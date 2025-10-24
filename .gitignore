@@ -1,0 +1,33 @@
+# Senhas
+.env
+
+# Ambiente Virtual
+venv/
+.venv/
+
+# Arquivos de cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de IDE
+.idea/
+.vscode/
+
+# Arquivos e pastas de usuário
+.uploads/
+.babackup_app/
+.DocumentosSistema/
+
+# Arquivos de backup do banco
+*.dump
+
+# Arquivos de texto genéricos (para evitar senhas acidentais)
+*.txt
+
+# Arquivos zipados (backup da versões manuais)
+*.zip
+
+# Planilhas
+*.xlsx
