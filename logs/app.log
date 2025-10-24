@@ -16,3 +16,13 @@
 2025-10-24 16:27:46 - INFO - root - Aplicação iniciada com sucesso.
 2025-10-24 16:27:49 - INFO - root - Sistema de Logging Configurado.
 2025-10-24 16:27:56 - INFO - root - Aplicação iniciada com sucesso.
+2025-10-24 16:44:07 - INFO - root - Sistema de Logging Configurado.
+2025-10-24 16:44:49 - INFO - root - Sistema de Logging Configurado.
+2025-10-24 16:44:56 - INFO - root - Aplicação iniciada com sucesso.
+2025-10-24 16:44:59 - INFO - root - Sistema de Logging Configurado.
+2025-10-24 16:45:05 - INFO - root - Aplicação iniciada com sucesso.
+2025-10-24 16:45:20 - INFO - root - Sistema de Logging Configurado.
+2025-10-24 16:45:26 - INFO - root - Aplicação iniciada com sucesso.
+2025-10-24 16:46:21 - INFO - app.routers.agente_router - Usuário 'admin' criou Agente ID 2 ('Matheus Henrique').
+2025-10-24 16:46:53 - INFO - app.routers.agente_router - Usuário 'admin' atualizou Agente ID 2 de 'Matheus Henrique' para 'Matheus Henrique Macieira'.
+2025-10-24 16:47:02 - INFO - app.routers.agente_router - Usuário 'admin' deletou Agente ID 2 ('Matheus Henrique Macieira').

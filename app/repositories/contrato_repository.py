@@ -6,7 +6,7 @@ from app.models.contrato_model import Contrato
 from app.models.fornecedor_vo import Fornecedor
 from app.schemas.contrato_schema import ContratoRequest
 from .categoria_repository import CategoriaRepository
-from .instrumento_repository import InstrumentosRepository
+from .instrumento_repository import InstrumentoRepository
 from .modalidade_repository import ModalidadeRepository
 from .numeromodalidade_repository import NumeromodalidadeRepository
 from .processolicitatorio_repository import ProcessolicitatorioRepository
@@ -15,7 +15,7 @@ class ContratoRepository:
     def __init__(self, db_conn: connection):
         self.db_conn = db_conn
         self.categoria_repo = CategoriaRepository(db_conn)
-        self.instrumentos_repo = InstrumentosRepository(db_conn)
+        self.instrumentos_repo = InstrumentoRepository(db_conn)
         self.modalidade_repo = ModalidadeRepository(db_conn)
         self.numeromodalidade_repo = NumeromodalidadeRepository(db_conn)
         self.processoslicitatorios_repo = ProcessolicitatorioRepository(db_conn)
