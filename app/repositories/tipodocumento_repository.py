@@ -1,30 +1,30 @@
 import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
-from app.models.modalidade_model import Modalidade
-from app.schemas.modalidade_schema import ModalidadeRequest
+from app.models.tipodocumento_model import Tipodocumento
+from app.schemas.tipodocumento_schema import TipodocumentoRequest
 
-class ModalidadeRepository:
+class TipodocumentoRepository:
     def __init__(self, db_conn: connection):
         self.db_conn = db_conn
 
     #Criar (C)
-    def create(self, Modalidade_req: ModalidadeRequest) -> Modalidade:
+    def create(self, Tipodocumento_req: TipodocumentoRequest) -> Tipodocumento:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
             sql = """
-                INSERT INTO modalidade (nome) 
+                INSERT INTO tipos_documento (nome) 
                 VALUES (%s) 
                 RETURNING * """
-            cursor.execute(sql, (Modalidade_req.nome,))
+            cursor.execute(sql, (Tipodocumento_req.nome,))
             
             new_data = cursor.fetchone()
             
             self.db_conn.commit()
             
-            return Modalidade(
+            return Tipodocumento(
                 id=new_data['id'],
                 nome=new_data['nome'],
             )
@@ -33,18 +33,18 @@ class ModalidadeRepository:
                 cursor.close()
 
     #Listar (R)
-    def get_all(self) -> list[Modalidade]:
+    def get_all(self) -> list[Tipodocumento]:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
         
-            sql = "SELECT * FROM modalidade ORDER BY nome"
+            sql = "SELECT * FROM tipos_documento ORDER BY nome"
         
             cursor.execute(sql)
         
             all_data = cursor.fetchall()
         
-            return [Modalidade(
+            return [Tipodocumento(
                 id=row['id'], 
                 nome=row['nome']
             )
@@ -54,17 +54,17 @@ class ModalidadeRepository:
                 cursor.close()
 
     #Buscar pelo ID
-    def get_by_id(self, id: int) -> Modalidade | None:
+    def get_by_id(self, id: int) -> Tipodocumento | None:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
-            sql = "SELECT * FROM modalidade WHERE id = %s"
+            sql = "SELECT * FROM tipos_documento WHERE id = %s"
             cursor.execute(sql, (id,))
             data = cursor.fetchone()
             
             if data:
-                return Modalidade(id=data['id'], nome=data['nome'])
+                return Tipodocumento(id=data['id'], nome=data['nome'])
             
             return None 
         finally:
@@ -72,24 +72,24 @@ class ModalidadeRepository:
                 cursor.close()
 
     #Atualizar (U)
-    def update(self, id: int, Modalidade_req: ModalidadeRequest) -> Modalidade | None:
+    def update(self, id: int, Tipodocumento_req: TipodocumentoRequest) -> Tipodocumento | None:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
             sql = """
-                UPDATE modalidade 
+                UPDATE tipos_documento 
                 SET nome = %s 
                 WHERE id = %s
                 RETURNING *
             """
-            cursor.execute(sql, (Modalidade_req.nome, id))
+            cursor.execute(sql, (Tipodocumento_req.nome, id))
             updated_data = cursor.fetchone()
             
             self.db_conn.commit()
             
             if updated_data:
-                return Modalidade(
+                return Tipodocumento(
                     id=updated_data['id'],
                     nome=updated_data['nome'],
                 )
@@ -105,7 +105,7 @@ class ModalidadeRepository:
         try:
             cursor = self.db_conn.cursor()
             
-            sql = "DELETE FROM modalidade WHERE id = %s"
+            sql = "DELETE FROM tipos_documento WHERE id = %s"
             cursor.execute(sql, (id,))
             
             rowcount = cursor.rowcount
@@ -118,33 +118,33 @@ class ModalidadeRepository:
                 cursor.close()
                 
     #Busca pelo nome exato                
-    def get_by_nome(self, nome: str) -> Modalidade | None:
+    def get_by_nome(self, nome: str) -> Tipodocumento | None:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            sql = "SELECT * FROM modalidade WHERE nome = %s"
+            sql = "SELECT * FROM tipos_documento WHERE nome = %s"
             cursor.execute(sql, (nome,))
             data = cursor.fetchone()
             if data:
-                return Modalidade(id=data['id'], nome=data['nome'])
+                return Tipodocumento(id=data['id'], nome=data['nome'])
             return None
         finally:
             if cursor:
                 cursor.close()
 
     #Cria a categoria se não existir
-    def get_or_create(self, nome: str) -> Modalidade:
+    def get_or_create(self, nome: str) -> Tipodocumento:
         instrumento = self.get_by_nome(nome) 
         if instrumento:
             return instrumento
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            sql = "INSERT INTO modalidade (nome) VALUES (%s) RETURNING *"
+            sql = "INSERT INTO tipos_documento (nome) VALUES (%s) RETURNING *"
             cursor.execute(sql, (nome,))
             new_data = cursor.fetchone()
             self.db_conn.commit()
-            return Modalidade(id=new_data['id'], nome=new_data['nome'])
+            return Tipodocumento(id=new_data['id'], nome=new_data['nome'])
 
         except psycopg2.IntegrityError:
             self.db_conn.rollback()
@@ -153,7 +153,7 @@ class ModalidadeRepository:
             if categoria_existente:
                 return categoria_existente
             else:
-                raise Exception(f"Erro inesperado ao buscar categoria '{nome}' após conflito de inserção.")
+                raise Exception(f"Erro inesperado ao buscar tiposdocumentos '{nome}' após conflito de inserção.")
 
         finally:
             if cursor and not cursor.closed:

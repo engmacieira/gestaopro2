@@ -3,7 +3,7 @@ from psycopg2.extensions import connection
 import psycopg2 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.dotacao_models import Dotacao 
+from app.models.dotacao_model import Dotacao 
 from app.schemas.dotacao_schema import DotacaoRequest, DotacaoResponse
 from app.repositories.dotacao_repository import DotacaoRepository
 

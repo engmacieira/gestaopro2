@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
-from app.models.categoria_models import Categoria
+from app.models.categoria_model import Categoria
 from app.schemas.categoria_schema import CategoriaRequest
 
 class CategoriaRepository:

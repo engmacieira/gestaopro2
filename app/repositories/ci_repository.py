@@ -2,19 +2,19 @@ import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
 from datetime import date
-from app.models.ci_models import Ci
+from app.models.ci_model import Ci
 from app.schemas.ci_schema import CiRequest
 from .aocs_repository import AocsRepository
-from .agentes_repository import AgentesRepository
-from .unidades_repository import UnidadesRepository
+from .agente_repository import AgenteRepository
+from .unidade_repository import UnidadeRepository
 from .dotacao_repository import DotacaoRepository
 
 class CiRepository:
     def __init__(self, db_conn: connection):
         self.db_conn = db_conn
         self.aocs_repo = AocsRepository(db_conn)
-        self.agentes_repo = AgentesRepository(db_conn)
-        self.unidades_repo = UnidadesRepository(db_conn)
+        self.agentes_repo = AgenteRepository(db_conn)
+        self.unidades_repo = UnidadeRepository(db_conn)
         self.dotacao_repo = DotacaoRepository(db_conn)
 
     #Mapear

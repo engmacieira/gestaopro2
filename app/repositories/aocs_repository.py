@@ -2,20 +2,20 @@ import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
 from datetime import date
-from app.models.aocs_models import Aocs
+from app.models.aocs_model import Aocs
 from app.schemas.aocs_schema import AocsRequest
-from .unidades_repository import UnidadesRepository
-from .locais_repository import LocaisRepository
-from .agentes_repository import AgentesRepository
+from .unidade_repository import UnidadeRepository
+from .local_repository import LocalRepository
+from .agente_repository import AgenteRepository
 from .dotacao_repository import DotacaoRepository
 
 
 class AocsRepository:
     def __init__(self, db_conn: connection):
         self.db_conn = db_conn
-        self.unidades_repo = UnidadesRepository(db_conn)
-        self.locais_repo = LocaisRepository(db_conn)
-        self.agentes_repo = AgentesRepository(db_conn)
+        self.unidades_repo = UnidadeRepository(db_conn)
+        self.locais_repo = LocalRepository(db_conn)
+        self.agentes_repo = AgenteRepository(db_conn)
         self.dotacao_repo = DotacaoRepository(db_conn)
 
     #Mapear

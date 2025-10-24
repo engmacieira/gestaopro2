@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
-from app.models.numeromodalidade_models import Numeromodalidade
+from app.models.numeromodalidade_model import Numeromodalidade
 from app.schemas.numeromodalidade_schema import NumeromodalidadeRequest
 
 class NumeromodalidadeRepository:

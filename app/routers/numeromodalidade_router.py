@@ -3,7 +3,7 @@ from psycopg2.extensions import connection
 import psycopg2 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.numeromodalidade_models import Numeromodalidade 
+from app.models.numeromodalidade_model import Numeromodalidade 
 from app.schemas.numeromodalidade_schema import NumeromodalidadeRequest, NumeromodalidadeResponse
 from app.repositories.numeromodalidade_repository import NumeromodalidadeRepository
 

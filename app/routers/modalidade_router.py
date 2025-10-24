@@ -3,7 +3,7 @@ from psycopg2.extensions import connection
 import psycopg2 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.modalidade_models import Modalidade 
+from app.models.modalidade_model import Modalidade 
 from app.schemas.modalidade_schema import ModalidadeRequest, ModalidadeResponse
 from app.repositories.modalidade_repository import ModalidadeRepository
 

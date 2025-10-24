@@ -3,80 +3,80 @@ from psycopg2.extensions import connection
 import psycopg2 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.ci_model import Ci 
-from app.schemas.ci_schema import CiRequest, CiResponse
-from app.repositories.ci_repository import CiRepository
+from app.models.anexo_model import Anexo 
+from app.schemas.anexo_schema import AnexoRequest, AnexoResponse
+from app.repositories.anexo_repository import AnexoRepository
 
 router = APIRouter(
-    prefix="/ci",      
-    tags=["Ci"],       
+    prefix="/anexos",      
+    tags=["Anexo"],       
     dependencies=[Depends(get_current_user)]
 )
 
 @router.post("/", 
-             response_model=CiResponse, 
+             response_model=AnexoResponse, 
              status_code=status.HTTP_201_CREATED)
-def create_ci(
-    ci_req: CiRequest, 
+def create_anexos(
+    anexos_req: AnexoRequest, 
     db_conn: connection = Depends(get_db)
 ):
     try:
-        repo = CiRepository(db_conn)
-        nova_ci = repo.create(ci_req)
-        return nova_ci
+        repo = AnexoRepository(db_conn)
+        nova_anexos = repo.create(anexos_req)
+        return nova_anexos
     except psycopg2.IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"O ci '{ci_req.numero_ci}' já existe."
+            detail=f"O anexos '{anexos_req.tipo_documento}' já existe."
         )
 
-@router.get("/", response_model=list[CiResponse])
-def get_all_ci(
+@router.get("/", response_model=list[AnexoResponse])
+def get_all_anexos(
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
-    ci = repo.get_all()
-    return ci
+    repo = AnexoRepository(db_conn)
+    anexos = repo.get_all()
+    return anexos
 
-@router.get("/{id}", response_model=CiResponse)
-def get_ci_by_id(
+@router.get("/{id}", response_model=AnexoResponse)
+def get_anexos_by_id(
     id: int, 
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
-    ci = repo.get_by_id(id)
+    repo = AnexoRepository(db_conn)
+    anexos = repo.get_by_id(id)
     
-    if not ci:
+    if not anexos:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="ci não encontrada."
+            detail="anexos não encontrada."
         )
-    return ci
+    return anexos
 
-@router.put("/{id}", response_model=CiResponse)
-def update_ci(
+@router.put("/{id}", response_model=AnexoResponse)
+def update_anexos(
     id: int,
-    ci_req: CiRequest,
+    anexos_req: AnexoRequest,
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
+    repo = AnexoRepository(db_conn)
     
-    ci_db = repo.get_by_id(id)
-    if not ci_db:
+    anexos_db = repo.get_by_id(id)
+    if not anexos_db:
          raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Ci não encontrada para atualização."
+            detail="Anexo não encontrada para atualização."
         )
         
-    ci_atualizada = repo.update(id, ci_req)
-    return ci_atualizada
+    anexos_atualizada = repo.update(id, anexos_req)
+    return anexos_atualizada
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_ci(
+def delete_anexos(
     id: int,
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
+    repo = AnexoRepository(db_conn)
     
     try:
         sucesso = repo.delete(id)

@@ -3,80 +3,80 @@ from psycopg2.extensions import connection
 import psycopg2 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.ci_model import Ci 
-from app.schemas.ci_schema import CiRequest, CiResponse
-from app.repositories.ci_repository import CiRepository
+from app.models.pedido_model import Pedido 
+from app.schemas.pedido_schema import PedidoRequest, PedidoResponse
+from app.repositories.pedido_repository import PedidoRepository
 
 router = APIRouter(
-    prefix="/ci",      
-    tags=["Ci"],       
+    prefix="/pedidos",      
+    tags=["Pedido"],       
     dependencies=[Depends(get_current_user)]
 )
 
 @router.post("/", 
-             response_model=CiResponse, 
+             response_model=PedidoResponse, 
              status_code=status.HTTP_201_CREATED)
-def create_ci(
-    ci_req: CiRequest, 
+def create_pedidos(
+    pedidos_req: PedidoRequest, 
     db_conn: connection = Depends(get_db)
 ):
     try:
-        repo = CiRepository(db_conn)
-        nova_ci = repo.create(ci_req)
-        return nova_ci
+        repo = PedidoRepository(db_conn)
+        nova_pedidos = repo.create(pedidos_req)
+        return nova_pedidos
     except psycopg2.IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"O ci '{ci_req.numero_ci}' já existe."
+            detail=f"O pedidos '{pedidos_req.aocs_nome}' já existe."
         )
 
-@router.get("/", response_model=list[CiResponse])
-def get_all_ci(
+@router.get("/", response_model=list[PedidoResponse])
+def get_all_pedidos(
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
-    ci = repo.get_all()
-    return ci
+    repo = PedidoRepository(db_conn)
+    pedidos = repo.get_all()
+    return pedidos
 
-@router.get("/{id}", response_model=CiResponse)
-def get_ci_by_id(
+@router.get("/{id}", response_model=PedidoResponse)
+def get_pedidos_by_id(
     id: int, 
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
-    ci = repo.get_by_id(id)
+    repo = PedidoRepository(db_conn)
+    pedidos = repo.get_by_id(id)
     
-    if not ci:
+    if not pedidos:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="ci não encontrada."
+            detail="pedidos não encontrada."
         )
-    return ci
+    return pedidos
 
-@router.put("/{id}", response_model=CiResponse)
-def update_ci(
+@router.put("/{id}", response_model=PedidoResponse)
+def update_pedidos(
     id: int,
-    ci_req: CiRequest,
+    pedidos_req: PedidoRequest,
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
+    repo = PedidoRepository(db_conn)
     
-    ci_db = repo.get_by_id(id)
-    if not ci_db:
+    pedidos_db = repo.get_by_id(id)
+    if not pedidos_db:
          raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Ci não encontrada para atualização."
+            detail="Pedido não encontrada para atualização."
         )
         
-    ci_atualizada = repo.update(id, ci_req)
-    return ci_atualizada
+    pedidos_atualizada = repo.update(id, pedidos_req)
+    return pedidos_atualizada
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_ci(
+def delete_pedidos(
     id: int,
     db_conn: connection = Depends(get_db)
 ):
-    repo = CiRepository(db_conn)
+    repo = PedidoRepository(db_conn)
     
     try:
         sucesso = repo.delete(id)

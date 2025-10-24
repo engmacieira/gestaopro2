@@ -1,52 +1,52 @@
 import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
-from app.models.modalidade_model import Modalidade
-from app.schemas.modalidade_schema import ModalidadeRequest
+from app.models.processolicitatorio_model import Processolicitatorio
+from app.schemas.processolicitatorio_schema import ProcessolicitatorioRequest
 
-class ModalidadeRepository:
+class ProcessolicitatorioRepository:
     def __init__(self, db_conn: connection):
         self.db_conn = db_conn
 
     #Criar (C)
-    def create(self, Modalidade_req: ModalidadeRequest) -> Modalidade:
+    def create(self, Processolicitatorio_req: ProcessolicitatorioRequest) -> Processolicitatorio:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
             sql = """
-                INSERT INTO modalidade (nome) 
+                INSERT INTO processoslicitatorios (numero) 
                 VALUES (%s) 
                 RETURNING * """
-            cursor.execute(sql, (Modalidade_req.nome,))
+            cursor.execute(sql, (Processolicitatorio_req.numero,))
             
             new_data = cursor.fetchone()
             
             self.db_conn.commit()
             
-            return Modalidade(
+            return Processolicitatorio(
                 id=new_data['id'],
-                nome=new_data['nome'],
+                numero=new_data['numero'],
             )
         finally:
             if cursor:
                 cursor.close()
 
     #Listar (R)
-    def get_all(self) -> list[Modalidade]:
+    def get_all(self) -> list[Processolicitatorio]:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
         
-            sql = "SELECT * FROM modalidade ORDER BY nome"
+            sql = "SELECT * FROM processoslicitatorios ORDER BY numero"
         
             cursor.execute(sql)
         
             all_data = cursor.fetchall()
         
-            return [Modalidade(
+            return [Processolicitatorio(
                 id=row['id'], 
-                nome=row['nome']
+                numero=row['numero']
             )
             for row in all_data]
         finally:
@@ -54,17 +54,17 @@ class ModalidadeRepository:
                 cursor.close()
 
     #Buscar pelo ID
-    def get_by_id(self, id: int) -> Modalidade | None:
+    def get_by_id(self, id: int) -> Processolicitatorio | None:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
-            sql = "SELECT * FROM modalidade WHERE id = %s"
+            sql = "SELECT * FROM processoslicitatorios WHERE id = %s"
             cursor.execute(sql, (id,))
             data = cursor.fetchone()
             
             if data:
-                return Modalidade(id=data['id'], nome=data['nome'])
+                return Processolicitatorio(id=data['id'], numero=data['numero'])
             
             return None 
         finally:
@@ -72,26 +72,26 @@ class ModalidadeRepository:
                 cursor.close()
 
     #Atualizar (U)
-    def update(self, id: int, Modalidade_req: ModalidadeRequest) -> Modalidade | None:
+    def update(self, id: int, Processolicitatorio_req: ProcessolicitatorioRequest) -> Processolicitatorio | None:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
             sql = """
-                UPDATE modalidade 
-                SET nome = %s 
+                UPDATE processoslicitatorios 
+                SET numero = %s 
                 WHERE id = %s
                 RETURNING *
             """
-            cursor.execute(sql, (Modalidade_req.nome, id))
+            cursor.execute(sql, (Processolicitatorio_req.numero, id))
             updated_data = cursor.fetchone()
             
             self.db_conn.commit()
             
             if updated_data:
-                return Modalidade(
+                return Processolicitatorio(
                     id=updated_data['id'],
-                    nome=updated_data['nome'],
+                    numero=updated_data['numero'],
                 )
             
             return None
@@ -105,7 +105,7 @@ class ModalidadeRepository:
         try:
             cursor = self.db_conn.cursor()
             
-            sql = "DELETE FROM modalidade WHERE id = %s"
+            sql = "DELETE FROM processoslicitatorios WHERE id = %s"
             cursor.execute(sql, (id,))
             
             rowcount = cursor.rowcount
@@ -118,42 +118,42 @@ class ModalidadeRepository:
                 cursor.close()
                 
     #Busca pelo nome exato                
-    def get_by_nome(self, nome: str) -> Modalidade | None:
+    def get_by_nome(self, numero: str) -> Processolicitatorio | None:
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            sql = "SELECT * FROM modalidade WHERE nome = %s"
-            cursor.execute(sql, (nome,))
+            sql = "SELECT * FROM processoslicitatorios WHERE numero = %s"
+            cursor.execute(sql, (numero,))
             data = cursor.fetchone()
             if data:
-                return Modalidade(id=data['id'], nome=data['nome'])
+                return Processolicitatorio(id=data['id'], numero=data['numero'])
             return None
         finally:
             if cursor:
                 cursor.close()
 
     #Cria a categoria se não existir
-    def get_or_create(self, nome: str) -> Modalidade:
-        instrumento = self.get_by_nome(nome) 
+    def get_or_create(self, numero: str) -> Processolicitatorio:
+        instrumento = self.get_by_nome(numero) 
         if instrumento:
             return instrumento
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            sql = "INSERT INTO modalidade (nome) VALUES (%s) RETURNING *"
-            cursor.execute(sql, (nome,))
+            sql = "INSERT INTO processoslicitatorios (numero) VALUES (%s) RETURNING *"
+            cursor.execute(sql, (numero,))
             new_data = cursor.fetchone()
             self.db_conn.commit()
-            return Modalidade(id=new_data['id'], nome=new_data['nome'])
+            return Processolicitatorio(id=new_data['id'], numero=new_data['numero'])
 
         except psycopg2.IntegrityError:
             self.db_conn.rollback()
             cursor.close() 
-            categoria_existente = self.get_by_nome(nome)
+            categoria_existente = self.get_by_nome(numero)
             if categoria_existente:
                 return categoria_existente
             else:
-                raise Exception(f"Erro inesperado ao buscar categoria '{nome}' após conflito de inserção.")
+                raise Exception(f"Erro inesperado ao buscar categoria '{numero}' após conflito de inserção.")
 
         finally:
             if cursor and not cursor.closed:

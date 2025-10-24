@@ -3,7 +3,7 @@ from psycopg2.extensions import connection
 import psycopg2 
 from app.core.database import get_db
 from app.core.security import get_current_user
-from app.models.aocs_models import Aocs 
+from app.models.aocs_model import Aocs 
 from app.schemas.aocs_schema import AocsRequest, AocsResponse
 from app.repositories.aocs_repository import AocsRepository
 

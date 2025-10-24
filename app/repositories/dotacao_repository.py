@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
-from app.models.dotacao_models import Dotacao
+from app.models.dotacao_model import Dotacao
 from app.schemas.dotacao_schema import DotacaoRequest
 
 class DotacaoRepository:
