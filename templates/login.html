@@ -28,25 +28,41 @@
         .login-header h2 {
             font-size: 1.8em;
         }
+        /* Novo estilo para o logo na tela de login */
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
         .btn-full-width {
             width: 100%;
         }
     </style>
 </head>
 <body>
+    {# --- Área de Notificação Flutuante --- #}
+    <div id="notification-area">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {# Removida a estilização estática para usar o CSS flutuante global #}
+                    <div class="notification {{ category }} flash">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
     <div class="card login-card">
         <div class="login-header">
+            {# --- Inclusão do logo para reforçar o branding --- #}
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo GestãoPRO" class="login-logo">
             <h2>GestãoPRO</h2>
             <p class="subtitle">Faça o login para continuar</p>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="notification {{ category }}" style="position: static; margin-bottom: 20px;">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        {# O bloco de notificação foi movido para o <div id="notification-area"> acima. #}
 
         <form method="POST" action="{{ url_for('login') }}">
             <div class="form-group">
@@ -60,5 +76,26 @@
             <button type="submit" class="btn btn-primary btn-full-width">Entrar</button>
         </form>
     </div>
+
+    {# Pequeno script para mover as notificações flash para a área de notificação flutuante #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationArea = document.getElementById('notification-area');
+            const flashMessages = document.querySelectorAll('.notification.flash');
+            
+            // Inicia o fade out para notificações que foram carregadas no HTML
+            flashMessages.forEach(notification => {
+                // Posiciona a notificação no topo direito (que é o padrão do CSS)
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.right = '20px';
+                
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.addEventListener('transitionend', () => notification.remove());
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>

@@ -14,29 +14,9 @@
 </header>
 
 <div class="pedido-container">
-    <div class="card full-width">
-        <div class="card-actions">
-            <div class="search-form">
-                <i class="fa-solid fa-search search-icon"></i>
-                <input type="search" id="campo-busca" placeholder="Buscar por descrição do item..." class="form-control">
-            </div>
-        </div>
-        <div class="table-wrapper">
-            <table class="data-table selectable" id="tabela-itens-catalogo">
-                <thead>
-                    <tr>
-                        <th class="sortable" data-sort="numero_item" style="width: 10%;">Nº Item <i class="fa-solid fa-sort"></i></th>
-                        <th class="sortable" data-sort="descricao" style="width: 40%;">Descrição do Item <i class="fa-solid fa-sort"></i></th>
-                        <th class="sortable" data-sort="saldo" class="text-center">Saldo <i class="fa-solid fa-sort"></i></th>
-                        <th class="sortable" data-sort="valor_unitario" class="text-center">Valor Unit. <i class="fa-solid fa-sort"></i></th>
-                        <th class="text-center">Qtd. a Pedir</th>
-                    </tr>
-                </thead>
-                <tbody id="corpo-tabela-itens">
-                    </tbody>
-            </table>
-        </div>
-    </div>
+    
+    {# 1. INCLUSÃO DO NOVO COMPONENTE DE CATÁLOGO #}
+    {% include '_novo_pedido_catalogo.html' %} 
 
     <div class="side-cart">
         <div class="card full-width">
@@ -48,7 +28,7 @@
                 <div class="empty-state mini"><i class="fa-solid fa-dolly"></i><p>Seu carrinho está vazio.</p></div>
             </div>
             <div id="carrinho-total" class="cart-total">
-                <span>Total Geral:</span>
+                <span>Total Geral (AOCS):</span>
                 <strong>R$ 0.00</strong>
             </div>
             <div class="cart-actions">
@@ -60,6 +40,7 @@
     </div>
 </div>
 
+{# MODAL DE FINALIZAÇÃO (Mantido no corpo para simplificar) #}
 <div id="modal-finalizar-pedido" class="modal-overlay">
     <div class="modal-content large">
         <div class="modal-header">
@@ -157,9 +138,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnEnviarPedido = document.getElementById('btn-enviar-pedido');
     const notificationArea = document.getElementById('notification-area');
     
-    const divPaginacao = document.createElement('div');
-    divPaginacao.className = 'card-footer';
-    document.querySelector('.pedido-container .card.full-width').appendChild(divPaginacao);
+    // Referência ao novo container de paginação
+    const paginationContainer = document.getElementById('pagination-container');
 
     // --- FUNÇÕES ---
     function showNotification(message, type = 'error') {
@@ -175,9 +155,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
+    // Função ajustada para usar o endpoint da API refatorada
     async function fetchItens(page = 1, busca = '') {
         corpoTabelaItens.innerHTML = '<tr><td colspan="5">Carregando itens...</td></tr>';
         try {
+            // Chamada ao Router/Controller de Categoria/Itens
             const url = `/api/categorias/${idCategoria}/itens?page=${page}&busca=${busca}&sort_by=${sortColumn}&order=${sortDirection}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -222,13 +204,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const quantidadeNoCarrinho = itemNoCarrinho ? itemNoCarrinho.quantidade : '';
             const linha = document.createElement('tr');
             linha.className = itemNoCarrinho ? 'item-in-cart' : '';
+            // UX IMPROVEMENT: Aplicando o estilo inline do small-input
             linha.innerHTML = `
                 <td>${item.numero_item}</td>
                 <td><strong>${item.descricao}</strong><br><small>Contrato: ${item.numero_contrato}</small></td>
                 <td class="text-center" style="font-weight: 600;">${item.saldo}</td>
                 <td class="text-center">R$ ${parseFloat(item.valor_unitario).toFixed(2)}</td>
                 <td class="text-center">
-                    <input type="number" class="form-control small-input" min="1" max="${item.saldo}" data-item-id="${item.id}" data-item-full='${JSON.stringify(item)}' value="${quantidadeNoCarrinho}" placeholder="0">
+                    <input type="number" class="form-control small-input" min="1" max="${item.saldo}" data-item-id="${item.id}" data-item-full='${JSON.stringify(item)}' value="${quantidadeNoCarrinho}" placeholder="0" style="width: 100px; min-width: 80px;">
                 </td>
             `;
             const inputQtd = linha.querySelector('input[type="number"]');
@@ -237,16 +220,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Função de renderização de paginação ajustada para ser injetada no NOVO container
     function renderizarPaginacao(total_paginas, pagina_atual) {
-        divPaginacao.innerHTML = '';
+        paginationContainer.innerHTML = '';
         if (total_paginas <= 1) return;
+        
         let paginationHtml = '<nav class="pagination-nav"><ul class="pagination">';
-        for (let i = 1; i <= total_paginas; i++) {
-            paginationHtml += `<li class="page-item ${i === pagina_atual ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+        const maxPagesToShow = 5; 
+        let startPage = Math.max(1, pagina_atual - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(total_paginas, startPage + maxPagesToShow - 1);
+        
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
         }
+
+        if (pagina_atual > 1) {
+             paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${pagina_atual - 1}">&laquo; Anterior</a></li>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+             paginationHtml += `<li class="page-item ${i === pagina_atual ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+        }
+        
+        if (pagina_atual < total_paginas) {
+             paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${pagina_atual + 1}">Próxima &raquo;</a></li>`;
+        }
+
         paginationHtml += '</ul></nav>';
-        divPaginacao.innerHTML = paginationHtml;
-        divPaginacao.querySelectorAll('.page-link').forEach(link => {
+        paginationContainer.innerHTML = paginationHtml;
+        paginationContainer.querySelectorAll('.page-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const page = parseInt(e.target.dataset.page);
@@ -256,17 +258,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderizarCarrinho() {
+        let totalGeral = carrinho.reduce((acc, item) => acc + item.subtotal, 0);
         if (carrinho.length === 0) {
             divItensCarrinho.innerHTML = '<div class="empty-state mini"><i class="fa-solid fa-dolly"></i><p>Seu carrinho está vazio.</p></div>';
             btnFinalizarPedido.disabled = true;
-        } else {
-            divItensCarrinho.innerHTML = '';
-            carrinho.forEach(item => {
-                divItensCarrinho.innerHTML += `<div class="cart-item"><div class="cart-item-info"><span class="cart-item-name">${item.nome}</span><span class="cart-item-price">${item.quantidade} x R$ ${parseFloat(item.preco).toFixed(2)}</span></div><strong class="cart-item-subtotal">R$ ${item.subtotal.toFixed(2)}</strong></div>`;
-            });
-            btnFinalizarPedido.disabled = false;
-        }
-        const totalGeral = carrinho.reduce((acc, item) => acc + item.subtotal, 0);
+            divTotalCarrinho.querySelector('strong').innerText = `R$ 0.00`;
+            return;
+        } 
+        
+        divItensCarrinho.innerHTML = '';
+        carrinho.forEach(item => {
+            divItensCarrinho.innerHTML += `<div class="cart-item"><div class="cart-item-info"><span class="cart-item-name">${item.nome}</span><span class="cart-item-price">${item.quantidade} x R$ ${parseFloat(item.preco).toFixed(2)}</span></div><strong class="cart-item-subtotal">R$ ${item.subtotal.toFixed(2)}</strong></div>`;
+        });
+        
+        btnFinalizarPedido.disabled = false;
         divTotalCarrinho.querySelector('strong').innerText = `R$ ${totalGeral.toFixed(2)}`;
     }
 
@@ -274,8 +279,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const itemId = parseInt(input.dataset.itemId);
         let quantidade = parseFloat(input.value);
         const itemDoCatalogo = JSON.parse(input.dataset.itemFull);
+        
         if (isNaN(quantidade) || quantidade <= 0) {
             carrinho = carrinho.filter(item => item.id !== itemId);
+            quantidade = 0;
         } else {
             if (quantidade > itemDoCatalogo.saldo) {
                 showNotification(`Saldo insuficiente! O máximo para "${itemDoCatalogo.descricao}" é ${itemDoCatalogo.saldo}.`);
@@ -288,7 +295,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 itemExistente.quantidade = quantidade;
                 itemExistente.subtotal = quantidade * itemExistente.preco;
             } else {
-                carrinho.push({ id: itemId, nome: itemDoCatalogo.descricao, quantidade: quantidade, preco: valorUnitarioNumerico, subtotal: quantidade * valorUnitarioNumerico, idContrato: itemDoCatalogo.id_contrato, numeroContrato: itemDoCatalogo.numero_contrato });
+                carrinho.push({ 
+                    id: itemId, 
+                    nome: itemDoCatalogo.descricao, 
+                    quantidade: quantidade, 
+                    preco: valorUnitarioNumerico, 
+                    subtotal: quantidade * valorUnitarioNumerico, 
+                    idContrato: itemDoCatalogo.id_contrato, 
+                    numeroContrato: itemDoCatalogo.numero_contrato 
+                });
             }
         }
         renderizarCarrinho();
@@ -299,69 +314,119 @@ document.addEventListener('DOMContentLoaded', function() {
         if (carrinho.length === 0) return;
         const containerAOCS = document.getElementById('aocs-por-contrato-container');
         containerAOCS.innerHTML = '';
+        
         const contratosNoCarrinho = [...new Map(carrinho.map(item => [item.idContrato, { numeroContrato: item.numeroContrato, idContrato: item.idContrato }])).values()];
+        
+        // UX Improvement: Gera os campos de AOCS
         contratosNoCarrinho.forEach(itemContrato => {
             const formGroup = document.createElement('div');
             formGroup.className = 'form-group';
-            formGroup.innerHTML = `<label for="aocs-contrato-${itemContrato.idContrato}">Nº AOCS para Contrato: <strong>${itemContrato.numeroContrato}</strong></label><input type="text" id="aocs-contrato-${itemContrato.idContrato}" data-id-contrato="${itemContrato.idContrato}" class="form-control aocs-input" required>`;
+            formGroup.innerHTML = `
+                <label for="aocs-contrato-${itemContrato.idContrato}">Nº AOCS para Contrato: <strong>${itemContrato.numeroContrato}</strong></label>
+                <input type="text" id="aocs-contrato-${itemContrato.idContrato}" 
+                       data-id-contrato="${itemContrato.idContrato}" 
+                       class="form-control aocs-input" 
+                       required>
+            `;
             containerAOCS.appendChild(formGroup);
         });
+        
         modal.style.display = 'flex';
     }
     
     const fecharModal = () => modal.style.display = 'none';
     
+    // Função de envio REESCRITA para o fluxo modular do FastAPI:
+    // 1. POST /api/aocs (cria a AOCS) -> retorna ID
+    // 2. POST /api/pedidos?id_aocs={id} (cria os pedidos para a AOCS)
     async function enviarPedido() {
-        if (carrinho.length === 0) { showNotification('O carrinho está vazio.'); return; }
+        const submitButton = btnEnviarPedido;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
         const aocsDadosMestre = {
-            unidade_requisitante: document.getElementById('aocs-unidade').value,
+            unidade_requisitante_nome: document.getElementById('aocs-unidade').value,
             justificativa: document.getElementById('aocs-justificativa').value,
-            info_orcamentaria: document.getElementById('aocs-orcamento').value,
-            local_entrega: document.getElementById('aocs-local-entrega').value,
-            agente_responsavel: document.getElementById('aocs-responsavel').value,
-            local_data: `Braúnas/MG, ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
+            dotacao_info_orcamentaria: document.getElementById('aocs-orcamento').value,
+            local_entrega_descricao: document.getElementById('aocs-local-entrega').value,
+            agente_responsavel_nome: document.getElementById('aocs-responsavel').value,
         };
+        
+        // Agrupamento de itens por Contrato, formatado para o PedidoCreateRequest
         const contratosAgrupados = {};
         carrinho.forEach(item => {
             if (!contratosAgrupados[item.idContrato]) { contratosAgrupados[item.idContrato] = []; }
-            contratosAgrupados[item.idContrato].push({id: item.id, quantidade: item.quantidade});
+            contratosAgrupados[item.idContrato].push({
+                item_contrato_id: item.id, 
+                quantidade_pedida: item.quantidade 
+            });
         });
+        
         const promessasDeFetch = [];
         const inputsAOCS = document.querySelectorAll('.aocs-input');
+        
         for (const input of inputsAOCS) {
             const idContrato = parseInt(input.dataset.idContrato);
             const numeroAOCS = input.value.trim();
-            if (!numeroAOCS) { showNotification('Preencha o número da AOCS para todos os contratos.'); return; }
-            const payload = {
-                aocs_dados: { ...aocsDadosMestre, numero_aocs: numeroAOCS },
-                itens_pedido: contratosAgrupados[idContrato]
-            };
-            const promessa = fetch('/api/aocs', {
+            
+            // Validação de formulário
+            if (!numeroAOCS) { 
+                showNotification('Preencha o número da AOCS para todos os contratos.'); 
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar e Enviar';
+                return; 
+            }
+            
+            // 1. Cria a AOCS (POST /api/aocs)
+            const aocsPayload = { ...aocsDadosMestre, numero_aocs: numeroAOCS };
+            
+            const promiseChain = fetch('/api/aocs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).then(response => {
-                if (!response.ok) { return response.json().then(err => Promise.reject(err)); }
+                body: JSON.stringify(aocsPayload)
+            })
+            .then(response => {
+                // Trata erro de criação da AOCS (e.g., número duplicado)
+                if (!response.ok) { return response.json().then(err => Promise.reject({message: `Falha ao criar AOCS ${numeroAOCS}.`, error: err.detail})); }
                 return response.json();
+            })
+            .then(aocsResult => {
+                const id_aocs = aocsResult.id;
+                // 2. Cria os Pedidos (POST /api/pedidos?id_aocs={id_aocs})
+                const pedidoPromises = contratosAgrupados[idContrato].map(item => 
+                    fetch(`/api/pedidos?id_aocs=${id_aocs}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(item) // item = {item_contrato_id: X, quantidade_pedida: Y}
+                    })
+                    .then(response => {
+                         // Trata erro de criação de Pedido (e.g., saldo insuficiente)
+                        if (!response.ok) { return response.json().then(err => Promise.reject({message: `Falha ao adicionar Item ${item.item_contrato_id} à AOCS ${numeroAOCS}.`, error: err.detail})); }
+                        return response.json();
+                    })
+                );
+                return Promise.all(pedidoPromises);
             });
-            promessasDeFetch.push(promessa);
+
+            promessasDeFetch.push(promiseChain);
         }
-        btnEnviarPedido.disabled = true;
-        btnEnviarPedido.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+        
         try {
             const resultados = await Promise.all(promessasDeFetch);
             showNotification(`${resultados.length} AOCS(s) criada(s) com sucesso!`, 'success');
-            setTimeout(() => { window.location.href = "/pedidos-ui"; }, 2000);
+            // Redireciona para o histórico
+            setTimeout(() => { window.location.href = "{{ url_for('pedidos_ui') }}"; }, 2000);
         } catch (error) {
-            showNotification(`Erro ao criar AOCS: ${error.erro || 'Erro desconhecido.'}`);
-        } finally {
-            btnEnviarPedido.disabled = false;
-            btnEnviarPedido.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar e Enviar';
-            fecharModal();
+            console.error(error);
+            showNotification(`Erro ao enviar pedido. Detalhe: ${error.message || 'Erro desconhecido.'}`);
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar e Enviar';
         }
     }
 
+
     campoBusca.addEventListener('keyup', (e) => {
+        // Dispara busca apenas no Enter para evitar sobrecarga no backend/API
         if (e.key === 'Enter') {
             fetchItens(1, campoBusca.value);
         }
@@ -371,7 +436,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (confirm('Tem certeza que deseja limpar todos os itens do pedido?')) {
             carrinho = [];
             renderizarCarrinho();
-            fetchItens();
+            fetchItens(); // Recarrega a tabela de itens
+            // Garante que o estado visual dos inputs é limpo
+            document.querySelectorAll('.data-table.selectable .form-control.small-input').forEach(input => {
+                input.value = '';
+                input.closest('tr').classList.remove('item-in-cart');
+            });
         }
     });
 

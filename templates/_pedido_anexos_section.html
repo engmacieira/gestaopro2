@@ -1,35 +1,38 @@
+{# Componente: templates/_pedido_anexos_section.html #}
 <div class="card">
-    {# Título consistente com outros cards da side-panel #}
     <h4>Anexos do Pedido</h4> 
 
-    {# Formulário de Upload Padronizado #}
-    <form id="form-anexos" action="{{ url_for('upload_anexo_aocs', numero_aocs=aocs.numero_aocs) }}" method="POST" enctype="multipart/form-data">
+    {# FORMULÁRIO DE UPLOAD REVISADO PARA FASTAPI/JS INTERCEPTION #}
+    {# Nota: O action="/api/anexos/upload/" é o endpoint correto da API #}
+    <form id="form-anexos" 
+          action="/api/anexos/upload/" 
+          method="POST" 
+          enctype="multipart/form-data">
+
+        {# CAMPOS OBRIGATÓRIOS: Usamos hidden inputs para passar o contexto do pedido #}
+        <input type="hidden" name="id_entidade" value="{{ aocs.id }}"> 
+        <input type="hidden" name="tipo_entidade" value="aocs"> 
+
         <div class="form-group">
-            <label for="tipo_documento_select">Tipo do Documento</label> {# Label padrão #}
-            <select name="tipo_documento_select" id="tipo_documento_select" class="form-control">
+            <label for="tipo_documento_select">Tipo do Documento</label> 
+            <select name="tipo_documento" id="tipo_documento_select" class="form-control" required>
                 <option value="" disabled selected>Selecione...</option>
                 {% for tipo in tipos_documento %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}
                 <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
             </select>
+            {# O campo de texto para o novo tipo também tem o nome esperado: 'tipo_documento_novo' #}
             <input type="text" name="tipo_documento_novo" id="tipo_documento_novo" class="form-control" placeholder="Digite o novo tipo" style="display: none; margin-top: 10px;">
         </div>
         <div class="form-group">
-            <label for="anexo">Arquivo</label> {# Label padrão #}
-            <input type="file" name="anexo" id="anexo" class="form-control" required>
+            <label for="file">Arquivo</label> 
+            {# O nome do campo deve ser 'file' para corresponder ao router #}
+            <input type="file" name="file" id="file" class="form-control" required> 
         </div>
         <button type="submit" class="btn btn-primary btn-full-width"><i class="fa-solid fa-upload"></i> Enviar Anexo</button>
     </form>
     
-    {# Área de Notificação específica para anexos (se necessário) #}
     <div id="notification-area-anexos" style="margin-top: 15px;"> 
-         {# Mensagens flash podem aparecer aqui, se o backend as direcionar especificamente #}
-         {% with messages = get_flashed_messages(category_filter=["anexo_success", "anexo_error"]) %}
-             {% if messages %}
-                 {% for message in messages %}
-                     <div class="notification {{ get_flashed_messages(category_filter=["anexo_success", "anexo_error"], with_categories=True)[0][0].replace('anexo_', '') }}">{{ message }}</div>
-                 {% endfor %}
-             {% endif %}
-         {% endwith %}
+         {# Área para mensagens flash #}
     </div>
 
     {# Lista de Anexos Existentes #}
@@ -40,13 +43,14 @@
             <li class="attachment-item">
                 <div class="attachment-file">
                     <i class="fa-solid fa-paperclip"></i>
-                    {# Usando truncate mas mantendo nome original no title #}
-                    <a href="{{ url_for('uploaded_file', filename=anexo.nome_seguro) }}" title="{{ anexo.tipo_documento }} - {{ anexo.nome_original }}" target="_blank">
-                        {{ anexo.tipo_documento | truncate(25, True) }}
+                    {# O link de download usa a rota download_anexo_file com o ID do anexo #}
+                    <a href="{{ url_for('download_anexo_file', id=anexo.id) }}" title="{{ anexo.tipo_documento }} - {{ anexo.nome_original }}" target="_blank">
+                        {{ anexo.tipo_documento or 'Documento' }} ({{ anexo.data_upload.strftime('%d/%m/%Y') }})
                     </a>
                 </div>
                 <div class="attachment-meta">
-                    <button type="button" class="btn-link-action red" title="Excluir" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_original }}')">
+                    {# Botão de exclusão chama a função JS da página detalhe_pedido.html #}
+                    <button type="button" class="btn-link-action red" title="Excluir" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_original | e }}')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -56,4 +60,3 @@
     </div>
     {% endif %}
 </div>
-{# Removido o fechamento extra de </div> #}

@@ -1,0 +1,45 @@
+{# Componente: templates/_importar_itens_steps.html #}
+<div class="card full-width process-card">
+    <div class="process-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <h2>Envie sua Planilha</h2>
+            <div class="instructions">
+                <p>Selecione um arquivo .xlsx com as colunas: <code>numero_item</code>, <code>descricao</code>, <code>unidade_medida</code>, <code>quantidade</code>, <code>valor_unitario</code>, e opcionalmente <code>marca</code>.</p>
+            </div>
+            
+            <form id="form-upload-itens" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="arquivo_excel">Selecione o arquivo Excel com os itens:</label>
+                    <input type="file" name="arquivo_excel" id="arquivo_excel" class="form-control" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar
+                </button>
+            </form>
+
+            <div id="error-message" class="error-message"></div>
+        </div>
+    </div>
+
+    <div id="preview-container" class="process-step" style="display: none;">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <h2>Pré-visualização</h2>
+            <p class="subtitle">Por favor, confira se os dados dos itens abaixo estão corretos antes de salvar.</p>
+            
+            <div class="table-wrapper">
+                <table id="preview-table" class="data-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <br>
+            <div class="form-actions">
+                 <button id="btn-salvar-dados" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Itens no Contrato
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

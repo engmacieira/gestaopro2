@@ -1,29 +1,33 @@
-{# REMOVIDO: {% extends "base.html" %} #}
+{# Componente: templates/_pedido_dados_status.html #}
+{# Focado nos dados administrativos e editáveis, removendo o status redundante #}
 
 <div class="card full-width">
-    {# Título ajustado para clareza #}
-    <h2>Status & Dados Gerais do Pedido</h2>
+    <h2>Dados Administrativos da AOCS</h2>
+    
     <div class="status-grid">
         <div class="form-group">
-            <label>Status da Entrega (Automático)</label>
-            {# Display claro do status usando badge #}
-            <div style="padding-top: 8px;"> {# Alinhamento vertical com outros inputs #}
-                {% set status_class = 'orange' if aocs.status_entrega == 'Pendente' else ('blue' if aocs.status_entrega == 'Entrega Parcial' else 'green') %}
-                <span class="status-badge {{ status_class }}" style="font-size: 1em;">{{ aocs.status_entrega }}</span>
-            </div>
-            <small style="margin-top: 5px; display: block;">Calculado com base nos registros de entrega.</small>
+            <label for="data_pedido_input">Data da AOCS</label>
+            <input type="date" id="data_pedido_input" class="form-control" 
+                   value="{{ aocs.data_criacao.strftime('%Y-%m-%d') }}" 
+                   data-campo="data_criacao">
+            <small style="margin-top: 5px; display: block;">A alteração recalcula o tempo de pendência.</small>
         </div>
+        
         <div class="form-group">
-            <label for="data_pedido_input">Data do Pedido</label>
-            <input type="date" id="data_pedido_input" class="form-control" value="{{ aocs.data_criacao.strftime('%Y-%m-%d') }}">
+            <label for="numero-pedido-input">Nº do Pedido (Opcional)</label>
+            <input type="text" id="numero-pedido-input" class="form-control" 
+                   value="{{ aocs.numero_pedido or '' }}" 
+                   data-campo="numero_pedido" 
+                   placeholder="Nº da solicitação interna">
         </div>
+        
         <div class="form-group">
-            <label for="numero-pedido-input">Nº do Pedido</label>
-            <input type="text" id="numero-pedido-input" class="form-control" value="{{ aocs.numero_pedido or '' }}" data-campo="numero_pedido">
+            <label for="empenho-input">Nº do Empenho (Opcional)</label>
+            <input type="text" id="empenho-input" class="form-control" 
+                   value="{{ aocs.empenho or '' }}" 
+                   data-campo="empenho" 
+                   placeholder="Nº do documento de empenho">
         </div>
-        <div class="form-group">
-            <label for="empenho-input">Nº do Empenho</label>
-            <input type="text" id="empenho-input" class="form-control" value="{{ aocs.empenho or '' }}" data-campo="empenho">
-        </div>
+        
     </div>
 </div>

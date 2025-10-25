@@ -12,27 +12,11 @@
     <h2>Relatórios Disponíveis</h2>
 
     <div class="report-selection-grid">
-
+        {# O loop 'relatorios' é fornecido pelo contexto Flask #}
         {% for key, config in relatorios.items() %}
-        <div class="report-item">
-            <div class="report-info">
-                <h4>{{ config.titulo }}</h4>
-                <p>{{ config.descricao }}</p>
-            </div>
-            <div class="report-actions">
-                <div class="form-group">
-                    <label for="ordenacao-{{ key }}">Ordenar por:</label>
-                    <select id="ordenacao-{{ key }}" class="form-control">
-                        {% for sort_key, sort_config in config.ordenacao_opcoes.items() %}
-                            <option value="{{ sort_key }}">{{ sort_config.label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <a href="#" class="btn btn-primary" onclick="gerarRelatorio('{{ key }}')"><i class="fa-solid fa-file-pdf"></i> Gerar PDF</a>
-            </div>
-        </div>
+            {# INCLUSÃO DO COMPONENTE DE ITEM DE RELATÓRIO #}
+            {% include '_relatorio_item.html' with context %}
         {% endfor %}
-        
     </div>
 </div>
 
@@ -44,6 +28,7 @@ function gerarRelatorio(nomeRelatorio) {
     const selectOrdenacao = document.getElementById(`ordenacao-${nomeRelatorio}`);
     const ordenacao = selectOrdenacao.value;
     
+    // O endpoint /api/relatorios/{nome_relatorio}?ordenacao={valor} está correto para o FastAPI.
     const url = `/api/relatorios/${nomeRelatorio}?ordenacao=${ordenacao}`;
     
     window.open(url, '_blank');

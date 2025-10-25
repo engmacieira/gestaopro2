@@ -1,0 +1,20 @@
+{# Componente: templates/_contratos_por_categoria_header.html #}
+<header class="main-header">
+    <a href="{{ url_for('categorias_ui') }}" class="back-link">
+        &larr; Voltar para a lista de categorias
+    </a>
+    <h1>Catálogo de Itens: <span class="text-blue">{{ categoria.nome }}</span></h1>
+    <p class="subtitle">Visualize todos os itens disponíveis para esta categoria e inicie um novo pedido.</p>
+</header>
+
+<div class="card-actions" style="flex-wrap: wrap; justify-content: space-between;">
+    <form method="GET" action="{{ url_for('contratos_por_categoria', id_categoria=categoria.id) }}" class="search-form" style="flex: 1 1 70%;">
+        <i class="fa-solid fa-search search-icon"></i>
+        <input type="search" name="busca" placeholder="Buscar por descrição do item..." value="{{ query_params.busca or '' }}" class="form-control" style="flex: 1;">
+        <button type="submit" class="btn btn-secondary">Buscar</button>
+    </form>
+    <a href="{{ url_for('novo_pedido_pagina', id_categoria=categoria.id) }}" class="btn btn-primary" style="flex-shrink: 0; min-width: 200px;">
+        <i class="fa-solid fa-cart-plus"></i>
+        Iniciar Novo Pedido
+    </a>
+</div>

@@ -1,0 +1,53 @@
+{# Componente para a tabela de pedidos pendentes #}
+{% from '_pagination.html' import render_pagination %}
+
+<div class="card full-width">
+    <h2><i class="fa-solid fa-clock-rotate-left" style="margin-right: 8px; color: var(--action-primary);"></i> Pedidos Pendentes</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nº AOCS</th>
+                    <th>Contrato</th>
+                    <th>Data</th>
+                    <th>Dias Passados</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if pedidos_pendentes %}
+                    {% for pedido in pedidos_pendentes %}
+                    <tr>
+                        <td><strong><a href="{{ url_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
+                        <td>{{ pedido.numero_contrato }}</td>
+                        <td>{{ pedido.data_pedido | replace('-', '/') }}</td>
+                        {# Lógica de Cores UX Melhorada #}
+                        {% set dias_passados = pedido.dias_passados %}
+                        {% set dias_class = '' %}
+                        {% if dias_passados > 60 %}
+                            {% set dias_class = 'overdue-critical' %}
+                        {% elif dias_passados > 30 %}
+                            {% set dias_class = 'overdue-warning' %}
+                        {% elif dias_passados > 7 %}
+                            {% set dias_class = 'overdue-mild' %}
+                        {% endif %}
+                        <td class="{{ dias_class }}">{{ pedido.dias_passados }} dias</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-state mini">
+                                <i class="fa-solid fa-check-circle" style="color: var(--action-success);"></i>
+                                <p>Nenhum pedido pendente. Bom trabalho!</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card-footer">
+        {{ render_pagination(pagina_atual, total_paginas, 'home') }}
+    </div>
+</div>

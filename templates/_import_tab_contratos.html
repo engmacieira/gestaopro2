@@ -1,0 +1,31 @@
+{# Componente: templates/_import_tab_contratos.html #}
+<div class="card full-width process-card">
+    <div class="process-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <h2>Envie sua Planilha de Contratos</h2>
+            <div class="instructions">
+                <p>A planilha deve conter as seguintes colunas:</p>
+                <code>id_categoria</code>, <code>numero_contrato</code>, <code>fornecedor</code>, <code>cpf_cnpj</code>, <code>numero_processo</code>, <code>modalidade</code>, <code>numero_modalidade</code>, <code>data_inicio</code>, <code>data_fim</code>, <code>tipo_contrato</code>, <code>email</code>, <code>telefone</code>
+            </div>
+            <form id="form-upload-contratos" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="arquivo_excel_contratos">Selecione o arquivo Excel:</label>
+                    <input type="file" name="arquivo_excel" id="arquivo_excel_contratos" class="form-control" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar</button>
+            </form>
+            <div id="error-message-contratos" class="error-message"></div>
+        </div>
+    </div>
+    <div id="preview-container-contratos" class="process-step" style="display: none;">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <h2>Pré-visualização dos Contratos</h2>
+            <p class="subtitle">Confirme os dados antes de salvar definitivamente no sistema.</p>
+            <div class="table-wrapper"><table id="preview-table-contratos" class="data-table"></table></div>
+            <br>
+            <div class="form-actions"><button id="btn-salvar-contratos" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar Contratos</button></div>
+        </div>
+    </div>
+</div>

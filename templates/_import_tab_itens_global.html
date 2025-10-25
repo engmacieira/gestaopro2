@@ -1,0 +1,31 @@
+{# Componente: templates/_import_tab_itens_global.html #}
+<div class="card full-width process-card">
+    <div class="process-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <h2>Envie sua Planilha de Itens</h2>
+            <div class="instructions">
+                <p>A planilha deve conter as seguintes colunas:</p>
+                <code>numero_contrato</code>, <code>tipo_contrato</code>, <code>numero_item</code>, <code>descricao</code>, <code>unidade_medida</code>, <code>quantidade</code>, <code>valor_unitario</code>
+            </div>
+            <form id="form-upload-itens" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="arquivo_excel_itens">Selecione o arquivo Excel:</label>
+                    <input type="file" name="arquivo_excel" id="arquivo_excel_itens" class="form-control" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar Itens</button>
+            </form>
+            <div id="error-message-itens" class="error-message"></div>
+        </div>
+    </div>
+    <div id="preview-container-itens" class="process-step" style="display: none;">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <h2>Pré-visualização dos Itens</h2>
+            <p class="subtitle">Confirme os dados antes de salvar definitivamente no sistema.</p>
+            <div class="table-wrapper"><table id="preview-table-itens" class="data-table"></table></div>
+            <br>
+            <div class="form-actions"><button id="btn-salvar-itens" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar Itens</button></div>
+        </div>
+    </div>
+</div>

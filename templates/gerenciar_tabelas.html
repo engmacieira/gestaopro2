@@ -13,6 +13,7 @@
 <div class="management-container">
     <aside class="management-sidebar">
         <nav>
+            {# O loop 'tabelas' é fornecido pelo contexto Flask, mantido #}
             {% for key, config in tabelas.items() %}
                 <a href="#" class="management-link" data-tabela="{{ key }}" data-nome-exibicao="{{ config.tabela|replace('_', ' ')|title }}">
                     {{ config.tabela|replace('_', ' ')|title }}
@@ -30,54 +31,15 @@
             </div>
         </div>
 
-        <template id="table-template">
-            <div class="card full-width">
-                <div class="card-actions">
-                    <h2 id="table-title"></h2>
-                    <button id="btn-add-new-item" class="btn btn-primary">
-                        <i class="fa-solid fa-plus"></i> Adicionar Novo
-                    </button>
-                </div>
-                <div class="table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 10%;">ID</th>
-                                <th>Nome</th>
-                                <th style="width: 20%;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </template>
+        {# INCLUSÃO DO TEMPLATE DA TABELA (Substitui o bloco <template>) #}
+        {% include '_tabela_generica_crud.html' %}
+        
     </main>
 </div>
 
-<div id="modal-item" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modal-titulo">Adicionar Novo Item</h2>
-            <button id="btn-fechar-modal" class="close-button">&times;</button>
-        </div>
-        <form id="form-item">
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="item-nome">Nome</label>
-                    <input type="text" id="item-nome" name="nome" class="form-control" required>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+{# INCLUSÃO DO MODAL #}
+{% include '_modal_generica_crud.html' %}
+
 {% endblock %}
 {% block scripts %}
 <script>
@@ -94,12 +56,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputNomeItem = document.getElementById('item-nome');
     let idItemEmEdicao = null;
 
-    const fecharModal = () => {
-        modal.style.display = 'none';
-        formItem.reset();
-        idItemEmEdicao = null;
-    };
-
     function showNotification(message, type = 'error') {
         const notificationArea = document.getElementById('notification-area');
         const existing = notificationArea.querySelector('.notification');
@@ -113,25 +69,42 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.addEventListener('transitionend', () => notification.remove());
         }, 5000);
     }
+    
+    const fecharModal = () => {
+        modal.style.display = 'none';
+        formItem.reset();
+        idItemEmEdicao = null;
+    };
+
+
+    // --- FUNÇÕES PRINCIPAIS DE UX ---
 
     async function carregarTabela(nomeTabela, nomeExibicao) {
         tabelaAtiva = nomeTabela;
         nomeExibicaoTabelaAtiva = nomeExibicao;
 
+        // Limpa a área de conteúdo e clona o template da tabela
         contentArea.innerHTML = '';
         const clone = tableTemplate.content.cloneNode(true);
         contentArea.appendChild(clone);
 
         document.getElementById('table-title').textContent = `Gerenciando: ${nomeExibicao}`;
+        
+        // Remove listeners antigos antes de adicionar o novo (previne duplicidade)
+        const btnAdd = document.getElementById('btn-add-new-item');
+        btnAdd.replaceWith(btnAdd.cloneNode(true));
         document.getElementById('btn-add-new-item').addEventListener('click', abrirModalParaNovo);
 
         const tableBody = document.getElementById('table-body');
         tableBody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
 
         try {
+            // Chama a API que lista os itens (GET /api/tabelas-sistema/{nome_tabela})
             const response = await fetch(`/api/tabelas-sistema/${nomeTabela}`);
             const itens = await response.json();
-            if (!response.ok) throw new Error(itens.erro);
+            
+            // Tratamento de resposta da API
+            if (!response.ok) throw new Error(itens.detail || itens.erro || 'Erro desconhecido da API');
 
             tableBody.innerHTML = '';
             if (itens.length === 0) {
@@ -139,13 +112,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // Renderização da Tabela
             itens.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${item.id}</td>
                     <td>${item.nome}</td>
                     <td class="actions-cell">
-                        <button class="btn-link-action" onclick="abrirModalParaEditar(${item.id}, '${item.nome}')"><i class="fa-solid fa-pencil"></i> Editar</button>
+                        <button class="btn-link-action" onclick="abrirModalParaEditar(${item.id}, '${item.nome.replace(/'/g, "\\'")}')"><i class="fa-solid fa-pencil"></i> Editar</button>
                         <button class="btn-link-action red" onclick="excluirItem(${item.id})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
                     </td>
                 `;
@@ -172,11 +146,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     formItem.addEventListener('submit', async function(event) {
         event.preventDefault();
-        const nome = inputNomeItem.value;
+        const nome = inputNomeItem.value.trim();
+        
+        if (!nome) { showNotification('O campo Nome é obrigatório.'); return; }
+        
         const url = idItemEmEdicao 
-            ? `/api/tabelas-sistema/${tabelaAtiva}/${idItemEmEdicao}` 
-            : `/api/tabelas-sistema/${tabelaAtiva}`;
+            ? `/api/tabelas-sistema/${tabelaAtiva}/${idItemEmEdicao}` // PUT
+            : `/api/tabelas-sistema/${tabelaAtiva}`; // POST
         const method = idItemEmEdicao ? 'PUT' : 'POST';
+
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
 
         try {
             const response = await fetch(url, {
@@ -185,13 +165,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ nome: nome })
             });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
             
-            showNotification(resultado.mensagem, 'success');
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro na API');
+            
+            showNotification(resultado.mensagem || `Item ${idItemEmEdicao ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+            
             fecharModal();
+            // Recarrega o conteúdo da tabela ativa
             carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva); 
+            
         } catch (error) {
             showNotification(`Erro: ${error.message}`);
+        } finally {
+            submitButton.disabled = false;
         }
     });
 
@@ -202,16 +188,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/api/tabelas-sistema/${tabelaAtiva}/${id}`, {
                 method: 'DELETE'
             });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-
-            showNotification(resultado.mensagem, 'success');
+            
+            // O DELETE no FastAPI retorna 204 NO CONTENT em caso de sucesso
+            if (response.status === 204) {
+                 showNotification('Item excluído com sucesso!', 'success');
+            } else {
+                 const resultado = await response.json();
+                 if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro na exclusão');
+                 // Se retornar 200/201 mas com mensagem, exibe.
+                 showNotification(resultado.mensagem || 'Item excluído com sucesso!', 'success');
+            }
+            
+            // Recarrega o conteúdo da tabela ativa
             carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva); 
+            
         } catch (error) {
             showNotification(`Erro ao excluir: ${error.message}`);
         }
     }
 
+    // --- Inicialização e Listeners de UI ---
     document.querySelectorAll('.management-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -229,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.target == modal) fecharModal();
     });
 
+    // Torna as funções acessíveis globalmente para os botões da tabela (onclick=...)
     window.abrirModalParaEditar = abrirModalParaEditar;
     window.excluirItem = excluirItem;
 });

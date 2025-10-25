@@ -24,62 +24,9 @@
     <div class="detail-item"><span>Telefone</span><strong>{{ contrato.telefone or 'Não informado' }}</strong></div>
 </div>
 
-<div class="card full-width" style="margin-bottom: 30px;">
-    <h2>Anexos do Contrato</h2>
-    <p class="subtitle" style="margin-bottom: 20px;">Adicione ou visualize os documentos vinculados a este contrato.</p>
-    <form action="{{ url_for('upload_anexo', id_contrato=contrato.id) }}" method="POST" enctype="multipart/form-data" class="upload-form">
-    
-    <div class="form-group" style="flex-grow: 2;">
-        <label for="tipo_documento_select">Tipo do Documento</label>
-        <select name="tipo_documento_select" id="tipo_documento_select" class="form-control" required>
-    <option value="" disabled selected>Selecione um tipo...</option>
-    
-    {% for tipo in tipos_documento %}
-        <option value="{{ tipo }}">{{ tipo }}</option>
-    {% endfor %}
+{# 1. INCLUSÃO DO COMPONENTE DE ANEXOS #}
+{% include '_contrato_anexos_section.html' %}
 
-    <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
-</select>
-        
-        <input type="text" name="tipo_documento_novo" id="tipo_documento_novo" class="form-control" placeholder="Digite o novo tipo de documento" style="display: none; margin-top: 10px;">
-    </div>
-
-    <div class="form-group" style="flex-grow: 3;">
-        <label for="anexo">Arquivo</label>
-        <input type="file" name="anexo" id="anexo" class="form-control" required>
-    </div>
-
-    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Enviar</button>
-    </form>
-
-    <div id="notification-area-anexos">
-        {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="notification {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
-    </div>
-    {% if anexos %}
-    <div class="attachment-list-container">
-        <h4>Anexos existentes:</h4>
-        <ul class="attachment-list">
-            {% for anexo in anexos %}
-    <tr>
-        <td>
-    <a href="{{ url_for('uploaded_file', filename=anexo.nome_seguro) }}" target="_blank">
-        <i class="fa-solid fa-link"></i> {{ anexo.tipo_documento }} - {{ contrato.nome_instrumento or 'Documento' }} {{ contrato.numero_contrato }}
-    </a>
-</td>
-        <td class="meta-info">
-            Enviado em: {{ anexo.data_upload_br }}
-        </td>
-        <td class="actions-cell" style="width: 1%;">
-            <button class="btn-link-action red" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_seguro }}', '{{ anexo.nome_original }}')">
-                <i class="fa-solid fa-trash-can"></i> Excluir
-            </button>
-        </td>
-    </tr>
-    {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-</div>
 
 <div class="card full-width">
     <div class="card-actions">
@@ -96,20 +43,8 @@
         </div>
     </div>
 
-    <div id="form-container" class="collapsible-section" style="display: none;">
-        <form id="form-item">
-            <h3 id="form-item-titulo" style="margin-bottom: 20px;">Adicionar Novo Item</h3>
-            <div class="form-grid-details">
-                <div class="form-group"><label for="numero_item">Nº</label><input type="number" id="numero_item" name="numero_item" class="form-control" required></div>
-                <div class="form-group desc-group"><label for="descricao">Descrição</label><input type="text" id="descricao" name="descricao" class="form-control" required></div>
-                <div class="form-group"><label for="marca">Marca</label><input type="text" id="marca" name="marca" class="form-control"></div>
-                <div class="form-group"><label for="unidade_medida">Unid.</label><input type="text" id="unidade_medida" name="unidade_medida" class="form-control" required></div>
-                <div class="form-group"><label for="quantidade">Qtd.</label><input type="number" id="quantidade" name="quantidade" class="form-control" required></div>
-                <div class="form-group"><label for="valor_unitario">Valor Unit.</label><input type="text" id="valor_unitario" name="valor_unitario" class="form-control" placeholder="12.50" required></div>
-                <div class="form-group action-group"><button type="submit" class="btn btn-primary">Salvar</button></div>
-            </div>
-        </form>
-    </div>
+    {# 2. INCLUSÃO DO COMPONENTE DE FORMULÁRIO DE ITEM #}
+    {% include '_contrato_item_form.html' %}
 
    <div class="table-wrapper">
        <table class="data-table">
@@ -146,7 +81,7 @@
                     <td>{{ item.marca or 'N/D' }}</td>
                     <td>{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %} {{ item.unidade_medida }}(s)</td>
                     <td>{{ "%.2f"|format(item.valor_unitario) }}</td>
-                    <td class="{{ 'text-red' if item.saldo == 0 else 'text-green' }}" style="font-weight: 700;">
+                    <td class="{{ 'text-red' if item.saldo <= 0 else 'text-green' }}" style="font-weight: 700;">
                         {% if item.saldo == item.saldo|int %}
                             {{ item.saldo|int }}
                         {% else %}
@@ -177,12 +112,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-     const formContainer = document.getElementById('form-container');
+    const formContainer = document.getElementById('form-container-item'); 
     const formItem = document.getElementById('form-item');
     const formItemTitulo = document.getElementById('form-item-titulo');
     const notificationArea = document.getElementById('notification-area');
     let idItemEmEdicao = null;
-
+    const idContrato = {{ contrato.id }}; 
+    const nomeContrato = "{{ contrato.numero_contrato }}"; 
+    
+    // --- Funções de UI Auxiliares ---
     function showNotification(message, type = 'error') {
         const existing = notificationArea.querySelector('.notification');
         if(existing) existing.remove();
@@ -204,6 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
         location.reload();
     }
 
+    // Exibir notificação após redirecionamento
     const msg = sessionStorage.getItem('notificationMessage');
     if (msg) {
         showNotification(msg, sessionStorage.getItem('notificationType'));
@@ -211,113 +150,185 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('notificationType');
     }
 
+    // --- Lógica do Formulário de Item ---
+    
+    // Lógica para alternar o formulário de item
     document.getElementById('btn-toggle-form').addEventListener('click', () => {
         idItemEmEdicao = null;
         formItemTitulo.innerText = 'Adicionar Novo Item';
         formItem.reset();
         const isHidden = formContainer.style.display === 'none';
         formContainer.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) { formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     });
 
-    async function abrirFormParaEditarItem(id) {
+    // Função global para edição
+    window.abrirFormParaEditarItem = async (id) => {
         idItemEmEdicao = id;
         try {
             const response = await fetch(`/api/itens/${id}`);
             const item = await response.json();
-            if (!response.ok) throw new Error(item.erro);
+            if (!response.ok) throw new Error(item.detail || item.erro);
             
             formItemTitulo.innerText = 'Editar Item';
+            
+            // Preenche os campos do formulário
             for (const key in item) {
-                if(formItem.elements[key]) {
+                // Trata a descrição que está aninhada no esquema
+                if (key === 'descricao') {
+                    formItem.elements['descricao'].value = item[key].descricao;
+                } 
+                // Trata campos de valor (convertendo de . para ,)
+                else if (key === 'quantidade' || key === 'valor_unitario') {
+                     if (formItem.elements[key]) {
+                        formItem.elements[key].value = parseFloat(item[key]).toFixed(2).replace('.', ',');
+                     }
+                }
+                // Trata campos simples
+                else if(formItem.elements[key]) {
                     formItem.elements[key].value = item[key];
                 }
             }
+            
             formContainer.style.display = 'block';
             formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } catch (error) {
             showNotification(`Erro ao buscar item: ${error.message}`);
         }
-    }
+    };
 
+    // Lógica de Submissão (POST / PUT)
     formItem.addEventListener('submit', async function(event) {
         event.preventDefault();
-        const idContrato = {{ contrato.id }};
+        
         const dados = Object.fromEntries(new FormData(formItem).entries());
-        const url = idItemEmEdicao ? `/api/itens/${idItemEmEdicao}` : `/api/contratos/${idContrato}/itens`;
-        const method = idItemEmEdicao ? 'PUT' : 'POST';
+        
+        // 1. Lógica de Conversão de , para . e Validação
         try {
-            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
+            dados.quantidade = String(dados.quantidade).replace('.', '').replace(',', '.');
+            dados.valor_unitario = String(dados.valor_unitario).replace('.', '').replace(',', '.');
+            
+            const qtdNumerica = parseFloat(dados.quantidade);
+            const valorNumerico = parseFloat(dados.valor_unitario);
+            
+            if (isNaN(qtdNumerica) || isNaN(valorNumerico)) {
+                throw new Error("Quantidade e Valor Unitário devem ser números válidos (use vírgula ou ponto como separador decimal).");
+            }
+        } catch (e) {
+            showNotification(e.message);
+            return;
+        }
+
+        // 2. Monta o Payload para a API (Schema ItemRequest)
+        const payload = {
+            numero_item: dados.numero_item,
+            marca: dados.marca,
+            unidade_medida: dados.unidade_medida,
+            quantidade: dados.quantidade,
+            valor_unitario: dados.valor_unitario,
+            contrato_nome: nomeContrato, 
+            descricao: { 
+                descricao: dados.descricao 
+            }
+        };
+
+        const url = idItemEmEdicao ? `/api/itens/${idItemEmEdicao}` : `/api/itens`;
+        const method = idItemEmEdicao ? 'PUT' : 'POST';
+        
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(url, { 
+                method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(payload)
+            });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
+            
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
+            
+            showNotification(resultado.mensagem || `Item ${idItemEmEdicao ? 'atualizado' : 'cadastrado'} com sucesso!`, 'success');
             setTimeout(() => location.reload(), 1500);
         } catch (error) {
             showNotification(`Erro ao salvar: ${error.message}`);
+        } finally {
+            submitButton.disabled = false;
         }
     });
 
-    async function toggleItemStatus(id) {
-        if (!confirm('Tem certeza?')) return;
+    // Lógica para Ativar/Inativar (PATCH com parâmetro)
+    window.toggleItemStatus = async (id) => {
+        if (!confirm('Tem certeza que deseja alterar o status deste item?')) return;
         try {
-            const response = await fetch(`/api/itens/${id}/status`, { method: 'POST' });
+            const getResponse = await fetch(`/api/itens/${id}`);
+            if (!getResponse.ok) throw new Error("Item não encontrado para status.");
+            const item = await getResponse.json();
+            const novoStatus = !item.ativo; 
+            
+            const response = await fetch(`/api/itens/${id}/status?activate=${novoStatus}`, { method: 'PATCH' });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => location.reload(), 1500);
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
+            
+            reloadPageWithMessage(resultado.mensagem || `Status do item alterado com sucesso para ${novoStatus ? 'Ativo' : 'Inativo'}!`, 'success');
         } catch(error) {
             showNotification(`Erro: ${error.message}`);
         }
     }
 
-    async function excluirItem(id) {
-        if (!confirm('ATENÇÃO: Ação permanente. Tem certeza?')) return;
+    // Lógica para Excluir (DELETE)
+    window.excluirItem = async (id) => {
+        if (!confirm('ATENÇÃO: Ação permanente. Tem certeza que deseja excluir este item?')) return;
         try {
             const response = await fetch(`/api/itens/${id}`, { method: 'DELETE' });
+            if (response.status === 204) { 
+                reloadPageWithMessage("Item excluído com sucesso!", 'success');
+                return;
+            }
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => location.reload(), 1500);
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
         } catch(error) {
             showNotification(`Erro ao excluir: ${error.message}`);
         }
     }
+    
+    // --- Lógica de Anexos ---
 
-    async function excluirAnexo(idAnexo, nomeSeguro, nomeOriginal) {
-        const mensagemAlerta = `Você está prestes a excluir o registro do anexo "${nomeOriginal}".\n\nATENÇÃO: Esta ação NÃO apaga o arquivo do servidor. Lembre-se de apagar o arquivo físico '${nomeSeguro}' da pasta 'uploads' no servidor, se necessário.\n\nDeseja continuar?`;
+    // Lógica para excluir o anexo
+    window.excluirAnexo = async function(idAnexo, nomeSeguro, nomeOriginal) {
+        const mensagemAlerta = `Você está prestes a excluir o anexo "${nomeOriginal}". Deseja continuar?`;
         if (!confirm(mensagemAlerta)) return;
 
         try {
-            const response = await fetch(`/api/anexos/${idAnexo}`, {
-                method: 'DELETE'
-            });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
+            const response = await fetch(`/api/anexos/${idAnexo}`, { method: 'DELETE' });
+            
+            if (response.status === 204) {
+                 reloadPageWithMessage("Registro do anexo excluído com sucesso.", 'success');
+                 return;
+            }
 
-            reloadPageWithMessage(resultado.mensagem, 'success');
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
 
         } catch (error) {
             showNotification(`Erro ao excluir anexo: ${error.message}`);
         }
     }
+    
+    // Lógica para o formulário de anexos (CRIAR NOVO TIPO)
+    const tipoDocumentoSelectAnexo = document.getElementById('tipo_documento_select_anexo');
+    const tipoDocumentoNovoInputAnexo = document.getElementById('tipo_documento_novo_anexo');
 
-    window.abrirFormParaEditarItem = abrirFormParaEditarItem;
-    window.toggleItemStatus = toggleItemStatus;
-    window.excluirItem = excluirItem;
-    window.excluirAnexo = excluirAnexo;
-
-const tipoDocumentoSelect = document.getElementById('tipo_documento_select');
-const tipoDocumentoNovoInput = document.getElementById('tipo_documento_novo');
-
-tipoDocumentoSelect.addEventListener('change', function() {
-    if (this.value === 'NOVO') {
-        tipoDocumentoNovoInput.style.display = 'block';
-        tipoDocumentoNovoInput.required = true; 
-    } else {
-        tipoDocumentoNovoInput.style.display = 'none';
-        tipoDocumentoNovoInput.required = false; 
-        tipoDocumentoNovoInput.value = ''; 
+    if (tipoDocumentoSelectAnexo && tipoDocumentoNovoInputAnexo) {
+        tipoDocumentoSelectAnexo.addEventListener('change', function() {
+            const isNovo = this.value === 'NOVO';
+            tipoDocumentoNovoInputAnexo.style.display = isNovo ? 'block' : 'none';
+            tipoDocumentoNovoInputAnexo.required = isNovo; 
+            if (!isNovo) {
+                tipoDocumentoNovoInputAnexo.value = '';
+            }
+        });
     }
-});
 
 });
 </script>

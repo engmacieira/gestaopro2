@@ -1,0 +1,21 @@
+{# Componente: templates/_categorias_modal.html #}
+<div id="modal-categoria" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-titulo">Cadastrar Nova Categoria</h2>
+            <button id="btn-fechar-modal" class="close-button">&times;</button>
+        </div>
+        <form id="form-categoria">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nome-categoria">Nome da Categoria</label>
+                    <input type="text" id="nome-categoria" name="nome" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>

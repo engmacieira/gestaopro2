@@ -11,85 +11,10 @@
 
 <div class="card full-width">
     
-    <div class="form-context-section">
-        <h4>Contexto (Automático da AOCS)</h4>
-        <div class="context-grid">
-            <div class="context-item"><span>Fornecedor:</span> <strong>{{ aocs.fornecedor }}</strong></div>
-            <div class="context-item"><span>CNPJ:</span> <strong>{{ aocs.cpf_cnpj }}</strong></div>
-            <div class="context-item full-span"><span>Referência:</span> <strong>{{ aocs.justificativa }}</strong></div>
-        </div>
-    </div>
-
     <form method="POST" action="{{ url_for('nova_ci_ui', numero_aocs=numero_aocs) }}">
         
-        <div class="form-grid-columns">
-
-            <div class="form-group-column span-2">
-                <h4>Dados da CI</h4>
-                <div class="form-grid-columns inner-grid">
-                    <div class="form-group">
-                        <label for="numero_ci">Número da CI</label>
-                        <input type="text" id="numero_ci" name="numero_ci" class="form-control" placeholder="Ex: 497/2025" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="data_ci">Data da CI</label>
-                        <input type="date" id="data_ci" name="data_ci" class="form-control" required>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group-column span-2">
-                <h4>Dados da Nota Fiscal</h4>
-                <div class="form-grid-columns inner-grid quad-grid"> {# Grid aninhado de 4 colunas #}
-                    <div class="form-group">
-                        <label for="numero_nota_fiscal">Número NF</label>
-                        <input type="text" id="numero_nota_fiscal" name="numero_nota_fiscal" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="serie_nota_fiscal">Série (Opcional)</label>
-                        <input type="text" id="serie_nota_fiscal" name="serie_nota_fiscal" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="data_nota_fiscal">Data NF</label>
-                        <input type="date" id="data_nota_fiscal" name="data_nota_fiscal" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="valor_nota_fiscal">Valor NF</label>
-                        <input type="text" id="valor_nota_fiscal" name="valor_nota_fiscal" class="form-control" placeholder="1234,56" required>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group span-2">
-                <label for="observacoes_pagamento">Observações de Pagamento (Opcional)</label>
-                <textarea id="observacoes_pagamento" name="observacoes_pagamento" class="form-control" rows="3" placeholder="Ex: Pagar com fonte - Recurso Próprio..."></textarea>
-            </div>
-
-            <div class="form-group-column span-2">
-                <h4>Informações de Origem</h4>
-                 <div class="form-grid-columns inner-grid">
-                    <div class="form-group span-2">
-                        <label for="id_dotacao_pagamento">Dotação Orçamentária</label>
-                        <select id="id_dotacao_pagamento" name="id_dotacao_pagamento" class="form-control" required>
-                            {% for dotacao in dotacoes %}<option value="{{ dotacao.id }}" {% if dotacao.id == aocs.id_dotacao %}selected{% endif %}>{{ dotacao.info_orcamentaria }}</option>{% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_secretaria">Secretaria de Origem</label>
-                        <select id="id_secretaria" name="id_secretaria" class="form-control" required>
-                             {% for secretaria in secretarias %}<option value="{{ secretaria.id }}" {% if secretaria.id == aocs.id_unidade_requisitante %}selected{% endif %}>{{ secretaria.nome }}</option>{% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_solicitante">Solicitante</label>
-                        <select id="id_solicitante" name="id_solicitante" class="form-control" required>
-                             {% for solicitante in solicitantes %}<option value="{{ solicitante.id }}" {% if solicitante.id == aocs.id_agente_responsavel %}selected{% endif %}>{{ solicitante.nome }}</option>{% endfor %}
-                        </select>
-                    </div>
-                 </div>
-            </div>
-
-        </div> {# Fim do form-grid-columns #}
+        {# INCLUINDO O COMPONENTE DO FORMULÁRIO. Passamos um objeto 'ci' vazio para o contexto. #}
+        {% include '_ci_form_fields.html' with context %}
 
         <div class="form-actions" style="margin-top: 30px;">
             <a href="{{ url_for('detalhe_pedido', numero_aocs=numero_aocs) }}" class="btn btn-secondary">Cancelar</a>

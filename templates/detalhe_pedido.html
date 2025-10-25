@@ -6,22 +6,19 @@
 {# Área para notificações dinâmicas via JavaScript #}
 <div id="notification-area"></div>
 
-{# --- CABEÇALHO DA PÁGINA --- #}
+{# --- 1. CABEÇALHO DA PÁGINA (Componente) --- #}
 {% include '_pedido_header.html' %}
 
-{# --- BARRA DE INFORMAÇÕES PRINCIPAIS --- #}
-<div class="page-info-bar">
-    <span><strong>Fornecedor:</strong> {{ aocs.fornecedor }}</span>
-    <span><strong>CNPJ:</strong> {{ aocs.cpf_cnpj }}</span>
-</div>
+{# --- 2. BARRA DE STATUS/RESUMO (Novo Componente) --- #}
+{% include '_pedido_status_summary.html' %}
 
-{# --- LAYOUT PRINCIPAL EM GRID --- #}
+{# --- 3. LAYOUT PRINCIPAL EM GRID --- #}
 <div class="dashboard-main-grid">
     
     {# --- COLUNA PRINCIPAL (ESQUERDA) --- #}
     <div class="main-panel">
-        {# Card com Status e Dados Editáveis #}
-        {% include '_pedido_dados_status.html' %}
+        {# Card com Status e Dados Editáveis (Status já foi movido para o Summary) #}
+        {% include '_pedido_dados_status.html' %} 
         {# Card com Tabela de Controle de Entrega #}
         {% include '_pedido_controle_entrega.html' %} 
     </div>
@@ -37,19 +34,13 @@
 
 {# --- MODAIS (Estrutura Overlay) --- #}
 <div id="modal-edicao-aocs" class="modal-overlay">
-    {# Conteúdo do Modal de Edição da AOCS #}
     {% include '_modal_editar_aocs.html' %}
 </div>
 <div id="modal-registrar-entrega" class="modal-overlay">
-    {# Conteúdo do Modal de Registro de Entrega #}
     {% include '_modal_registrar_entrega.html' %}
 </div>
 {% endblock %}
 
-{% block scripts %}
-{# ================================================================ #}
-{# JAVASCRIPT CONSOLIDADO PARA A PÁGINA DETALHE_PEDIDO
-/* ================================================================ */ #}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     

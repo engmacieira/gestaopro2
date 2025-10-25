@@ -10,17 +10,8 @@
 </header>
 
 <div class="card full-width">
-    <div class="card-actions">
-        <form id="filter-form" action="{{ url_for('categorias_ui') }}" method="GET">
-            <label class="checkbox-label">
-                <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if mostrar_inativos %}checked{% endif %}>
-                Mostrar Inativos
-            </label>
-        </form>
-        <button id="btn-abrir-modal" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Adicionar Categoria
-        </button>
-    </div>
+    {# 1. INCLUSÃO DO COMPONENTE DA BARRA DE AÇÕES/FILTRO #}
+    {% include '_categorias_action_bar.html' %}
 
     <div class="table-wrapper">
         <table class="data-table" id="tabela-categorias">
@@ -75,9 +66,9 @@
                             {% if cat.ativo %}<span class="status-badge green">Ativo</span>
                             {% else %}<span class="status-badge gray">Inativo</span>{% endif %}
                         </td>
-                        <td>
+                        <td class="actions-cell">
                             <button class="btn-link-action" onclick="abrirModalParaEditar({{ cat.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
-                            <button class="btn-link-action {{ 'red' if cat.ativo else 'green' }}" onclick="toggleStatusCategoria({{ cat.id }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if cat.ativo else 'Ativar' }}</button>
+                            <button class="btn-link-action {{ 'red' if cat.ativo else 'green' }}" onclick="toggleStatusCategoria({{ cat.id }}, {{ 'true' if cat.ativo else 'false' }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if cat.ativo else 'Ativar' }}</button>
                             <button class="btn-link-action red" onclick="excluirCategoria({{ cat.id }})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
                         </td>
                     </tr>
@@ -94,26 +85,8 @@
     </div>
 </div>
 
-<div id="modal-categoria" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modal-titulo">Cadastrar Nova Categoria</h2>
-            <button id="btn-fechar-modal" class="close-button">&times;</button>
-        </div>
-        <form id="form-categoria">
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="nome-categoria">Nome da Categoria</label>
-                    <input type="text" id="nome-categoria" name="nome" class="form-control" required>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
-            </div>
-        </form>
-    </div>
-</div>
+{# 2. INCLUSÃO DO COMPONENTE MODAL #}
+{% include '_categorias_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -123,19 +96,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalTitulo = document.getElementById('modal-titulo');
     const formCategoria = document.getElementById('form-categoria');
     const inputNomeCategoria = document.getElementById('nome-categoria');
+    const notificationArea = document.getElementById('notification-area');
     let idCategoriaEmEdicao = null;
+
+    function showNotification(message, type = 'error') {
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+    
+    function showNotificationAndReload(message, type = 'success') {
+        // Usa sessionStorage para exibir notificação após o reload
+        sessionStorage.setItem('notificationMessage', message);
+        sessionStorage.setItem('notificationType', type);
+        window.location.reload();
+    }
+    
+    // Exibir notificação após redirecionamento
+    const msg = sessionStorage.getItem('notificationMessage');
+    if (msg) {
+        showNotification(msg, sessionStorage.getItem('notificationType'));
+        sessionStorage.removeItem('notificationMessage');
+        sessionStorage.removeItem('notificationType');
+    }
 
     const fecharModal = () => {
         modal.style.display = 'none';
         formCategoria.reset();
         idCategoriaEmEdicao = null;
     };
+    
     document.getElementById('btn-abrir-modal').addEventListener('click', () => {
         idCategoriaEmEdicao = null;
         modalTitulo.innerText = 'Cadastrar Nova Categoria';
         formCategoria.reset();
         modal.style.display = 'flex';
     });
+    
     document.getElementById('btn-fechar-modal').addEventListener('click', fecharModal);
     document.getElementById('btn-cancelar-modal').addEventListener('click', fecharModal);
     window.addEventListener('click', (event) => { if (event.target == modal) fecharModal(); });
@@ -143,12 +147,17 @@ document.addEventListener('DOMContentLoaded', function() {
     async function abrirModalParaEditar(id) {
         idCategoriaEmEdicao = id;
         try {
+            // GET /api/categorias/{id}
             const response = await fetch(`/api/categorias/${id}`);
             const categoria = await response.json();
-            if (!response.ok) throw new Error(categoria.erro);
+            
+            // Tratamento de resposta da API
+            if (!response.ok) throw new Error(categoria.detail || 'Categoria não encontrada.'); 
+            
             modalTitulo.innerText = 'Editar Categoria';
             inputNomeCategoria.value = categoria.nome;
             modal.style.display = 'flex';
+            
         } catch (error) {
             showNotification(`Erro ao buscar categoria: ${error.message}`);
         }
@@ -156,49 +165,78 @@ document.addEventListener('DOMContentLoaded', function() {
 
     formCategoria.addEventListener('submit', async function(event) {
         event.preventDefault();
-        const nome = inputNomeCategoria.value;
+        const nome = inputNomeCategoria.value.trim();
+        
         const url = idCategoriaEmEdicao ? `/api/categorias/${idCategoriaEmEdicao}` : '/api/categorias';
         const method = idCategoriaEmEdicao ? 'PUT' : 'POST';
+        
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        
         try {
-            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: nome }) });
+            const response = await fetch(url, { 
+                method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ nome: nome }) 
+            });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => { window.location.reload(); }, 1500);
+            
+            // Tratamento de erros de validação e integridade (FastAPI)
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro); 
+            
+            showNotificationAndReload(resultado.mensagem || `Categoria ${idCategoriaEmEdicao ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+            
         } catch (error) {
-            showNotification(`Erro: ${error.message}`);
+            showNotification(`Erro ao salvar: ${error.message}`);
+        } finally {
+            submitButton.disabled = false;
         }
     });
 
-    async function toggleStatusCategoria(id) {
-        if (!confirm('Tem certeza?')) return;
+    // Função de status (PATCH /api/categorias/{id}/status?activate=...)
+    window.toggleStatusCategoria = async (id, statusAtual) => {
+        if (!confirm('Tem certeza que deseja alterar o status desta categoria?')) return;
+        
+        // Converte o status atual para o novo status booleano (true/false)
+        const novoStatus = statusAtual === 'true' ? 'false' : 'true'; // Inverte o valor booleano
+        
         try {
-            const response = await fetch(`/api/categorias/${id}/status`, { method: 'POST' });
+            // A API PATCH espera o parâmetro 'activate' na query
+            const response = await fetch(`/api/categorias/${id}/status?activate=${novoStatus}`, { method: 'PATCH' });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => { window.location.reload(); }, 1500);
+            
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
+            
+            const acao = novoStatus === 'true' ? 'ativada' : 'inativada';
+            showNotificationAndReload(resultado.mensagem || `Categoria ${acao} com sucesso!`, 'success');
+            
         } catch(error) {
             showNotification(`Erro ao alterar status: ${error.message}`);
         }
     }
 
-    async function excluirCategoria(id) {
-        if (!confirm('ATENÇÃO: Ação permanente. Tem certeza?')) return;
+    // Função de exclusão (DELETE /api/categorias/{id})
+    window.excluirCategoria = async (id) => {
+        if (!confirm('ATENÇÃO: Ação permanente. Tem certeza que deseja excluir esta categoria?')) return;
+        
         try {
             const response = await fetch(`/api/categorias/${id}`, { method: 'DELETE' });
+            
+            // O DELETE no FastAPI retorna 204 NO CONTENT em caso de sucesso
+            if (response.status === 204) {
+                 showNotificationAndReload("Categoria excluída com sucesso!", 'success');
+                 return;
+            }
+            
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => { window.location.reload(); }, 1500);
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
+            
         } catch(error) {
             showNotification(`Erro ao excluir: ${error.message}`);
         }
     }
 
     window.abrirModalParaEditar = abrirModalParaEditar;
-    window.toggleStatusCategoria = toggleStatusCategoria;
-    window.excluirCategoria = excluirCategoria;
 });
 </script>
 {% endblock %}

@@ -37,9 +37,9 @@
                     <th style="width: 8%;">ITEM</th>
                     <th class="item-description">DESCRIÇÃO</th>
                     <th style="width: 8%;">UN.</th>
-                    <th style="width: 8%;">QTDE</th>
-                    <th style="width: 15%;" class="text-right">VALOR UNIT. (R$)</th>
-                    <th style="width: 15%;" class="text-right">VALOR TOTAL (R$)</th>
+                    <th style="8%;" class="text-right">QTDE</th>
+                    <th style="15%;" class="text-right">VALOR UNIT. (R$)</th>
+                    <th style="15%;" class="text-right">VALOR TOTAL (R$)</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,14 +48,17 @@
                     <td>{{ item.numero_item_contrato }}</td>
                     <td class="item-description">{{ item.descricao }}</td>
                     <td>{{ item.unidade_medida }}</td>
-                    <td>{% if item.quantidade_pedida == item.quantidade_pedida|int %}{{ item.quantidade_pedida|int }}{% else %}{{ "%.3f"|format(item.quantidade_pedida)|replace('.', ',') }}{% endif %}</td>
-                    <td class="text-right">{{ "%.2f"|format(item.valor_unitario) }}</td>
-                    <td class="text-right">{{ "%.2f"|format(item.subtotal) }}</td>
+                    {# FORMATO: Formata a quantidade para 3 casas decimais (padrão de precisão) e exibe à direita #}
+                    <td class="text-right">{{ "%.3f"|format(item.quantidade_pedida)|replace('.', ',') }}</td>
+                    {# FORMATO: Valor unitário em 2 casas, alinhado à direita #}
+                    <td class="text-right">{{ "%.2f"|format(item.valor_unitario)|replace('.', ',') }}</td>
+                    {# FORMATO: Valor total em 2 casas, alinhado à direita #}
+                    <td class="text-right">{{ "%.2f"|format(item.subtotal)|replace('.', ',') }}</td>
                 </tr>
                 {% endfor %}
                 <tr class="total-row">
                     <td colspan="5" class="text-right"><strong>VALOR TOTAL</strong></td>
-                    <td class="text-right"><strong>R$ {{ "%.2f"|format(total_geral) }}</strong></td>
+                    <td class="text-right"><strong>R$ {{ "%.2f"|format(total_geral)|replace('.', ',') }}</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -71,12 +74,15 @@
         <p>{{ aocs.local_entrega }}</p>
     </div>
 
+    {# Bloco de assinatura mais claro e formal #}
     <footer class="footer">
-        <div class="signature-section">
-            <p><strong>Local e data:</strong> {{ aocs.local_data }}</p>
-            <div class="signature-block">
-                <div class="line"></div>
-                <p>{{ aocs.agente_responsavel }}<br><strong>Assinatura do demandante</strong></p>
+        <div class="signature-section" style="display: block; text-align: center;">
+            {# Data e local fora do bloco de assinatura, para alinhamento central #}
+            <p style="margin-bottom: 2cm;"><strong>Local e data:</strong> {{ aocs.local_data }}</p> 
+            
+            <div class="signature-block" style="width: 60%; margin: 0 auto; text-align: center;">
+                <div class="line" style="border-top: 1px solid #333; margin-bottom: 5px;"></div>
+                <p>{{ aocs.agente_responsavel }}<br><strong style="font-size: 10pt;">Assinatura do Demandante</strong></p>
             </div>
         </div>
     </footer>

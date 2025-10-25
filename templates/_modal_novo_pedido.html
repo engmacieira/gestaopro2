@@ -1,0 +1,25 @@
+{# Componente Modal para Iniciar Novo Pedido - Conteúdo e Estrutura HTML #}
+
+<div id="modal-novo-pedido" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Iniciar Novo Pedido</h2>
+            <button id="btn-fechar-modal-pedido" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Para qual categoria você deseja criar um pedido?</p>
+            <div class="form-group">
+                <label for="categoria-pedido-select">Selecione a Categoria</label>
+                <select id="categoria-pedido-select" class="form-control" required>
+                    <option value="">Carregando categorias...</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-cancelar-modal-pedido" class="btn btn-secondary">Cancelar</button>
+            <button type="button" id="btn-continuar-pedido" class="btn btn-primary">
+                Continuar <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+{# Componente: templates/_relatorio_item.html #}
+<div class="report-item">
+    <div class="report-info">
+        <h4>{{ config.titulo }}</h4>
+        <p>{{ config.descricao }}</p>
+    </div>
+    <div class="report-actions">
+        <div class="form-group">
+            <label for="ordenacao-{{ key }}">Ordenar por:</label>
+            <select id="ordenacao-{{ key }}" class="form-control">
+                {# O loop 'sort_key' deve ser passado para este componente #}
+                {% for sort_key, sort_config in config.ordenacao_opcoes.items() %}
+                    <option value="{{ sort_key }}">{{ sort_config.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <a href="#" class="btn btn-primary" onclick="gerarRelatorio('{{ key }}')"><i class="fa-solid fa-file-pdf"></i> Gerar PDF</a>
+    </div>
+</div>

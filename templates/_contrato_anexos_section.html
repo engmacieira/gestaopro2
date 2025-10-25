@@ -1,0 +1,61 @@
+{# Componente: templates/_contrato_anexos_section.html #}
+{# Gerencia o upload de arquivos e a lista de anexos do contrato #}
+
+<div class="card full-width" style="margin-bottom: 30px;">
+    <h2>Anexos do Contrato</h2>
+    <p class="subtitle" style="margin-bottom: 20px;">Adicione ou visualize os documentos vinculados a este contrato.</p>
+    
+    {# O form deve apontar para o endpoint da API Anexo, mas mantemos o URL Flask antigo para compatibilidade do Template #}
+    <form action="{{ url_for('upload_anexo', id_contrato=contrato.id) }}" method="POST" enctype="multipart/form-data" class="upload-form">
+    
+    <div class="form-group" style="flex-grow: 2;">
+        <label for="tipo_documento_select_anexo">Tipo do Documento</label>
+        <select name="tipo_documento_select" id="tipo_documento_select_anexo" class="form-control" required>
+            <option value="" disabled selected>Selecione um tipo...</option>
+            
+            {% for tipo in tipos_documento %}
+                <option value="{{ tipo }}">{{ tipo }}</option>
+            {% endfor %}
+
+            <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
+        </select>
+        
+        <input type="text" name="tipo_documento_novo" id="tipo_documento_novo_anexo" class="form-control" placeholder="Digite o novo tipo de documento" style="display: none; margin-top: 10px;">
+    </div>
+
+    <div class="form-group" style="flex-grow: 3;">
+        <label for="anexo_file">Arquivo</label>
+        <input type="file" name="anexo" id="anexo_file" class="form-control" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Enviar</button>
+    </form>
+
+    <div id="notification-area-anexos">
+        {# Manter a área para as mensagens flash/JS da rota de upload #}
+    </div>
+    
+    {% if anexos %}
+    <div class="attachment-list-container">
+        <h4>Anexos existentes ({{ anexos | length }}):</h4>
+        <ul class="attachment-list">
+            {% for anexo in anexos %}
+            <li class="attachment-item">
+                <div class="attachment-file">
+                    <i class="fa-solid fa-paperclip"></i>
+                    <a href="{{ url_for('uploaded_file', filename=anexo.nome_seguro) }}" title="{{ anexo.nome_original }}" target="_blank">
+                        {{ anexo.tipo_documento or 'Documento' }} - {{ contrato.numero_contrato }}
+                    </a>
+                </div>
+                <div class="attachment-meta">
+                    Enviado em: {{ anexo.data_upload_br }}
+                    <button class="btn-link-action red" title="Excluir" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_seguro }}', '{{ anexo.nome_original }}')">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>

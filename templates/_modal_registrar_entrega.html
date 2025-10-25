@@ -1,26 +1,46 @@
-<div class="modal-content">
-    <div class="modal-header">
-        <h2>Registrar Entrega</h2>
-        {# Adicionado type="button" para clareza e semântica #}
-        <button type="button" class="close-button">&times;</button>
-    </div>
-    <form id="form-registrar-entrega">
-        <div class="modal-body">
-            {# Melhorando a clareza da descrição do item #}
-            <p style="margin-bottom: 20px;">
-                <strong style="color: var(--text-secondary);">Item:</strong> 
-                <span id="modal-entrega-descricao">[Nome do Item]</span>
-            </p>
-            <div class="form-group">
-                <label for="input-entrega-quantidade">Quantidade Recebida:</label>
-                <input type="number" id="input-entrega-quantidade" name="quantidade" class="form-control" required min="0.01" step="any">
-                <small>Informe a quantidade que está sendo entregue *neste momento*.</small>
+{# Componente: templates/_modal_registrar_entrega.html #}
+<div id="modal-registrar-entrega" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Registrar Entrega de Item</h2>
+            <button type="button" class="close-button">&times;</button>
+        </div>
+        <form id="form-registrar-entrega">
+            <input type="hidden" id="entrega-item-id" name="item_pedido_id">
+            
+            <div class="modal-body">
+                <p>Item: <strong id="entrega-item-descricao" class="text-blue"></strong></p>
+                <p>Saldo Restante: <span id="entrega-saldo-restante" class="text-green" style="font-weight: 700;"></span></p>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="quantidade_entregue">Quantidade Entregue Agora</label>
+                        <input type="number" id="quantidade_entregue" name="quantidade_entregue" class="form-control" 
+                               min="0.01" step="0.01" required>
+                        <small class="form-text-hint">A quantidade máxima é o saldo restante.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_entrega">Data da Entrega</label>
+                        <input type="date" id="data_entrega" name="data_entrega" class="form-control" required>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label for="nota_fiscal">Número da Nota Fiscal (NF)</label>
+                        <input type="text" id="nota_fiscal" name="nota_fiscal" class="form-control" placeholder="Informe o número da nota fiscal ou documento de entrega" required>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label for="observacao">Observações (Opcional)</label>
+                        <textarea id="observacao" name="observacao" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+
             </div>
-        </div>
-        <div class="modal-footer">
-            {# Botão Cancelar agora também tem a classe close-button #}
-            <button type="button" class="close-button btn btn-secondary">Cancelar</button>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Confirmar Entrega</button>
-        </div>
-    </form>
+            <div class="modal-footer">
+                <button type="button" class="close-button btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-truck-ramp-box"></i> Confirmar Entrega</button>
+            </div>
+        </form>
+    </div>
 </div>

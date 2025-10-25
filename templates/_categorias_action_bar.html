@@ -1,0 +1,12 @@
+{# Componente: templates/_categorias_action_bar.html #}
+<div class="card-actions">
+    <form id="filter-form" action="{{ url_for('categorias_ui') }}" method="GET" style="flex: 1;">
+        <label class="checkbox-label">
+            <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if mostrar_inativos %}checked{% endif %}>
+            Mostrar Inativos
+        </label>
+    </form>
+    <button id="btn-abrir-modal" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Adicionar Categoria
+    </button>
+</div>

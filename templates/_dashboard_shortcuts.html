@@ -1,0 +1,15 @@
+{# Componente para o card de atalhos lateral #}
+
+<div class="shortcut-card">
+    <h3>Atalhos do Sistema</h3>
+    {# Novo Atalho: Iniciar Pedido (UX Refinement) #}
+    <button id="btn-iniciar-pedido-shortcut" class="action-button" style="background-color: rgba(25, 135, 84, 0.1); border-color: var(--action-success); color: var(--action-success);">
+        <i class="fa-solid fa-cart-plus" style="color: var(--action-success);"></i><span>Iniciar Novo Pedido</span>
+    </button>
+    <a href="{{ url_for('categorias_ui') }}" class="action-button"><i class="fa-solid fa-tags"></i><span>Gerenciar Categorias</span></a>
+    <a href="{{ url_for('contratos_ui') }}" class="action-button"><i class="fa-solid fa-file-signature"></i><span>Gerenciar Contratos</span></a>
+    {# Novo Atalho Dinâmico (UX Refinement) #}
+    <a href="{{ url_for('contratos_ui', mostrar_vencidos='false', data_vencimento_filtro='60d') }}" class="action-button" style="border-color: var(--action-warning); color: #856404;">
+        <i class="fa-solid fa-calendar-times" style="color: #856404;"></i><span>Contratos a Vencer (60 dias)</span>
+    </a>
+</div>

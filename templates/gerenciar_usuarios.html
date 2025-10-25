@@ -9,10 +9,8 @@
 </header>
 
 <div class="card full-width">
-    <div class="card-actions">
-        <h2>Lista de Usuários</h2>
-        <button id="btn-add-user" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Adicionar Usuário</button>
-    </div>
+    {# 1. INCLUSÃO DO COMPONENTE DO CABEÇALHO DA TABELA #}
+    {% include '_usuarios_table_header.html' %}
 
     <div class="table-wrapper">
         <table class="data-table">
@@ -42,7 +40,8 @@
                     <td class="actions-cell">
                         <button class="btn-link-action" onclick="abrirModalParaEditar({{ usuario.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
                         <button class="btn-link-action" onclick="resetarSenha({{ usuario.id }})"><i class="fa-solid fa-key"></i> Redefinir Senha</button>
-                        <button class="btn-link-action {{ 'red' if usuario.ativo else 'green' }}" onclick="toggleUserStatus({{ usuario.id }})">
+                        {# A função toggleUserStatus foi ajustada para receber o status atual e calcular o PUT correto #}
+                        <button class="btn-link-action {{ 'red' if usuario.ativo else 'green' }}" onclick="toggleUserStatus({{ usuario.id }}, {{ 'true' if usuario.ativo else 'false' }})">
                             <i class="fa-solid fa-power-off"></i> {{ 'Inativar' if usuario.ativo else 'Ativar' }}
                         </button>
                     </td>
@@ -53,38 +52,8 @@
     </div>
 </div>
 
-<div id="modal-user" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modal-user-title">Adicionar Novo Usuário</h2>
-            <button class="close-button">&times;</button>
-        </div>
-        <form id="form-user">
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="username">Nome de Usuário</label>
-                    <input type="text" id="username" name="username" class="form-control" required>
-                </div>
-                <div class="form-group" id="password-group">
-                    <label for="password">Senha</label>
-                    <input type="password" id="password" name="password" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="nivel_acesso">Nível de Acesso</label>
-                    <select id="nivel_acesso" name="nivel_acesso" class="form-control" required>
-                        <option value="3">Visualização</option>
-                        <option value="2">Usuário Completo</option>
-                        <option value="1">Administrador</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="close-button btn btn-secondary">Cancelar</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
-            </div>
-        </form>
-    </div>
-</div>
+{# 2. INCLUSÃO DO COMPONENTE MODAL #}
+{% include '_modal_gerenciar_usuarios.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -111,6 +80,20 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.addEventListener('transitionend', () => notification.remove());
         }, 5000);
     }
+    
+    function showNotificationAndReload(message, type = 'success') {
+         sessionStorage.setItem('notificationMessage', message);
+         sessionStorage.setItem('notificationType', type);
+         window.location.reload();
+    }
+    
+    // Exibir notificação após redirecionamento
+    const msg = sessionStorage.getItem('notificationMessage');
+    if (msg) {
+        showNotification(msg, sessionStorage.getItem('notificationType'));
+        sessionStorage.removeItem('notificationMessage');
+        sessionStorage.removeItem('notificationType');
+    }
 
     const fecharModal = () => {
         modal.style.display = 'none';
@@ -131,16 +114,19 @@ document.addEventListener('DOMContentLoaded', function() {
         idUsuarioEmEdicao = id;
         formUser.reset();
         try {
-            const response = await fetch(`/api/admin/usuarios/${id}`);
+            // Chamada GET para buscar o usuário (API: /users/{id})
+            const response = await fetch(`/api/users/${id}`); 
             const usuario = await response.json();
-            if (!response.ok) throw new Error(usuario.erro);
+            
+            if (!response.ok) throw new Error(usuario.detail || 'Erro ao carregar usuário');
             
             modalTitle.textContent = 'Editar Usuário';
             formUser.elements.username.value = usuario.username;
             formUser.elements.nivel_acesso.value = usuario.nivel_acesso;
             
+            // Esconde o campo de senha na edição
             passwordGroup.style.display = 'none'; 
-            formUser.elements.password.required = false; 
+            formUser.elements.password.required = false;
             
             modal.style.display = 'flex';
         } catch (error) {
@@ -148,30 +134,45 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    window.toggleUserStatus = async (id) => {
-        if (!confirm('Tem certeza que deseja alterar o status deste usuário?')) return;
-        try {
-            const response = await fetch(`/api/admin/usuarios/${id}/status`, { method: 'POST' });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => window.location.reload(), 1500);
-        } catch (error) {
-            showNotification(`Erro: ${error.message}`);
-        }
+    // Função para Ativar/Inativar (PUT com campo ativo: true/false)
+    window.toggleUserStatus = async (id, statusAtual) => {
+         if (!confirm('Tem certeza que deseja alterar o status deste usuário?')) return;
+         
+         // Inverte o status booleano (string 'true'/'false' => boolean true/false)
+         const novoStatus = statusAtual === 'true' ? false : true;
+         
+         try {
+             // Chamada PUT para alterar o campo 'ativo' (API: /users/{id})
+             const response = await fetch(`/api/users/${id}`, {
+                 method: 'PUT',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ ativo: novoStatus })
+             });
+             const resultado = await response.json();
+             
+             if (!response.ok) throw new Error(resultado.detail || 'Erro ao alterar status');
+             
+             const acao = novoStatus ? 'ativado' : 'inativado';
+             showNotificationAndReload(`Usuário ${acao} com sucesso!`, 'success');
+
+         } catch (error) {
+             showNotification(`Erro ao alterar status: ${error.message}`);
+         }
     };
 
     window.resetarSenha = async (id) => {
         if (!confirm('ATENÇÃO: Isso irá gerar uma nova senha para o usuário e invalidar a antiga. Deseja continuar?')) return;
         try {
-            const response = await fetch(`/api/admin/usuarios/${id}/reset-password`, { method: 'POST' });
+            // Chamada POST para resetar senha (API: /users/{id}/reset-password)
+            const response = await fetch(`/api/users/${id}/reset-password`, { method: 'POST' });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
             
-            alert(`Senha redefinida com sucesso!\n\nA nova senha temporária é:\n\n${resultado.nova_senha}\n\nCopie esta senha e a entregue ao usuário de forma segura.`);
+            if (!response.ok) throw new Error(resultado.detail || 'Erro ao resetar senha');
+            
+            alert(`Senha redefinida com sucesso!\n\nA nova senha temporária é:\n\n${resultado.new_password}\n\nCopie esta senha e a entregue ao usuário de forma segura.`);
             
         } catch (error) {
-            showNotification(`Erro: ${error.message}`);
+            showNotification(`Erro ao redefinir senha: ${error.message}`);
         }
     };
 
@@ -181,10 +182,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     formUser.addEventListener('submit', async function(event) {
         event.preventDefault();
-        const dados = Object.fromEntries(new FormData(formUser).entries());
         
-        const url = idUsuarioEmEdicao ? `/api/admin/usuarios/${idUsuarioEmEdicao}` : '/api/admin/usuarios';
+        const formData = new FormData(formUser);
+        const dados = Object.fromEntries(formData.entries());
+        
+        const url = idUsuarioEmEdicao ? `/api/users/${idUsuarioEmEdicao}` : '/api/users/';
         const method = idUsuarioEmEdicao ? 'PUT' : 'POST';
+        
+        // Remove a senha se for PUT e estiver vazia, para não sobrescrever o hash
+        if (method === 'PUT' && dados.password === "") {
+            delete dados.password;
+        }
 
         const submitButton = this.querySelector('button[type="submit"]');
         submitButton.disabled = true;
@@ -196,10 +204,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(dados)
             });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
+            
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
 
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => window.location.reload(), 1500); 
+            showNotificationAndReload(resultado.mensagem || `Usuário ${idUsuarioEmEdicao ? 'atualizado' : 'criado'} com sucesso!`, 'success');
 
         } catch (error) {
             showNotification(`Erro: ${error.message}`);

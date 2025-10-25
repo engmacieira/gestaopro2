@@ -1,3 +1,4 @@
+{# Componente: templates/_modal_editar_aocs.html #}
 <div class="modal-content large">
     <div class="modal-header">
         <h2 id="modal-titulo-edicao">Editar Dados da AOCS</h2>
@@ -11,7 +12,7 @@
                     <label for="edit-aocs-unidade">Unidade Requisitante</label>
                     <select id="edit-aocs-unidade" name="unidade_requisitante" class="form-control" required>
                         <option value="" disabled>Selecione...</option>
-                        {# ADICIONADO: Loop para preencher as unidades #}
+                        {# Popula com as opções do contexto do detalhe_pedido.html #}
                         {% for unidade in unidades %}
                         <option value="{{ unidade }}">{{ unidade }}</option>
                         {% endfor %}
@@ -27,7 +28,7 @@
                     <label for="edit-aocs-orcamento">Informação Orçamentária</label>
                     <select id="edit-aocs-orcamento" name="info_orcamentaria" class="form-control" required>
                         <option value="" disabled>Selecione...</option>
-                        {# ADICIONADO: Loop para preencher as dotações #}
+                        {# Popula com as opções do contexto do detalhe_pedido.html #}
                         {% for dotacao in dotacoes %}
                         <option value="{{ dotacao }}">{{ dotacao }}</option>
                         {% endfor %}
@@ -38,7 +39,7 @@
                     <label for="edit-aocs-local-entrega">Local de Entrega</label>
                     <select id="edit-aocs-local-entrega" name="local_entrega" class="form-control" required>
                         <option value="" disabled>Selecione...</option>
-                        {# ADICIONADO: Loop para preencher os locais #}
+                        {# Popula com as opções do contexto do detalhe_pedido.html #}
                         {% for local in locais %}
                         <option value="{{ local }}">{{ local }}</option>
                         {% endfor %}
@@ -49,7 +50,7 @@
                     <label for="edit-aocs-responsavel">Agente Responsável</label>
                     <select id="edit-aocs-responsavel" name="agente_responsavel" class="form-control" required>
                         <option value="" disabled>Selecione...</option>
-                        {# ADICIONADO: Loop para preencher os responsáveis #}
+                        {# Popula com as opções do contexto do detalhe_pedido.html #}
                         {% for responsavel in responsaveis %}
                         <option value="{{ responsavel }}">{{ responsavel }}</option>
                         {% endfor %}

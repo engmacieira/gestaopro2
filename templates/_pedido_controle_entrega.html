@@ -1,4 +1,4 @@
-{# REMOVIDO: {% extends "base.html" %} #}
+{# Componente: templates/_pedido_controle_entrega.html #}
 
 <div class="card full-width">
     {# Título mais descritivo #}
@@ -9,25 +9,54 @@
             <thead>
                 <tr>
                     <th style="width: 40%;">Descrição do Item</th>
-                    <th class="text-center">Qtd. Pedida</th> {# Alinhado ao centro #}
-                    <th class="text-center text-green">Qtd. Entregue</th> {# Alinhado e com cor #}
-                    <th class="text-center text-blue">Saldo</th> {# Alinhado e com cor #}
-                    <th class="text-center" style="width: 18%;">Ação</th> {# Alinhado e largura ajustada #}
+                    <th class="text-right">Qtd. Pedida</th> 
+                    <th class="text-right text-green">Qtd. Entregue</th> 
+                    <th class="text-right text-blue">Saldo</th> 
+                    <th class="text-center" style="width: 18%;">Ação</th> 
                 </tr>
             </thead>
             <tbody>
-                {% if itens %} {# Adicionado check para caso 'itens' não exista #}
+                {% if itens %} 
                     {% for item in itens %}
                     <tr>
-                        <td><strong>{{ item.descricao }}</strong><br><small>Contrato: {{ item.numero_contrato }}</small></td>
-                        <td class="text-center">{{ "%.0f"|format(item.quantidade_pedida) }}</td>
-                        <td class="text-center text-green">{{ "%.0f"|format(item.quantidade_entregue) }}</td>
-                        <td class="text-center text-blue" style="font-weight: 700;">{{ "%.0f"|format(item.quantidade_pedida - item.quantidade_entregue) }}</td>
-                        <td class="text-center"> {# Célula da ação alinhada #}
+                        <td>
+                            <strong>{{ item.descricao }}</strong><br>
+                            <small>Contrato: {{ item.numero_contrato }}</small>
+                        </td>
+                        
+                        {# Qtd. Pedida - Alinhado à Direita, Formatação com vírgula #}
+                        <td class="text-right">
+                            {% if item.quantidade_pedida == item.quantidade_pedida|int %}
+                                {{ item.quantidade_pedida|int }}
+                            {% else %}
+                                {{ "%.2f"|format(item.quantidade_pedida)|replace('.', ',') }}
+                            {% endif %}
+                        </td>
+                        
+                        {# Qtd. Entregue - Alinhado à Direita, Formatação com vírgula #}
+                        <td class="text-right text-green">
+                            {% if item.quantidade_entregue == item.quantidade_entregue|int %}
+                                {{ item.quantidade_entregue|int }}
+                            {% else %}
+                                {{ "%.2f"|format(item.quantidade_entregue)|replace('.', ',') }}
+                            {% endif %}
+                        </td>
+                        
+                        {# Saldo - Alinhado à Direita, Formatação com vírgula #}
+                        {% set saldo_restante = item.quantidade_pedida - item.quantidade_entregue %}
+                        <td class="text-right text-blue" style="font-weight: 700;">
+                            {% if saldo_restante == saldo_restante|int %}
+                                {{ saldo_restante|int }}
+                            {% else %}
+                                {{ "%.2f"|format(saldo_restante)|replace('.', ',') }}
+                            {% endif %}
+                        </td>
+                        
+                        <td class="text-center">
                             {% if item.quantidade_pedida > item.quantidade_entregue %}
                                 <button class="btn btn-secondary btn-small" 
                                         title="Registrar nova entrega para este item"
-                                        onclick="abrirModalEntrega({{ item.id_pedido }}, '{{ item.descricao | e }}', {{ item.quantidade_pedida - item.quantidade_entregue }})">
+                                        onclick="abrirModalEntrega({{ item.id_pedido }}, '{{ item.descricao | e }}', {{ saldo_restante }})">
                                     <i class="fa-solid fa-truck-fast"></i> Registrar Entrega
                                 </button>
                             {% else %}

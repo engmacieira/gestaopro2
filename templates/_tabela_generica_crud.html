@@ -1,0 +1,26 @@
+{# Componente: templates/_tabela_generica_crud.html #}
+
+<template id="table-template">
+    <div class="card full-width">
+        <div class="card-actions">
+            {# Título dinâmico injetado via JS #}
+            <h2 id="table-title"></h2>
+            <button id="btn-add-new-item" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Adicionar Novo
+            </button>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">ID</th>
+                        <th>Nome</th>
+                        <th style="width: 20%;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</template>

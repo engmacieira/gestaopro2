@@ -1,0 +1,25 @@
+{# Componente: templates/_pedido_status_summary.html #}
+
+{% set status_class = 'orange' if aocs.status_entrega == 'Pendente' else ('blue' if aocs.status_entrega == 'Entrega Parcial' else 'green') %}
+{% set status_icon = 'fa-hourglass-half' if aocs.status_entrega == 'Pendente' else ('fa-truck-moving' if aocs.status_entrega == 'Entrega Parcial' else 'fa-check-circle') %}
+
+<div class="status-overview">
+    <div class="detail-item">
+        <span>Status de Entrega</span>
+        <span class="status-badge {{ status_class }}" style="font-size: 1.2em;">
+            <i class="fa-solid {{ status_icon }}" style="margin-right: 5px;"></i> {{ aocs.status_entrega }}
+        </span>
+    </div>
+    <div class="detail-item">
+        <span>Fornecedor</span>
+        <strong>{{ aocs.fornecedor }}</strong>
+    </div>
+    <div class="detail-item">
+        <span>CNPJ</span>
+        <strong>{{ aocs.cpf_cnpj }}</strong>
+    </div>
+    <div class="detail-item">
+        <span>Valor Total</span>
+        <strong style="color: var(--action-success);">R$ {{ aocs.valor_total | format("%.2f") }}</strong>
+    </div>
+</div>

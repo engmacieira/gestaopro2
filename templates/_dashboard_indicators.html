@@ -1,0 +1,25 @@
+{# Componente para a grade de indicadores do Dashboard #}
+
+<div class="dashboard-grid">
+    <div class="card">
+        <div class="card-icon blue"><i class="fa-solid fa-file-signature"></i></div>
+        <div class="card-info">
+            <span class="card-value">{{ indicadores.contratos_ativos }}</span>
+            <span class="card-title">Contratos Ativos</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-icon green"><i class="fa-solid fa-box-archive"></i></div>
+        <div class="card-info">
+            <span class="card-value">{{ indicadores.pedidos_mes }}</span>
+            <span class="card-title">Pedidos este Mês</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-icon orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="card-info">
+            <span class="card-value">{{ indicadores.contratos_a_vencer }}</span>
+            <span class="card-title">Contratos a Vencer (60d)</span>
+        </div>
+    </div>
+</div>

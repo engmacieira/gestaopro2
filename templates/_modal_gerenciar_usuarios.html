@@ -1,0 +1,33 @@
+{# Componente: templates/_modal_gerenciar_usuarios.html #}
+<div id="modal-user" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-user-title">Adicionar Novo Usuário</h2>
+            <button class="close-button">&times;</button>
+        </div>
+        <form id="form-user">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="username">Nome de Usuário</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="form-group" id="password-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="nivel_acesso">Nível de Acesso</label>
+                    <select id="nivel_acesso" name="nivel_acesso" class="form-control" required>
+                        <option value="3">Visualização</option>
+                        <option value="2">Usuário Completo</option>
+                        <option value="1">Administrador</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-button btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>

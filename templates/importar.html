@@ -24,51 +24,13 @@
     </div>
 
     <div id="tab-contratos" class="tab-content active">
-        <div class="card full-width">
-            <h2>1. Envie sua Planilha de Contratos</h2>
-            <div class="instructions">
-                <p>A planilha deve conter as seguintes colunas:</p>
-                <code>id_categoria</code>, <code>numero_contrato</code>, <code>fornecedor</code>, <code>cpf_cnpj</code>, <code>numero_processo</code>, <code>modalidade</code>, <code>numero_modalidade</code>, <code>data_inicio</code>, <code>data_fim</code>, <code>tipo_contrato</code>, <code>email</code>, <code>telefone</code>
-            </div>
-            <form id="form-upload-contratos" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="arquivo_excel_contratos">Selecione o arquivo Excel:</label>
-                    <input type="file" name="arquivo_excel" id="arquivo_excel_contratos" class="form-control" accept=".xlsx" required>
-                </div>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar</button>
-            </form>
-            <div id="error-message-contratos" class="error-message"></div>
-        </div>
-        <div id="preview-container-contratos" class="card full-width" style="display: none; margin-top: 30px;">
-            <h2>2. Pré-visualização dos Contratos</h2>
-            <div class="table-wrapper"><table id="preview-table-contratos" class="data-table"></table></div>
-            <br>
-            <div class="form-actions"><button id="btn-salvar-contratos" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar Contratos</button></div>
-        </div>
+        {# INCLUINDO COMPONENTE DE CONTRATOS #}
+        {% include '_import_tab_contratos.html' %}
     </div>
 
     <div id="tab-itens" class="tab-content">
-        <div class="card full-width">
-            <h2>1. Envie sua Planilha de Itens</h2>
-            <div class="instructions">
-                <p>A planilha deve conter as seguintes colunas:</p>
-                <code>numero_contrato</code>, <code>tipo_contrato</code>, <code>numero_item</code>, <code>descricao</code>, <code>unidade_medida</code>, <code>quantidade</code>, <code>valor_unitario</code>
-            </div>
-            <form id="form-upload-itens" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="arquivo_excel_itens">Selecione o arquivo Excel:</label>
-                    <input type="file" name="arquivo_excel" id="arquivo_excel_itens" class="form-control" accept=".xlsx" required>
-                </div>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar Itens</button>
-            </form>
-            <div id="error-message-itens" class="error-message"></div>
-        </div>
-        <div id="preview-container-itens" class="card full-width" style="display: none; margin-top: 30px;">
-            <h2>2. Pré-visualização dos Itens</h2>
-            <div class="table-wrapper"><table id="preview-table-itens" class="data-table"></table></div>
-            <br>
-            <div class="form-actions"><button id="btn-salvar-itens" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar Itens</button></div>
-        </div>
+        {# INCLUINDO COMPONENTE DE ITENS #}
+        {% include '_import_tab_itens_global.html' %}
     </div>
 </div>
 {% endblock %}
@@ -113,6 +75,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const errorDiv = document.getElementById(errorDivId);
         const saveBtn = document.getElementById(saveBtnId);
         let dataToSave = [];
+        
+        // Determina o texto do botão salvar (pega o último da string para 'Contratos' ou 'Itens')
+        const saveButtonText = saveBtn.textContent;
 
         form.addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -124,11 +89,22 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Carregando...';
 
             try {
+                // Rota de Preview da API
                 const response = await fetch(previewUrl, { method: 'POST', body: formData });
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.erro || 'Erro desconhecido');
+                
+                if (!response.ok) {
+                    // Tenta ler o erro do JSON da API (que é o comportamento esperado do FastAPI)
+                    let errorDetail = result.erro || 'Erro desconhecido.';
+                    if (result.detail && typeof result.detail === 'string') {
+                         errorDetail = result.detail;
+                    }
+                    throw new Error(errorDetail);
+                }
+                
                 dataToSave = result;
                 renderPreview(dataToSave, previewTable, errorDiv, previewContainer);
+                
             } catch (error) {
                 errorDiv.textContent = `Erro: ${error.message}`;
             } finally {
@@ -143,19 +119,29 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
 
             try {
+                // Rota de Salvar da API
                 const response = await fetch(saveUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dataToSave)
                 });
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.erro);
+                
+                if (!response.ok) {
+                    let errorDetail = result.erro || 'Erro desconhecido ao salvar.';
+                    if (result.detail && typeof result.detail === 'string') {
+                         errorDetail = result.detail;
+                    }
+                    throw new Error(errorDetail);
+                }
+                
                 showNotification(result.mensagem, 'success');
                 setTimeout(() => { window.location.href = redirectUrl; }, 2000);
+                
             } catch (error) {
                 showNotification(`Erro: ${error.message}`);
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Definitivamente';
+                saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${saveButtonText}`;
             }
         });
     }
@@ -165,7 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
             errorDiv.textContent = 'Nenhum dado válido encontrado na planilha.';
             return;
         }
-        container.style.display = 'block';
+        // Usamos flex para garantir que o layout da etapa 2 seja correto (process-step)
+        container.style.display = 'flex'; 
+        
         const thead = table.querySelector('thead') || table.createTHead();
         const tbody = table.querySelector('tbody') || table.createTBody();
         thead.innerHTML = '';
@@ -178,16 +166,25 @@ document.addEventListener('DOMContentLoaded', function() {
             <tr>
                 ${headers.map(h => {
                     let value = row[h];
+                    // Formatação de data (melhorada)
                     if ((h === 'data_inicio' || h === 'data_fim') && value) {
-                        const [year, month, day] = value.split('T')[0].split('-');
-                        value = `${day}/${month}/${year}`;
+                        try {
+                            const dateObj = new Date(value);
+                            // Usando toLocaleDateString para formato DD/MM/YYYY
+                            value = dateObj.toLocaleDateString('pt-BR');
+                        } catch (e) {
+                             value = String(value); 
+                        }
+                    } else if (value === null || value === undefined) {
+                         value = '';
                     }
-                    return `<td>${value !== null ? value : ''}</td>`;
+                    return `<td>${value}</td>`;
                 }).join('')}
             </tr>
         `).join('');
     }
 
+    // Inicialização do fluxo de Importação de Contratos
     setupImportSection(
         'form-upload-contratos', 'preview-container-contratos', 'preview-table-contratos',
         'error-message-contratos', 'btn-salvar-contratos',
@@ -196,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
         "{{ url_for('contratos_ui') }}"        
     );
 
+    // Inicialização do fluxo de Importação de Itens
     setupImportSection(
         'form-upload-itens', 'preview-container-itens', 'preview-table-itens',
         'error-message-itens', 'btn-salvar-itens',

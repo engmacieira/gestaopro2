@@ -1,10 +1,3 @@
-/* =================================================================== */
-/* ARQUIVO style.css - DESIGN SYSTEM GESTÃOPRO (VERSÃO CONSOLIDADA 2.0)
-/* =================================================================== */
-
-/* ------------------------------------------------------------------- */
-/* 1. GLOBAIS E VARIÁVEIS (Globals & Variables)
-/* ------------------------------------------------------------------- */
 :root {
     --color-background: #f8f9fa;
     --color-surface: #ffffff;
@@ -448,3 +441,26 @@ body {
 .form-grid, 
 .status-grid { grid-template-columns: 1fr; }
 }
+
+/* --- Cores para Urgência no Dashboard --- */
+.overdue-critical { color: var(--action-danger); font-weight: 700; } /* Mais de 60 dias */
+.overdue-warning { color: #cc6600; font-weight: 700; } /* 31 a 60 dias (Laranja Escuro) */
+.overdue-mild { color: #ffae00; font-weight: 600; } /* 8 a 30 dias (Amarelo/Laranja Claro) */
+
+/* --- Novo bloco de Status (Adicione ao final de static/style.css) --- */
+.status-overview {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    background-color: var(--color-background);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px; /* Espaço após o header */
+    margin-bottom: 25px;
+    border: 1px solid var(--color-border);
+}
+.status-overview .detail-item strong { font-size: 1.2em; }
+.status-overview .status-badge { font-size: 1em; padding: 6px 12px; }
+.status-overview .status-badge.blue { background-color: rgba(13, 110, 253, 0.1); color: var(--action-primary); }
+/* (As classes de status green e orange já estão definidas no CSS original) */

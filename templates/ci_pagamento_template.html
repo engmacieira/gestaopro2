@@ -10,7 +10,7 @@
         COMUNICAÇÃO INTERNA - Nº {{ numero_ci }}
     </div>
 
-    {# Seção I: Informações Gerais (DE/PARA/DATA/REF) - Usando tabela simples como na AOCS #}
+    {# Seção I: Informações Gerais (DE/PARA/DATA/REF) #}
     <div class="section-box">
         <div class="section-title">I - INFORMAÇÕES GERAIS</div>
         <table>
@@ -37,19 +37,19 @@
         </table>
     </div>
 
-    {# Seção II: Solicitação (Parágrafo principal) #}
+    {# Seção II: Solicitação (Parágrafo principal) - Destaque no Valor #}
     <div class="section-box">
         <div class="section-title">II - SOLICITAÇÃO</div>
-        {# Adicionando justificação diretamente aqui para garantir #}
+        {# Aplicando estilos robustos (justify, indent) para layout de texto formal #}
         <p style="text-align: justify; text-indent: 4em;">
-            Venho por meio desta, solicitar pagamento no valor de R$ {{ "%.2f"|format(valor_nf)|replace('.', ',') }} ({{ valor_por_extenso }}) conforme Nota Fiscal de Nº {{ numero_nf }} – EMITIDA {{ data_nf }} – {{ fornecedor }}, CNPJ: {{ cnpj }}, referente à {{ referencia }}.
+            Venho por meio desta, solicitar pagamento no valor de <strong style="color: #343a40;">R$ {{ "%.2f"|format(valor_nf)|replace('.', ',') }}</strong> ({{ valor_por_extenso }}) conforme Nota Fiscal de Nº {{ numero_nf }} – EMITIDA {{ data_nf }} – {{ fornecedor }}, CNPJ: {{ cnpj }}, referente à {{ referencia }}.
         </p>
     </div>
 
-    {# Seção III: Valor Total #}
+    {# Seção III: Valor Total - Aumentando o destaque para a informação chave #}
      <div class="section-box">
         <div class="section-title">III - VALOR TOTAL</div>
-        <p style="font-weight: bold; text-align: center;">
+        <p style="font-weight: bold; text-align: center; font-size: 12pt;">
             R$ {{ "%.2f"|format(valor_nf)|replace('.', ',') }} ({{ valor_por_extenso }})
         </p>
     </div>

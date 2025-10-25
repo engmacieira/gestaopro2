@@ -8,28 +8,8 @@
     <p class="subtitle">Encontre contratos ou pedidos com base em seus vínculos no sistema.</p>
 </header>
 
-<div class="card full-width">
-    <form id="form-consulta" class="filter-controls-form">
-        <div class="form-group" style="flex: 1;">
-            <label for="tipo-consulta">Tipo de Consulta</label>
-            <select id="tipo-consulta" class="form-control">
-                <option value="" disabled selected>Selecione um tipo de consulta...</option>
-                {% for key, config in entidades_pesquisaveis.items() %}
-                    <option value="{{ key }}">{{ config.label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div id="container-valor-consulta" class="form-group" style="flex: 2; display: none;">
-            <label for="valor-consulta" id="label-valor-consulta">Selecione o Valor</label>
-            <select id="valor-consulta" class="form-control"></select>
-        </div>
-
-        <div class="form-group" style="align-self: flex-end;">
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i> Consultar</button>
-        </div>
-    </form>
-</div>
+{# INCLUINDO O COMPONENTE DO FORMULÁRIO #}
+{% include '_consultas_form.html' %}
 
 <div id="area-resultados" style="margin-top: 30px;">
     <div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h2>Aguardando sua consulta</h2><p>Selecione um tipo de consulta e um valor para buscar os resultados.</p></div>
@@ -46,8 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const valorConsultaLabel = document.getElementById('label-valor-consulta');
     const formConsulta = document.getElementById('form-consulta');
     const areaResultados = document.getElementById('area-resultados');
-
-    const configEntidades = {{ entidades_pesquisaveis|tojson }};
+    
+    // Objeto essencial para o mapeamento de colunas e URLs da API.
+    const configEntidades = {{ entidades_pesquisaveis|tojson }}; 
 
     tipoConsultaSelect.addEventListener('change', async function() {
         const tipo = this.value;
@@ -64,15 +45,19 @@ document.addEventListener('DOMContentLoaded', function() {
         valorConsultaContainer.style.display = 'block';
 
         try {
+            // 1. Fetch dos valores disponíveis para o tipo de consulta
             const response = await fetch(`/api/consultas/entidades/${tipo}`);
             const data = await response.json();
+            
             if (!response.ok) throw new Error(data.erro || 'Erro ao carregar opções.');
 
             valorConsultaSelect.innerHTML = '<option value="" disabled selected>Selecione...</option>';
             data.forEach(item => {
-                valorConsultaSelect.innerHTML += `<option value="${item.id}">${item.texto}</option>`;
+                // 'texto' e 'id' são os campos esperados da API 
+                valorConsultaSelect.innerHTML += `<option value="${item.id}">${item.texto}</option>`; 
             });
             valorConsultaSelect.disabled = false;
+            
         } catch (error) {
             valorConsultaSelect.innerHTML = '<option value="">Erro ao carregar</option>';
             console.error(error);
@@ -89,21 +74,27 @@ document.addEventListener('DOMContentLoaded', function() {
         areaResultados.innerHTML = '<div class="empty-state mini"><i class="fa-solid fa-spinner fa-spin"></i><p>Buscando...</p></div>';
 
         try {
+            // 2. Fetch dos resultados da consulta
             const response = await fetch(`/api/consultas?tipo=${tipo}&valor=${valor}`);
             const data = await response.json();
+            
             if (!response.ok) throw new Error(data.erro || 'Erro na consulta.');
+            
             renderizarResultados(data);
+            
         } catch (error) {
             areaResultados.innerHTML = `<p style="color: red;">${error.message}</p>`;
         }
     });
     
+    // Função de renderização de resultados (USANDO CONFIGURAÇÃO DO BACKEND)
     function renderizarResultados(data) {
         if (!data.resultados || data.resultados.length === 0) {
             areaResultados.innerHTML = '<div class="empty-state mini"><p>Nenhum resultado encontrado.</p></div>';
             return;
         }
 
+        // Mapeamento de colunas para renderização dinâmica
         const colunasMap = {
                     'processo_licitatorio': [
                         { header: 'Contrato', key: 'numero_contrato', link: '/contrato/' },
@@ -114,20 +105,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     'unidade_requisitante': [ 
                         { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' },
                         { header: 'Data', key: 'data_criacao' },
-                        { header: 'Fornecedor', key: 'fornecedor' }
+                        { header: 'Fornecedor', key: 'fornecedor' },
+                        { header: 'Status', key: 'status_entrega', format: (val) => {
+                             const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
+                             return `<span class="status-badge ${statusClass}">${val}</span>`;
+                        }}
                     ],
                     'local_entrega': [
                         { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' },
                         { header: 'Data', key: 'data_criacao' },
-                        { header: 'Fornecedor', key: 'fornecedor' }
+                        { header: 'Fornecedor', key: 'fornecedor' },
+                         { header: 'Status', key: 'status_entrega', format: (val) => {
+                             const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
+                             return `<span class="status-badge ${statusClass}">${val}</span>`;
+                        }}
                     ],
                     'dotacao': [
                         { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' },
                         { header: 'Data', key: 'data_criacao' },
-                        { header: 'Fornecedor', key: 'fornecedor' }
+                        { header: 'Fornecedor', key: 'fornecedor' },
+                         { header: 'Status', key: 'status_entrega', format: (val) => {
+                             const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
+                             return `<span class="status-badge ${statusClass}">${val}</span>`;
+                        }}
                     ]
                 };
-
+        
         const colunas = colunasMap[data.tipo];
         if (!colunas) { areaResultados.innerHTML = '<p>Erro de configuração de renderização.</p>'; return; }
 
@@ -143,8 +146,25 @@ document.addEventListener('DOMContentLoaded', function() {
             tableHtml += '<tr>';
             colunas.forEach(col => {
                 let valor = item[col.key];
-                if (col.format) valor = col.format(valor);
-                if (col.link) valor = `<a href="${col.link}${item.id || item.numero_aocs}"><strong>${valor}</strong></a>`;
+                
+                // Aplica formatação customizada
+                if (col.format) {
+                    valor = col.format(valor);
+                } else if (valor === true) {
+                     valor = 'Sim';
+                } else if (valor === false) {
+                     valor = 'Não';
+                } else if (valor === null || valor === undefined) {
+                     valor = 'N/D';
+                }
+
+                // Aplica link
+                if (col.link) {
+                    // Determina o valor do link: 'id' para Contrato, 'numero_aocs' para Pedido/AOCS
+                    const linkValue = item.id !== undefined ? item.id : item.numero_aocs;
+                    valor = `<a href="${col.link}${linkValue}"><strong>${valor}</strong></a>`;
+                }
+                
                 tableHtml += `<td>${valor}</td>`;
             });
             tableHtml += '</tr>';

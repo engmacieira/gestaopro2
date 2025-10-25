@@ -1,0 +1,30 @@
+{# Componente: templates/_contratos_header.html #}
+<header class="main-header">
+    <h1>Gerenciar Contratos</h1>
+    <p class="subtitle">Visão geral de todos os instrumentos contratuais ativos e inativos.</p>
+</header>
+
+<div class="card-actions" style="flex-wrap: wrap; justify-content: space-between;">
+    <form method="GET" action="{{ url_for('contratos_ui') }}" class="search-form" style="flex: 1 1 70%;">
+        <i class="fa-solid fa-search search-icon"></i>
+        <input type="search" name="busca" placeholder="Buscar por número ou fornecedor..." value="{{ query_params.busca or '' }}" class="form-control" style="flex: 1;">
+        
+        {# Filtro de Status de Contrato (Ativo, Inativo, Expirado) #}
+        <select name="status" class="form-control filter-select" style="max-width: 200px;">
+            <option value="">Status (Todos)</option>
+            <option value="ativo" {% if query_params.status == 'ativo' %}selected{% endif %}>Ativo</option>
+            <option value="inativo" {% if query_params.status == 'inativo' %}selected{% endif %}>Inativo</option>
+            <option value="expirado" {% if query_params.status == 'expirado' %}selected{% endif %}>Expirado</option>
+        </select>
+
+        <button type="submit" class="btn btn-secondary">Filtrar</button>
+        {% if query_params.busca or query_params.status %}
+            <a href="{{ url_for('contratos_ui') }}" class="btn btn-secondary btn-icon" title="Limpar Filtros"><i class="fa-solid fa-times"></i></a>
+        {% endif %}
+    </form>
+    
+    <a href="{{ url_for('novo_contrato_ui') }}" class="btn btn-primary" style="flex-shrink: 0; min-width: 200px;">
+        <i class="fa-solid fa-file-contract"></i>
+        Novo Contrato
+    </a>
+</div>

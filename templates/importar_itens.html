@@ -13,50 +13,9 @@
     <p class="subtitle">Contrato: <strong class="text-blue">{{ contrato.numero_contrato }}</strong></p>
 </header>
 
-<div class="card full-width process-card">
-    <div class="process-step">
-        <div class="step-number">1</div>
-        <div class="step-content">
-            <h2>Envie sua Planilha</h2>
-            <div class="instructions">
-                <p>Selecione um arquivo .xlsx com as colunas: <code>numero_item</code>, <code>descricao</code>, <code>unidade_medida</code>, <code>quantidade</code>, <code>valor_unitario</code>.</p>
-            </div>
-            
-            <form id="form-upload-itens" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="arquivo_excel">Selecione o arquivo Excel com os itens:</label>
-                    <input type="file" name="arquivo_excel" id="arquivo_excel" class="form-control" accept=".xlsx" required>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar
-                </button>
-            </form>
+{# INCLUSÃO DO COMPONENTE DE PASSOS #}
+{% include '_importar_itens_steps.html' %} 
 
-            <div id="error-message" class="error-message"></div>
-        </div>
-    </div>
-
-    <div id="preview-container" class="process-step" style="display: none;">
-        <div class="step-number">2</div>
-        <div class="step-content">
-            <h2>Pré-visualização</h2>
-            <p class="subtitle">Por favor, confira se os dados dos itens abaixo estão corretos antes de salvar.</p>
-            
-            <div class="table-wrapper">
-                <table id="preview-table" class="data-table">
-                    <thead></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <br>
-            <div class="form-actions">
-                 <button id="btn-salvar-dados" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar Itens no Contrato
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
@@ -87,6 +46,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
+    function showNotificationAndReload(message, type = 'success') {
+        sessionStorage.setItem('notificationMessage', message);
+        sessionStorage.setItem('notificationType', type);
+        window.location.reload();
+    }
+    
+    // Exibir notificação após redirecionamento
+    const msg = sessionStorage.getItem('notificationMessage');
+    if (msg) {
+        showNotification(msg, sessionStorage.getItem('notificationType'));
+        sessionStorage.removeItem('notificationMessage');
+        sessionStorage.removeItem('notificationType');
+    }
+
+
     formUpload.addEventListener('submit', async function(event) {
         event.preventDefault();
         errorMessageDiv.innerText = '';
@@ -98,15 +72,18 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Carregando...';
 
         try {
+            // API CALL: Preview (POST /api/importar/itens/{id_contrato}/preview)
             const response = await fetch(`/api/importar/itens/${idContrato}/preview`, {
                 method: 'POST',
                 body: formData
             });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro || 'Ocorreu um erro desconhecido.');
+            
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Ocorreu um erro desconhecido.');
             
             dadosParaSalvar = resultado;
             renderizarPreview(dadosParaSalvar);
+            
         } catch (error) {
             console.error('Erro no upload:', error);
             errorMessageDiv.innerText = `Erro: ${error.message}`;
@@ -121,19 +98,42 @@ document.addEventListener('DOMContentLoaded', function() {
             errorMessageDiv.innerText = 'Nenhum dado válido encontrado na planilha.';
             return;
         }
-        previewContainer.style.display = 'block';
+        
+        // UX Improvement: usa flex para exibir o container do passo 2
+        previewContainer.style.display = 'flex'; 
+        
         previewTable.innerHTML = '';
-        const headers = Object.keys(dados[0]);
+        
+        // Headers são as chaves do JSON
+        const headers = Object.keys(dados[0]); 
         let headerHTML = '<tr>';
+        
+        // Converte a chave para exibição (ex: numero_item -> Numero item)
         headers.forEach(h => headerHTML += `<th>${h.replace(/_/g, ' ')}</th>`);
         headerHTML += '</tr>';
+        
         previewTable.createTHead().innerHTML = headerHTML;
         let bodyHTML = '';
+        
+        // Body (dados)
         dados.forEach(linha => {
             bodyHTML += '<tr>';
-            headers.forEach(h => bodyHTML += `<td>${linha[h] !== null ? linha[h] : ''}</td>`);
+            headers.forEach(h => {
+                let value = linha[h];
+                
+                // Formatação para evitar "null" no front e garantir legibilidade
+                if (value === null || value === undefined) {
+                    value = '';
+                } else if (typeof value === 'number' && (h === 'quantidade' || h === 'valor_unitario')) {
+                    // Formata números para o padrão brasileiro (virgula)
+                    value = value.toFixed(2).replace('.', ',');
+                }
+                
+                bodyHTML += `<td>${value}</td>`;
+            });
             bodyHTML += '</tr>';
         });
+        
         previewTable.createTBody().innerHTML = bodyHTML;
     }
 
@@ -142,23 +142,28 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Não há dados para salvar.');
             return;
         }
+        
         btnSalvar.disabled = true;
         btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        
         try {
+            // API CALL: Save (POST /api/importar/itens/{id_contrato}/salvar)
             const response = await fetch(`/api/importar/itens/${idContrato}/salvar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosParaSalvar) 
             });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro || 'Ocorreu um erro desconhecido ao salvar.');
             
-            showNotification(resultado.mensagem, 'success');
-            setTimeout(() => { window.location.href = `/contrato/${idContrato}`; }, 2000);
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Ocorreu um erro desconhecido ao salvar.');
+            
+            // Redireciona para a página de detalhes do contrato após o sucesso
+            showNotificationAndReload(resultado.mensagem, 'success'); 
 
         } catch (error) {
             console.error('Erro ao salvar:', error);
             showNotification(`Erro: ${error.message}`);
+            
             btnSalvar.disabled = false;
             btnSalvar.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Itens no Contrato';
         }
