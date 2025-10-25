@@ -8,6 +8,9 @@ from app.core.logging_config import setup_logging
 setup_logging()
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles 
+ 
 from app.routers import agente_router 
 from app.routers import anexo_router 
 from app.routers import aocs_router
@@ -26,14 +29,24 @@ from app.routers import tipo_documento_router
 from app.routers import unidade_router 
 from app.routers import auth_router 
 from app.routers import user_router 
+from app.routers import ui_router
 
 logger = logging.getLogger(__name__) 
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(BASE_DIR)
 
 app = FastAPI(
     title="Gestão Pública API",
     description="API para o sistema de gestão pública (Refatorado com FastAPI)", 
     version="3.0.0" 
 )
+
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+
+@app.get("/")
+def read_root():
+    return RedirectResponse(url="/login", status_code=302)
 
 app.include_router(auth_router.router)
 app.include_router(user_router.router) 
@@ -53,6 +66,7 @@ app.include_router(pedido_router.router)
 app.include_router(processo_licitatorio_router.router)
 app.include_router(tipo_documento_router.router)
 app.include_router(unidade_router.router)
+app.include_router(ui_router.router)
 
 
 @app.on_event("startup")
