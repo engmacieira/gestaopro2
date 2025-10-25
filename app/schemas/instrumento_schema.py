@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
-class InstrumentoBase(BaseModel):
+class InstrumentoBase(BaseModel): 
     nome: str
-    
-class InstrumentoRequest(InstrumentoBase):
-    pass  
+
+class InstrumentoRequest(InstrumentoBase): 
+    pass
 
 class InstrumentoResponse(InstrumentoBase):
     id: int

@@ -26,3 +26,29 @@
 2025-10-24 16:46:21 - INFO - app.routers.agente_router - Usuário 'admin' criou Agente ID 2 ('Matheus Henrique').
 2025-10-24 16:46:53 - INFO - app.routers.agente_router - Usuário 'admin' atualizou Agente ID 2 de 'Matheus Henrique' para 'Matheus Henrique Macieira'.
 2025-10-24 16:47:02 - INFO - app.routers.agente_router - Usuário 'admin' deletou Agente ID 2 ('Matheus Henrique Macieira').
+2025-10-25 00:30:37 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 00:30:50 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 00:32:55 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 00:36:56 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 09:42:56 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 10:18:33 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 10:18:46 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-25 10:18:46 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-10-25 10:18:49 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 10:18:55 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-25 10:19:02 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-10-25 10:19:05 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 10:19:11 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-25 10:20:42 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-10-25 10:20:48 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 10:20:54 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-25 10:27:17 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-10-25 11:14:58 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 11:15:04 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-25 11:15:04 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-10-25 11:15:07 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 11:15:13 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-25 11:15:18 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-10-25 11:15:24 - INFO - root - Sistema de Logging Configurado.
+2025-10-25 11:15:29 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-25 11:32:15 - INFO - app.main - Aplicação Gestão Pública API encerrada.

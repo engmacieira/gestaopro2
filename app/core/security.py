@@ -69,6 +69,7 @@ def require_access_level(required_level: int):
                 detail="Você não tem permissão para realizar esta ação."
             )
         return current_user 
+    return check_permission
     
 require_admin = require_access_level(1)
 require_editor = require_access_level(2)
