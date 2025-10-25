@@ -1,0 +1,89 @@
+{% extends "relatorios_base.html" %}
+
+{% block relatorio_title %}CI de Pagamento Nº {{ numero_ci }}{% endblock %}
+
+{% block unidade_requisitante %}{{ secretaria }}{% endblock %}
+
+{% block relatorio_content %}
+    {# Título Principal - Similar à AOCS #}
+    <div class="title">
+        COMUNICAÇÃO INTERNA - Nº {{ numero_ci }}
+    </div>
+
+    {# Seção I: Informações Gerais (DE/PARA/DATA/REF) - Usando tabela simples como na AOCS #}
+    <div class="section-box">
+        <div class="section-title">I - INFORMAÇÕES GERAIS</div>
+        <table>
+            <tr>
+                <td style="width: 10%;"><strong>DE:</strong></td>
+                <td>{{ secretaria }}</td>
+            </tr>
+            <tr>
+                <td><strong>PARA:</strong></td>
+                <td>Gabinete do Prefeito</td>
+            </tr>
+             <tr>
+                <td><strong>DATA:</strong></td>
+                <td>{{ data_ci }}</td>
+            </tr>
+            <tr>
+                <td><strong>Ref.:</strong></td>
+                <td>Solicitação de Pagamento</td>
+            </tr>
+             <tr>
+                <td><strong>Ilmo. Sr.:</strong></td>
+                <td>{{ ilmo_sr }}</td>
+            </tr>
+        </table>
+    </div>
+
+    {# Seção II: Solicitação (Parágrafo principal) #}
+    <div class="section-box">
+        <div class="section-title">II - SOLICITAÇÃO</div>
+        {# Adicionando justificação diretamente aqui para garantir #}
+        <p style="text-align: justify; text-indent: 4em;">
+            Venho por meio desta, solicitar pagamento no valor de R$ {{ "%.2f"|format(valor_nf)|replace('.', ',') }} ({{ valor_por_extenso }}) conforme Nota Fiscal de Nº {{ numero_nf }} – EMITIDA {{ data_nf }} – {{ fornecedor }}, CNPJ: {{ cnpj }}, referente à {{ referencia }}.
+        </p>
+    </div>
+
+    {# Seção III: Valor Total #}
+     <div class="section-box">
+        <div class="section-title">III - VALOR TOTAL</div>
+        <p style="font-weight: bold; text-align: center;">
+            R$ {{ "%.2f"|format(valor_nf)|replace('.', ',') }} ({{ valor_por_extenso }})
+        </p>
+    </div>
+
+    {# Seção IV: Observações (Opcional) #}
+    {% if observacoes %}
+    <div class="section-box">
+        <div class="section-title">IV - OBSERVAÇÕES</div>
+        <p style="font-style: italic; text-align: center;">
+            {{ observacoes }}
+        </p>
+    </div>
+    {% endif %}
+
+    {# Texto de Fechamento (Fora das seções) #}
+    <p style="margin-top: 2cm; margin-bottom: 1.5cm;">
+        Sem mais para o momento, agradeço e me coloco à disposição para outras informações que se fizerem necessárias.
+        <br><br>
+        Atenciosamente,
+    </p>
+
+    {# Rodapé com Assinatura - Idêntico à AOCS #}
+    <footer class="footer">
+         <div class="signature-block">
+            <div class="line"></div>
+            <p>{{ solicitante }}<br><strong>{{ secretaria }}</strong></p>
+        </div>
+    </footer>
+
+    {# Rodapé de Controle (Texto estático, layout simples) #}
+    <div style="margin-top: 2cm; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 8pt; color: #666; text-align: center;">
+        <span style="margin: 0 10px;">CONFECCIONADA: _____________________</span>
+        <span style="margin: 0 10px;">SOLICITANTE: {{ solicitante }}</span>
+        <span style="margin: 0 10px;">RECEBIDA POR: _____________________</span>
+        <span style="margin: 0 10px;">Nº DA RESPOSTA: _____________________</span>
+    </div>
+{% endblock %}

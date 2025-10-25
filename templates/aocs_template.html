@@ -1,0 +1,83 @@
+{% extends "relatorios_base.html" %}
+
+{% block relatorio_title %}AOCS Nº {{ aocs.numero_aocs }}{% endblock %}
+
+{% block unidade_requisitante %}{{ aocs.unidade_requisitante }}{% endblock %}
+
+{% block relatorio_content %}
+    <div class="title">
+        AUTORIZAÇÃO PARA EMISSÃO DE ORDEM DE COMPRA/SERVIÇO - Nº {{ aocs.numero_aocs }}
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">I – HISTÓRICO / DESTINO DA COMPRA / JUSTIFICATIVA</div>
+        <p>{{ aocs.justificativa }}</p>
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">II – NÚMERO DO INSTRUMENTO CONTRATUAL</div>
+        <p>{{ aocs.instrumento_contratual }}</p>
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">III – FORNECEDOR / CNPJ</div>
+        <table>
+            <tr>
+                <td style="width: 70%;"><strong>Razão Social:</strong> {{ aocs.fornecedor }}</td>
+                <td><strong>CNPJ:</strong> {{ aocs.cnpj }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section-box">
+        <div class="section-title">IV – RELAÇÃO DOS ITENS</div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">ITEM</th>
+                    <th class="item-description">DESCRIÇÃO</th>
+                    <th style="width: 8%;">UN.</th>
+                    <th style="width: 8%;">QTDE</th>
+                    <th style="width: 15%;" class="text-right">VALOR UNIT. (R$)</th>
+                    <th style="width: 15%;" class="text-right">VALOR TOTAL (R$)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.numero_item_contrato }}</td>
+                    <td class="item-description">{{ item.descricao }}</td>
+                    <td>{{ item.unidade_medida }}</td>
+                    <td>{% if item.quantidade_pedida == item.quantidade_pedida|int %}{{ item.quantidade_pedida|int }}{% else %}{{ "%.3f"|format(item.quantidade_pedida)|replace('.', ',') }}{% endif %}</td>
+                    <td class="text-right">{{ "%.2f"|format(item.valor_unitario) }}</td>
+                    <td class="text-right">{{ "%.2f"|format(item.subtotal) }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="5" class="text-right"><strong>VALOR TOTAL</strong></td>
+                    <td class="text-right"><strong>R$ {{ "%.2f"|format(total_geral) }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">V – INFORMAÇÃO ACERCA DA DISPONIBILIDADE ORÇAMENTÁRIA/FINANCEIRA</div>
+        <p>{{ aocs.info_orcamentaria }}</p>
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">VI – LOCAL DE ENTREGA</div>
+        <p>{{ aocs.local_entrega }}</p>
+    </div>
+
+    <footer class="footer">
+        <div class="signature-section">
+            <p><strong>Local e data:</strong> {{ aocs.local_data }}</p>
+            <div class="signature-block">
+                <div class="line"></div>
+                <p>{{ aocs.agente_responsavel }}<br><strong>Assinatura do demandante</strong></p>
+            </div>
+        </div>
+    </footer>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Importar Itens para {{ contrato.numero_contrato }}{% endblock %}
+
+{% block content %}
+<div id="notification-area"></div>
+
+<header class="main-header">
+    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id) }}" class="back-link">
+        &larr; Voltar para os Detalhes do Contrato
+    </a>
+    <h1>Importar Itens para o Contrato</h1>
+    <p class="subtitle">Contrato: <strong class="text-blue">{{ contrato.numero_contrato }}</strong></p>
+</header>
+
+<div class="card full-width process-card">
+    <div class="process-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <h2>Envie sua Planilha</h2>
+            <div class="instructions">
+                <p>Selecione um arquivo .xlsx com as colunas: <code>numero_item</code>, <code>descricao</code>, <code>unidade_medida</code>, <code>quantidade</code>, <code>valor_unitario</code>.</p>
+            </div>
+            
+            <form id="form-upload-itens" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="arquivo_excel">Selecione o arquivo Excel com os itens:</label>
+                    <input type="file" name="arquivo_excel" id="arquivo_excel" class="form-control" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar
+                </button>
+            </form>
+
+            <div id="error-message" class="error-message"></div>
+        </div>
+    </div>
+
+    <div id="preview-container" class="process-step" style="display: none;">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <h2>Pré-visualização</h2>
+            <p class="subtitle">Por favor, confira se os dados dos itens abaixo estão corretos antes de salvar.</p>
+            
+            <div class="table-wrapper">
+                <table id="preview-table" class="data-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <br>
+            <div class="form-actions">
+                 <button id="btn-salvar-dados" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Itens no Contrato
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const formUpload = document.getElementById('form-upload-itens');
+    const previewContainer = document.getElementById('preview-container');
+    const previewTable = document.getElementById('preview-table');
+    const errorMessageDiv = document.getElementById('error-message');
+    const btnSalvar = document.getElementById('btn-salvar-dados');
+    const notificationArea = document.getElementById('notification-area');
+    
+    const idContrato = {{ contrato.id }};
+    let dadosParaSalvar = [];
+
+    function showNotification(message, type = 'error') {
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
+    formUpload.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        errorMessageDiv.innerText = '';
+        previewContainer.style.display = 'none';
+
+        const formData = new FormData(formUpload);
+        const submitButton = formUpload.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Carregando...';
+
+        try {
+            const response = await fetch(`/api/importar/itens/${idContrato}/preview`, {
+                method: 'POST',
+                body: formData
+            });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro || 'Ocorreu um erro desconhecido.');
+            
+            dadosParaSalvar = resultado;
+            renderizarPreview(dadosParaSalvar);
+        } catch (error) {
+            console.error('Erro no upload:', error);
+            errorMessageDiv.innerText = `Erro: ${error.message}`;
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar';
+        }
+    });
+
+    function renderizarPreview(dados) {
+        if (!dados || dados.length === 0) {
+            errorMessageDiv.innerText = 'Nenhum dado válido encontrado na planilha.';
+            return;
+        }
+        previewContainer.style.display = 'block';
+        previewTable.innerHTML = '';
+        const headers = Object.keys(dados[0]);
+        let headerHTML = '<tr>';
+        headers.forEach(h => headerHTML += `<th>${h.replace(/_/g, ' ')}</th>`);
+        headerHTML += '</tr>';
+        previewTable.createTHead().innerHTML = headerHTML;
+        let bodyHTML = '';
+        dados.forEach(linha => {
+            bodyHTML += '<tr>';
+            headers.forEach(h => bodyHTML += `<td>${linha[h] !== null ? linha[h] : ''}</td>`);
+            bodyHTML += '</tr>';
+        });
+        previewTable.createTBody().innerHTML = bodyHTML;
+    }
+
+    btnSalvar.addEventListener('click', async function() {
+        if (dadosParaSalvar.length === 0) {
+            showNotification('Não há dados para salvar.');
+            return;
+        }
+        btnSalvar.disabled = true;
+        btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        try {
+            const response = await fetch(`/api/importar/itens/${idContrato}/salvar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosParaSalvar) 
+            });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro || 'Ocorreu um erro desconhecido ao salvar.');
+            
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => { window.location.href = `/contrato/${idContrato}`; }, 2000);
+
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            showNotification(`Erro: ${error.message}`);
+            btnSalvar.disabled = false;
+            btnSalvar.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Itens no Contrato';
+        }
+    });
+});
+</script>
+{% endblock %}

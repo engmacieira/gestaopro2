@@ -1,0 +1,57 @@
+{% extends "relatorios_base.html" %}
+
+{% block relatorio_title %}Relatório de Itens Pendentes - AOCS Nº {{ aocs.numero_aocs }}{% endblock %}
+
+{% block unidade_requisitante %}{{ aocs.unidade_requisitante }}{% endblock %}
+
+{% block relatorio_content %}
+    <div class="title">
+        RELATÓRIO DE ITENS PENDENTES - AOCS Nº {{ aocs.numero_aocs }}
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">I – DADOS DO PEDIDO</div>
+        <table>
+            <tr>
+                <td style="width: 70%;"><strong>Fornecedor:</strong> {{ aocs.fornecedor }}</td>
+                <td><strong>CNPJ:</strong> {{ aocs.cnpj }}</td>
+            </tr>
+            <tr>
+                <td><strong>Nº Pedido (informado):</strong> {{ aocs.numero_pedido or 'Não informado' }}</td>
+                <td><strong>Data do Relatório:</strong> {{ aocs.local_data }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section-box">
+        <div class="section-title">II – RELAÇÃO DE ITENS PENDENTES</div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">ITEM</th>
+                    <th class="item-description">DESCRIÇÃO</th>
+                    <th style="width: 10%;">QTD. PEDIDA</th>
+                    <th style="width: 10%;">QTD. ENTREGUE</th>
+                    <th style="width: 10%;" class="text-right">SALDO PENDENTE</th>
+                    <th style="width: 15%;" class="text-right">VALOR TOTAL PENDENTE (R$)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                <tr>
+                    <td>{{ item.numero_item_contrato }}</td>
+                    <td class="item-description">{{ item.descricao }}</td>
+                    <td>{{ "%.0f"|format(item.quantidade_pedida) }}</td>
+                    <td>{{ "%.0f"|format(item.quantidade_entregue) }}</td>
+                    <td class="text-right" style="font-weight: bold; color: #dc3545;">{{ "%.0f"|format(item.saldo_pendente) }}</td>
+                    <td class="text-right">R$ {{ "%.2f"|format(item.saldo_pendente * item.valor_unitario) }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="5" class="text-right"><strong>VALOR TOTAL PENDENTE</strong></td>
+                    <td class="text-right"><strong>R$ {{ "%.2f"|format(total_geral_pendente) }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{# REMOVIDO: {% extends "base.html" %} - Este é um módulo incluído #}
+
+<div class="card">
+    <h4>Comunicações Internas (CI)</h4> {# Título consistente #}
+    
+    {% if cis_pagamento %}
+    <div class="table-wrapper condensed-table" style="margin-bottom: 15px;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Data</th>
+                    <th>Valor</th>
+                    <th style="width: 15%; text-align: right;">Ações</th> {# Ajuste na largura e alinhamento #}
+                </tr>
+            </thead>
+            <tbody>
+                {% for ci in cis_pagamento %}
+                <tr>
+                    <td><strong>{{ ci.numero_ci }}</strong></td>
+                    <td>{{ ci.data_ci.strftime('%d/%m/%y') }}</td> {# Data ainda mais curta #}
+                    <td>{{ "%.0f"|format(ci.valor_nota_fiscal) }}</td>
+                    <td class="actions-cell" style="text-align: right;"> {# Alinha ícones à direita #}
+                        {# ÍCONES COM TOOLTIPS #}
+                        <a href="{{ url_for('imprimir_ci', id_ci=ci.id) }}" class="btn-link-action" title="Imprimir CI" target="_blank"><i class="fa-solid fa-print"></i></a>
+                        <a href="{{ url_for('editar_ci_ui', id_ci=ci.id) }}" class="btn-link-action" title="Editar CI"><i class="fa-solid fa-pencil"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state mini" style="padding-bottom: 15px;"><p>Nenhuma CI registrada.</p></div>
+    {% endif %}
+
+    {# Botão Nova CI alinhado à direita #}
+    <div class="card-actions" style="justify-content: flex-end; margin-top: 5px; margin-bottom: 0;">
+         <a href="{{ url_for('nova_ci_ui', numero_aocs=aocs.numero_aocs) }}" class="btn btn-success btn-full-width"><i class="fa-solid fa-plus"></i> Nova CI</a>
+    </div>
+</div>

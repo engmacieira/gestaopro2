@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Tabelas do Sistema - GestãoPRO{% endblock %}
+
+{% block content %}
+<div id="notification-area"></div>
+
+<header class="main-header">
+    <h1>Gerenciar Tabelas do Sistema</h1>
+    <p class="subtitle">Adicione, edite ou exclua os dados mestres do sistema.</p>
+</header>
+
+<div class="management-container">
+    <aside class="management-sidebar">
+        <nav>
+            {% for key, config in tabelas.items() %}
+                <a href="#" class="management-link" data-tabela="{{ key }}" data-nome-exibicao="{{ config.tabela|replace('_', ' ')|title }}">
+                    {{ config.tabela|replace('_', ' ')|title }}
+                </a>
+            {% endfor %}
+        </nav>
+    </aside>
+
+    <main class="management-content">
+        <div id="content-area">
+            <div class="empty-state">
+                <i class="fa-solid fa-arrow-left"></i>
+                <h2>Selecione uma tabela</h2>
+                <p>Escolha uma das tabelas no menu à esquerda para começar a gerenciar.</p>
+            </div>
+        </div>
+
+        <template id="table-template">
+            <div class="card full-width">
+                <div class="card-actions">
+                    <h2 id="table-title"></h2>
+                    <button id="btn-add-new-item" class="btn btn-primary">
+                        <i class="fa-solid fa-plus"></i> Adicionar Novo
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">ID</th>
+                                <th>Nome</th>
+                                <th style="width: 20%;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </template>
+    </main>
+</div>
+
+<div id="modal-item" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-titulo">Adicionar Novo Item</h2>
+            <button id="btn-fechar-modal" class="close-button">&times;</button>
+        </div>
+        <form id="form-item">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="item-nome">Nome</label>
+                    <input type="text" id="item-nome" name="nome" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    let tabelaAtiva = null;
+    let nomeExibicaoTabelaAtiva = null;
+
+    const contentArea = document.getElementById('content-area');
+    const tableTemplate = document.getElementById('table-template');
+    const modal = document.getElementById('modal-item');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const formItem = document.getElementById('form-item');
+    const inputNomeItem = document.getElementById('item-nome');
+    let idItemEmEdicao = null;
+
+    const fecharModal = () => {
+        modal.style.display = 'none';
+        formItem.reset();
+        idItemEmEdicao = null;
+    };
+
+    function showNotification(message, type = 'error') {
+        const notificationArea = document.getElementById('notification-area');
+        const existing = notificationArea.querySelector('.notification');
+        if (existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
+    async function carregarTabela(nomeTabela, nomeExibicao) {
+        tabelaAtiva = nomeTabela;
+        nomeExibicaoTabelaAtiva = nomeExibicao;
+
+        contentArea.innerHTML = '';
+        const clone = tableTemplate.content.cloneNode(true);
+        contentArea.appendChild(clone);
+
+        document.getElementById('table-title').textContent = `Gerenciando: ${nomeExibicao}`;
+        document.getElementById('btn-add-new-item').addEventListener('click', abrirModalParaNovo);
+
+        const tableBody = document.getElementById('table-body');
+        tableBody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
+
+        try {
+            const response = await fetch(`/api/tabelas-sistema/${nomeTabela}`);
+            const itens = await response.json();
+            if (!response.ok) throw new Error(itens.erro);
+
+            tableBody.innerHTML = '';
+            if (itens.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3"><div class="empty-state mini"><p>Nenhum item cadastrado.</p></div></td></tr>';
+                return;
+            }
+
+            itens.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.nome}</td>
+                    <td class="actions-cell">
+                        <button class="btn-link-action" onclick="abrirModalParaEditar(${item.id}, '${item.nome}')"><i class="fa-solid fa-pencil"></i> Editar</button>
+                        <button class="btn-link-action red" onclick="excluirItem(${item.id})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        } catch (error) {
+            tableBody.innerHTML = `<tr><td colspan="3" class="text-red">Erro ao carregar dados: ${error.message}</td></tr>`;
+        }
+    }
+
+    function abrirModalParaNovo() {
+        idItemEmEdicao = null;
+        modalTitulo.textContent = `Adicionar Novo em ${nomeExibicaoTabelaAtiva}`;
+        formItem.reset();
+        modal.style.display = 'flex';
+    }
+
+    function abrirModalParaEditar(id, nomeAtual) {
+        idItemEmEdicao = id;
+        modalTitulo.textContent = `Editar Item em ${nomeExibicaoTabelaAtiva}`;
+        inputNomeItem.value = nomeAtual;
+        modal.style.display = 'flex';
+    }
+
+    formItem.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const nome = inputNomeItem.value;
+        const url = idItemEmEdicao 
+            ? `/api/tabelas-sistema/${tabelaAtiva}/${idItemEmEdicao}` 
+            : `/api/tabelas-sistema/${tabelaAtiva}`;
+        const method = idItemEmEdicao ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome: nome })
+            });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            
+            showNotification(resultado.mensagem, 'success');
+            fecharModal();
+            carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva); 
+        } catch (error) {
+            showNotification(`Erro: ${error.message}`);
+        }
+    });
+
+    async function excluirItem(id) {
+        if (!confirm('Tem certeza que deseja excluir este item? A ação não pode ser desfeita.')) return;
+        
+        try {
+            const response = await fetch(`/api/tabelas-sistema/${tabelaAtiva}/${id}`, {
+                method: 'DELETE'
+            });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+
+            showNotification(resultado.mensagem, 'success');
+            carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva); 
+        } catch (error) {
+            showNotification(`Erro ao excluir: ${error.message}`);
+        }
+    }
+
+    document.querySelectorAll('.management-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.management-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            const nomeTabela = link.dataset.tabela;
+            const nomeExibicao = link.dataset.nomeExibicao;
+            carregarTabela(nomeTabela, nomeExibicao);
+        });
+    });
+    
+    document.getElementById('btn-fechar-modal').addEventListener('click', fecharModal);
+    document.getElementById('btn-cancelar-modal').addEventListener('click', fecharModal);
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) fecharModal();
+    });
+
+    window.abrirModalParaEditar = abrirModalParaEditar;
+    window.excluirItem = excluirItem;
+});
+</script>
+{% endblock %}

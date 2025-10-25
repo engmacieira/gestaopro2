@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Usuários - GestãoPRO{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Gerenciar Usuários</h1>
+    <p class="subtitle">Adicione, edite, ative/inative ou redefina senhas dos usuários do sistema.</p>
+</header>
+
+<div class="card full-width">
+    <div class="card-actions">
+        <h2>Lista de Usuários</h2>
+        <button id="btn-add-user" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Adicionar Usuário</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Nível de Acesso</th>
+                    <th>Status</th>
+                    <th style="width: 30%;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td><strong>{{ usuario.username }}</strong></td>
+                    <td>
+                        {% if usuario.nivel_acesso == 1 %}Admin
+                        {% elif usuario.nivel_acesso == 2 %}Usuário Completo
+                        {% else %}Visualização
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge {{ 'green' if usuario.ativo else 'gray' }}">
+                            {{ 'Ativo' if usuario.ativo else 'Inativo' }}
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        <button class="btn-link-action" onclick="abrirModalParaEditar({{ usuario.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
+                        <button class="btn-link-action" onclick="resetarSenha({{ usuario.id }})"><i class="fa-solid fa-key"></i> Redefinir Senha</button>
+                        <button class="btn-link-action {{ 'red' if usuario.ativo else 'green' }}" onclick="toggleUserStatus({{ usuario.id }})">
+                            <i class="fa-solid fa-power-off"></i> {{ 'Inativar' if usuario.ativo else 'Ativar' }}
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="modal-user" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-user-title">Adicionar Novo Usuário</h2>
+            <button class="close-button">&times;</button>
+        </div>
+        <form id="form-user">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="username">Nome de Usuário</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="form-group" id="password-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="nivel_acesso">Nível de Acesso</label>
+                    <select id="nivel_acesso" name="nivel_acesso" class="form-control" required>
+                        <option value="3">Visualização</option>
+                        <option value="2">Usuário Completo</option>
+                        <option value="1">Administrador</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-button btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const modal = document.getElementById('modal-user');
+    const modalTitle = document.getElementById('modal-user-title');
+    const formUser = document.getElementById('form-user');
+    const passwordGroup = document.getElementById('password-group');
+    const btnAddUser = document.getElementById('btn-add-user');
+    const notificationArea = document.querySelector('.main-content #notification-area');
+    let idUsuarioEmEdicao = null;
+
+    function showNotification(message, type = 'error') {
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.prepend(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
+    const fecharModal = () => {
+        modal.style.display = 'none';
+        formUser.reset();
+        idUsuarioEmEdicao = null;
+    };
+
+    const abrirModalParaCriar = () => {
+        idUsuarioEmEdicao = null;
+        formUser.reset();
+        modalTitle.textContent = 'Adicionar Novo Usuário';
+        passwordGroup.style.display = 'block';
+        formUser.elements.password.required = true;
+        modal.style.display = 'flex';
+    };
+    
+    window.abrirModalParaEditar = async (id) => {
+        idUsuarioEmEdicao = id;
+        formUser.reset();
+        try {
+            const response = await fetch(`/api/admin/usuarios/${id}`);
+            const usuario = await response.json();
+            if (!response.ok) throw new Error(usuario.erro);
+            
+            modalTitle.textContent = 'Editar Usuário';
+            formUser.elements.username.value = usuario.username;
+            formUser.elements.nivel_acesso.value = usuario.nivel_acesso;
+            
+            passwordGroup.style.display = 'none'; 
+            formUser.elements.password.required = false; 
+            
+            modal.style.display = 'flex';
+        } catch (error) {
+            showNotification(`Erro ao carregar usuário: ${error.message}`);
+        }
+    };
+
+    window.toggleUserStatus = async (id) => {
+        if (!confirm('Tem certeza que deseja alterar o status deste usuário?')) return;
+        try {
+            const response = await fetch(`/api/admin/usuarios/${id}/status`, { method: 'POST' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (error) {
+            showNotification(`Erro: ${error.message}`);
+        }
+    };
+
+    window.resetarSenha = async (id) => {
+        if (!confirm('ATENÇÃO: Isso irá gerar uma nova senha para o usuário e invalidar a antiga. Deseja continuar?')) return;
+        try {
+            const response = await fetch(`/api/admin/usuarios/${id}/reset-password`, { method: 'POST' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            
+            alert(`Senha redefinida com sucesso!\n\nA nova senha temporária é:\n\n${resultado.nova_senha}\n\nCopie esta senha e a entregue ao usuário de forma segura.`);
+            
+        } catch (error) {
+            showNotification(`Erro: ${error.message}`);
+        }
+    };
+
+    btnAddUser.addEventListener('click', abrirModalParaCriar);
+    modal.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', fecharModal));
+    window.addEventListener('click', (event) => { if (event.target == modal) fecharModal(); });
+
+    formUser.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const dados = Object.fromEntries(new FormData(formUser).entries());
+        
+        const url = idUsuarioEmEdicao ? `/api/admin/usuarios/${idUsuarioEmEdicao}` : '/api/admin/usuarios';
+        const method = idUsuarioEmEdicao ? 'PUT' : 'POST';
+
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => window.location.reload(), 1500); 
+
+        } catch (error) {
+            showNotification(`Erro: ${error.message}`);
+        } finally {
+            submitButton.disabled = false;
+        }
+    });
+
+});
+</script>
+{% endblock %}

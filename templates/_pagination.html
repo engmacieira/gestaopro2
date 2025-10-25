@@ -1,0 +1,50 @@
+{% macro render_pagination(pagina_atual, total_paginas, endpoint, route_params={}, query_params={}) %}
+    {% if total_paginas > 1 %}
+        {% set base_params = route_params.copy() %}
+        {% set _ = base_params.update(query_params) %}
+        {% set window = 2 %}
+    {% endif %}
+
+    {% if total_paginas > 1 %}
+    <nav class="pagination-nav" aria-label="Navegação de página">
+        <ul class="pagination">
+            
+            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': 1}) %}
+            <li class="page-item {% if pagina_atual == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Primeira"><i class="fa-solid fa-backward-fast"></i></a>
+            </li>
+
+            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': pagina_atual - 1}) %}
+            <li class="page-item {% if pagina_atual == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Anterior"><i class="fa-solid fa-backward-step"></i></a>
+            </li>
+
+            {% set ellipsis_shown = false %}
+            {% for p in range(1, total_paginas + 1) %}
+                {% set show_page = (p == 1) or (p == total_paginas) or (p >= pagina_atual - window and p <= pagina_atual + window) %}
+                
+                {% if show_page %}
+                    {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': p}) %}
+                    <li class="page-item {% if p == pagina_atual %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for(endpoint, **link_params) }}">{{ p }}</a>
+                    </li>
+                    {% set ellipsis_shown = false %}
+                {% elif not ellipsis_shown %}
+                    <li class="page-item disabled"><span class="page-link ellipsis">...</span></li>
+                    {% set ellipsis_shown = true %}
+                {% endif %}
+            {% endfor %}
+
+            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': pagina_atual + 1}) %}
+            <li class="page-item {% if pagina_atual == total_paginas %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Próxima"><i class="fa-solid fa-forward-step"></i></a>
+            </li>
+
+            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': total_paginas}) %}
+            <li class="page-item {% if pagina_atual == total_paginas %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Última"><i class="fa-solid fa-forward-fast"></i></a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+{% endmacro %}

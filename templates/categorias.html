@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% from '_pagination.html' import render_pagination %}
+
+{% block title %}Gerenciar Categorias - GestãoPRO{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Gerenciar Categorias</h1>
+    <p class="subtitle">Adicione, visualize, edite ou exclua as categorias de contratos.</p>
+</header>
+
+<div class="card full-width">
+    <div class="card-actions">
+        <form id="filter-form" action="{{ url_for('categorias_ui') }}" method="GET">
+            <label class="checkbox-label">
+                <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if mostrar_inativos %}checked{% endif %}>
+                Mostrar Inativos
+            </label>
+        </form>
+        <button id="btn-abrir-modal" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Adicionar Categoria
+        </button>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table" id="tabela-categorias">
+            <thead>
+                <tr>
+                    <th class="sortable-header" style="width: 10%;">
+                        {% set next_order = 'desc' if sort_by == 'id' and order == 'asc' else 'asc' %}
+                        {% set params = query_params.copy() %}
+                        {% set _ = params.update({'sort_by': 'id', 'order': next_order}) %}
+                        <a href="{{ url_for('categorias_ui', **params) }}">
+                            ID
+                            {% if sort_by == 'id' %}
+                                <i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th class="sortable-header">
+                        {% set next_order = 'desc' if sort_by == 'nome' and order == 'asc' else 'asc' %}
+                        {% set params = query_params.copy() %}
+                        {% set _ = params.update({'sort_by': 'nome', 'order': next_order}) %}
+                        <a href="{{ url_for('categorias_ui', **params) }}">
+                            Nome
+                            {% if sort_by == 'nome' %}
+                                <i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+                    
+                    <th class="sortable-header" style="width: 15%;">
+                        {% set next_order = 'desc' if sort_by == 'status' and order == 'asc' else 'asc' %}
+                        {% set params = query_params.copy() %}
+                        {% set _ = params.update({'sort_by': 'status', 'order': next_order}) %}
+                        <a href="{{ url_for('categorias_ui', **params) }}">
+                            Status
+                             {% if sort_by == 'status' %}
+                                <i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th style="width: 25%;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if categorias %}
+                    {% for cat in categorias %}
+                    <tr class="{{ 'inactive-row' if not cat.ativo }}">
+                        <td>{{ cat.id }}</td>
+                        <td><a href="{{ url_for('contratos_por_categoria', id_categoria=cat.id) }}">{{ cat.nome }}</a></td>
+                        <td>
+                            {% if cat.ativo %}<span class="status-badge green">Ativo</span>
+                            {% else %}<span class="status-badge gray">Inativo</span>{% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-link-action" onclick="abrirModalParaEditar({{ cat.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
+                            <button class="btn-link-action {{ 'red' if cat.ativo else 'green' }}" onclick="toggleStatusCategoria({{ cat.id }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if cat.ativo else 'Ativar' }}</button>
+                            <button class="btn-link-action red" onclick="excluirCategoria({{ cat.id }})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="4"><div class="empty-state mini"><p>Nenhuma categoria encontrada.</p></div></td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-footer">
+        {{ render_pagination(pagina_atual, total_paginas, 'categorias_ui', query_params) }}
+    </div>
+</div>
+
+<div id="modal-categoria" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-titulo">Cadastrar Nova Categoria</h2>
+            <button id="btn-fechar-modal" class="close-button">&times;</button>
+        </div>
+        <form id="form-categoria">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nome-categoria">Nome da Categoria</label>
+                    <input type="text" id="nome-categoria" name="nome" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modal-categoria');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const formCategoria = document.getElementById('form-categoria');
+    const inputNomeCategoria = document.getElementById('nome-categoria');
+    let idCategoriaEmEdicao = null;
+
+    const fecharModal = () => {
+        modal.style.display = 'none';
+        formCategoria.reset();
+        idCategoriaEmEdicao = null;
+    };
+    document.getElementById('btn-abrir-modal').addEventListener('click', () => {
+        idCategoriaEmEdicao = null;
+        modalTitulo.innerText = 'Cadastrar Nova Categoria';
+        formCategoria.reset();
+        modal.style.display = 'flex';
+    });
+    document.getElementById('btn-fechar-modal').addEventListener('click', fecharModal);
+    document.getElementById('btn-cancelar-modal').addEventListener('click', fecharModal);
+    window.addEventListener('click', (event) => { if (event.target == modal) fecharModal(); });
+
+    async function abrirModalParaEditar(id) {
+        idCategoriaEmEdicao = id;
+        try {
+            const response = await fetch(`/api/categorias/${id}`);
+            const categoria = await response.json();
+            if (!response.ok) throw new Error(categoria.erro);
+            modalTitulo.innerText = 'Editar Categoria';
+            inputNomeCategoria.value = categoria.nome;
+            modal.style.display = 'flex';
+        } catch (error) {
+            showNotification(`Erro ao buscar categoria: ${error.message}`);
+        }
+    }
+
+    formCategoria.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const nome = inputNomeCategoria.value;
+        const url = idCategoriaEmEdicao ? `/api/categorias/${idCategoriaEmEdicao}` : '/api/categorias';
+        const method = idCategoriaEmEdicao ? 'PUT' : 'POST';
+        try {
+            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: nome }) });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => { window.location.reload(); }, 1500);
+        } catch (error) {
+            showNotification(`Erro: ${error.message}`);
+        }
+    });
+
+    async function toggleStatusCategoria(id) {
+        if (!confirm('Tem certeza?')) return;
+        try {
+            const response = await fetch(`/api/categorias/${id}/status`, { method: 'POST' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => { window.location.reload(); }, 1500);
+        } catch(error) {
+            showNotification(`Erro ao alterar status: ${error.message}`);
+        }
+    }
+
+    async function excluirCategoria(id) {
+        if (!confirm('ATENÇÃO: Ação permanente. Tem certeza?')) return;
+        try {
+            const response = await fetch(`/api/categorias/${id}`, { method: 'DELETE' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => { window.location.reload(); }, 1500);
+        } catch(error) {
+            showNotification(`Erro ao excluir: ${error.message}`);
+        }
+    }
+
+    window.abrirModalParaEditar = abrirModalParaEditar;
+    window.toggleStatusCategoria = toggleStatusCategoria;
+    window.excluirCategoria = excluirCategoria;
+});
+</script>
+{% endblock %}

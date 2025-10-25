@@ -1,0 +1,45 @@
+{# REMOVIDO: {% extends "base.html" %} #}
+
+<div class="card full-width">
+    {# Título mais descritivo #}
+    <h2>Controle de Entrega & Status dos Itens</h2> 
+    
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Descrição do Item</th>
+                    <th class="text-center">Qtd. Pedida</th> {# Alinhado ao centro #}
+                    <th class="text-center text-green">Qtd. Entregue</th> {# Alinhado e com cor #}
+                    <th class="text-center text-blue">Saldo</th> {# Alinhado e com cor #}
+                    <th class="text-center" style="width: 18%;">Ação</th> {# Alinhado e largura ajustada #}
+                </tr>
+            </thead>
+            <tbody>
+                {% if itens %} {# Adicionado check para caso 'itens' não exista #}
+                    {% for item in itens %}
+                    <tr>
+                        <td><strong>{{ item.descricao }}</strong><br><small>Contrato: {{ item.numero_contrato }}</small></td>
+                        <td class="text-center">{{ "%.0f"|format(item.quantidade_pedida) }}</td>
+                        <td class="text-center text-green">{{ "%.0f"|format(item.quantidade_entregue) }}</td>
+                        <td class="text-center text-blue" style="font-weight: 700;">{{ "%.0f"|format(item.quantidade_pedida - item.quantidade_entregue) }}</td>
+                        <td class="text-center"> {# Célula da ação alinhada #}
+                            {% if item.quantidade_pedida > item.quantidade_entregue %}
+                                <button class="btn btn-secondary btn-small" 
+                                        title="Registrar nova entrega para este item"
+                                        onclick="abrirModalEntrega({{ item.id_pedido }}, '{{ item.descricao | e }}', {{ item.quantidade_pedida - item.quantidade_entregue }})">
+                                    <i class="fa-solid fa-truck-fast"></i> Registrar Entrega
+                                </button>
+                            {% else %}
+                                <span class="status-badge green">Entrega Concluída</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                     <tr><td colspan="5"><div class="empty-state mini"><p>Nenhum item encontrado neste pedido.</p></div></td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,450 @@
+/* =================================================================== */
+/* ARQUIVO style.css - DESIGN SYSTEM GESTÃOPRO (VERSÃO CONSOLIDADA 2.0)
+/* =================================================================== */
+
+/* ------------------------------------------------------------------- */
+/* 1. GLOBAIS E VARIÁVEIS (Globals & Variables)
+/* ------------------------------------------------------------------- */
+:root {
+    --color-background: #f8f9fa;
+    --color-surface: #ffffff;
+    --color-border: #dee2e6;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-on-action: #ffffff;
+    --action-primary: #0d6efd;
+    --action-primary-hover: #0b5ed7;
+    --action-success: #198754;
+    --action-warning: #ffc107;
+    --action-danger: #dc3545;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-background);
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ------------------------------------------------------------------- */
+/* 2. ESTRUTURA PRINCIPAL (Main Layout)
+/* ------------------------------------------------------------------- */
+.app-container { display: flex; width: 100%; flex: 1; }
+.sidebar { width: 260px; background-color: var(--color-surface); border-right: 1px solid var(--color-border); padding: 20px; display: flex; flex-direction: column; }
+.sidebar-header { display: flex; align-items: center; padding-left: 10px; margin-bottom: 20px; }
+.sidebar-header h3 { font-size: 1.5em; color: var(--text-primary); }
+.sidebar-logo { height: 45px; width: 45px; border-radius: 50%; margin-right: 15px; filter: grayscale(1); opacity: 0.7; transition: all 0.3s ease; }
+.sidebar-logo:hover { filter: grayscale(0); opacity: 1; transform: scale(1.05); }
+.nav-link { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; text-decoration: none; color: var(--text-secondary); font-weight: 500; transition: background-color 0.2s, color 0.2s; }
+.nav-link i { width: 20px; margin-right: 15px; font-size: 1.1em; }
+.nav-link:hover { background-color: var(--color-background); color: var(--action-primary); }
+.nav-link.active { background-color: var(--action-primary); color: var(--text-on-action); font-weight: 600; }
+.main-content { flex: 1; padding: 30px 40px; overflow-y: auto; }
+.main-header { margin-bottom: 30px; }
+.main-header h1 { font-size: 2em; font-weight: 700; margin-bottom: 5px; }
+.main-header .subtitle { color: var(--text-secondary); }
+.header-with-action { display: flex; justify-content: space-between; align-items: center; }
+.back-link { text-decoration: none; color: var(--text-secondary); margin-bottom: 15px; display: inline-block; font-weight: 500; transition: color 0.2s; }
+.back-link:hover { color: var(--action-primary); }
+.app-footer { text-align: center; padding: 15px; color: var(--text-secondary); font-size: 0.9em; background-color: var(--color-surface); border-top: 1px solid var(--color-border); width: 100%; }
+
+/* ------------------------------------------------------------------- */
+/* 3. COMPONENTES GLOBAIS (Reusable Components)
+/* ------------------------------------------------------------------- */
+
+/* --- Cards e Seções --- */
+.card { background-color: var(--color-surface); padding: 25px; border-radius: 12px; box-shadow: var(--shadow); }
+.card.full-width { display: flex; flex-direction: column; align-items: flex-start; }
+.card-actions { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+.card-footer { width: 100%; padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--color-border); }
+.details-card { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px 30px; padding: 30px; background-color: var(--color-surface); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 30px; }
+.detail-item span { display: block; color: var(--text-secondary); font-size: 0.9em; margin-bottom: 6px; text-transform: uppercase; font-weight: 500; }
+.detail-item strong { font-size: 1.1em; font-weight: 600; word-break: break-word; }
+.detail-item.wide { grid-column: span 2; }
+
+/* --- Botões --- */
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 25px; border-radius: 8px; border: none; font-weight: 600; font-size: 1em; font-family: 'Inter', sans-serif; cursor: pointer; transition: background-color 0.2s, transform 0.1s; }
+.btn:hover { transform: translateY(-1px); }
+.btn i { margin-right: 8px; }
+.btn-primary { background-color: var(--action-primary); color: var(--text-on-action); }
+.btn-primary:hover { background-color: var(--action-primary-hover); }
+.btn-secondary { background-color: var(--color-background); color: var(--text-primary); border: 1px solid var(--color-border); }
+.btn-secondary:hover { background-color: #e2e6ea; }
+.action-button { display: flex; align-items: center; padding: 12px 20px; border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--text-primary); font-weight: 500; transition: all 0.2s; background-color: var(--color-surface); }
+.action-button:hover { border-color: var(--action-primary); color: var(--action-primary); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
+.action-button i { margin-right: 12px; width: 20px; }
+.btn-link-action { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: all 0.2s; background: none; border: none; cursor: pointer; font-size: 0.9em; }
+.btn-link-action:hover { background-color: var(--color-background); }
+.btn-link-action.red { color: var(--action-danger); }
+.btn-link-action.red:hover { background-color: rgba(220, 53, 69, 0.1); }
+.btn-link-action.green { color: var(--action-success); }
+.btn-link-action.green:hover { background-color: rgba(25, 135, 84, 0.1); }
+
+/* --- Tabelas --- */
+.table-wrapper { width: 100%; overflow-x: auto; border: 1px solid var(--color-border); border-radius: 8px; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--color-border); }
+.data-table thead th { background-color: var(--color-background); color: var(--text-secondary); font-size: 0.85em; text-transform: uppercase; font-weight: 600; }
+.data-table tbody tr:hover { background-color: #f1f3f5; }
+.data-table a { color: var(--action-primary); text-decoration: none; font-weight: 600; }
+.data-table a:hover { text-decoration: underline; }
+.inactive-row { color: var(--text-secondary); opacity: 0.7; }
+.inactive-row a { color: #a0aec0; text-decoration: line-through;}
+.data-table tfoot { border-top: 2px solid var(--text-primary); }
+.data-table .total-label { text-align: right; font-weight: 700; font-size: 1.1em; }
+.data-table .total-value { font-weight: 700; font-size: 1.1em; color: var(--action-success); }
+.sortable-header a { text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center; }
+.sortable-header a:hover { color: var(--action-primary); }
+.sortable-header a i { margin-left: 10px; color: var(--action-primary); }
+
+/* --- Formulários --- */
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9em; color: var(--text-primary); }
+.form-control { width: 100%; padding: 12px 15px; border: 1px solid var(--color-border); border-radius: 8px; font-size: 1em; font-family: 'Inter', sans-serif; background-color: var(--color-surface); color: var(--text-primary); transition: border-color 0.2s, box-shadow 0.2s; }
+.form-control:focus { outline: none; border-color: var(--action-primary); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25); }
+.search-form { display: flex; align-items: center; position: relative; flex-grow: 1; }
+.search-form .search-icon { position: absolute; left: 15px; color: var(--text-secondary); }
+.search-form .form-control { padding-left: 40px; width: 100%; }
+.filter-controls-form { display: flex; align-items: center; gap: 15px; flex-grow: 1;}
+.filter-group { display: flex; align-items: center; gap: 20px; margin-left: auto; padding-left: 20px; border-left: 1px solid var(--color-border); }
+.checkbox-label { display: flex; align-items: center; cursor: pointer; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
+.checkbox-label input { margin-right: 8px; }
+
+/* --- Modais --- */
+.modal-overlay { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(4, 10, 36, 0.5); display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-content { background-color: var(--color-surface); border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 600px; }
+.modal-content.large { max-width: 900px; }
+.modal-header { padding: 20px 25px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { font-size: 1.4em; }
+.close-button { background: none; border: none; font-size: 2em; color: var(--text-secondary); cursor: pointer; }
+.modal-body { padding: 25px; }
+.modal-footer { padding: 20px 25px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-end; gap: 15px; }
+
+/* --- Componente de Paginação --- */
+.pagination-nav { display: flex; justify-content: center; align-items: center; }
+.pagination { display: flex; padding-left: 0; list-style: none; border-radius: .25rem; }
+.page-item .page-link { position: relative; display: block; padding: .5rem .75rem; margin-left: -1px; line-height: 1.25; color: var(--action-primary); background-color: #fff; border: 1px solid var(--color-border); transition: all .2s; text-decoration: none; }
+.page-item:first-child .page-link { border-top-left-radius: .25rem; border-bottom-left-radius: .25rem; }
+.page-item:last-child .page-link { border-top-right-radius: .25rem; border-bottom-right-radius: .25rem; }
+.page-item:not(.disabled) .page-link:hover { z-index: 2; color: var(--action-primary-hover); background-color: #e9ecef; border-color: #dee2e6; }
+.page-item.disabled .page-link { color: #6c757d; pointer-events: none; cursor: auto; background-color: #fff; border-color: #dee2e6; opacity: 0.6; }
+.page-item.active .page-link { z-index: 3; color: #fff; background-color: var(--action-primary); border-color: var(--action-primary); font-weight: 700; }
+.page-link.ellipsis { border: none; background-color: transparent; color: var(--text-secondary); }
+
+/* --- Componente de Abas (Tabs) --- */
+.tabs-nav { display: flex; border-bottom: 1px solid var(--color-border); margin-bottom: -1px; }
+.tab-link { padding: 15px 25px; cursor: pointer; background: none; border: none; border-bottom: 3px solid transparent; font-size: 1.1em; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+.tab-link.active { color: var(--action-primary); border-bottom-color: var(--action-primary); font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* --- Outros Componentes de UI --- */
+.status-badge { padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 0.85em; }
+.status-badge.green { background-color: rgba(25, 135, 84, 0.1); color: var(--action-success); }
+.status-badge.orange { background-color: rgba(255, 193, 7, 0.15); color: #856404; }
+.status-badge.gray { background-color: #e9ecef; color: #495057; }
+.notification { padding: 15px; border-radius: 8px; font-weight: 500; box-shadow: var(--shadow); position: fixed; top: 20px; right: 20px; z-index: 2000; }
+.notification.error { color: var(--text-on-action); background-color: var(--action-danger); }
+.notification.success { color: var(--text-on-action); background-color: var(--action-success); }
+.text-blue { color: var(--action-primary); }
+.text-green { color: var(--action-success); }
+.text-red { color: var(--action-danger); }
+.overdue-days { color: var(--action-danger); font-weight: 700; }
+.empty-state { text-align: center; padding: 50px; width: 100%; }
+.empty-state i { font-size: 3.5em; color: var(--color-border); margin-bottom: 20px; }
+.empty-state h2 { font-size: 1.4em; margin-bottom: 10px; }
+.empty-state p { color: var(--text-secondary); }
+.empty-state.mini { padding: 30px 0; }
+.empty-state.mini i { font-size: 2.5em; }
+.instructions { background-color: rgba(13, 110, 253, 0.05); border-left: 4px solid var(--action-primary); padding: 15px 20px; margin: 20px 0; border-radius: 4px; }
+.instructions p { margin: 0 0 10px 0; }
+.instructions code { background-color: rgba(13, 110, 253, 0.1); font-weight: 600; padding: 3px 6px; border-radius: 4px; }
+
+/* ------------------------------------------------------------------- */
+/* 4. ESTILOS ESPECÍFICOS DE PÁGINA (Page-Specifics)
+/* ------------------------------------------------------------------- */
+
+/* --- Página: Dashboard --- */
+.dashboard-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; background-color: var(--color-surface); border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 30px; }
+.header-actions { display: flex; gap: 15px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }
+.dashboard-main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: start; }
+.shortcut-card { background-color: var(--color-surface); padding: 25px; border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 15px; position: sticky; top: 30px; }
+.shortcut-card h3 { margin-bottom: 10px; }
+.card-icon { display: flex; align-items: center; justify-content: center; font-size: 1.8em; padding: 20px; border-radius: 50%; margin-right: 20px; }
+.card-icon.blue { background-color: rgba(13, 110, 253, 0.1); color: var(--action-primary); }
+.card-icon.green { background-color: rgba(25, 135, 84, 0.1); color: var(--action-success); }
+.card-icon.orange { background-color: rgba(255, 193, 7, 0.15); color: #856404; }
+.card-info .card-value { display: block; font-size: 2em; font-weight: 700; }
+.card-info .card-title { color: var(--text-secondary); }
+
+/* --- Página: Detalhes do Contrato --- */
+.collapsible-section { padding: 25px; background-color: var(--color-background); border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--color-border); }
+.form-grid-details { display: grid; grid-template-columns: auto 1fr auto auto auto auto auto; gap: 15px; align-items: flex-end; }
+.form-grid-details .desc-group { grid-column: 2 / 3; }
+.form-grid-details .action-group { padding-bottom: 2px; }
+.upload-form { display: flex; gap: 15px; align-items: flex-end; width: 100%; }
+.upload-form .form-group { flex-grow: 1; margin-bottom: 0; }
+.upload-form .form-group label { font-weight: 500; font-size: 1em; color: var(--text-secondary); }
+.attachment-list-container { width: 100%; margin-top: 25px; border-top: 1px solid var(--color-border); padding-top: 25px; }
+.attachment-list-container h4 { font-size: 1.1em; margin-bottom: 15px; }
+.attachment-list { list-style: none; padding: 0; width: 100%; }
+.attachment-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-radius: 8px; transition: background-color 0.2s; border-bottom: 1px solid var(--color-border); }
+.attachment-item:last-child { border-bottom: none; }
+.attachment-item:hover { background-color: var(--color-background); }
+.attachment-file { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+.attachment-file a { text-decoration: none; color: var(--action-primary); }
+.attachment-file a:hover { text-decoration: underline; }
+.attachment-meta { font-size: 0.9em; color: var(--text-secondary); white-space: nowrap; padding-left: 20px; }
+
+/* --- Página: Novo Pedido --- */
+.pedido-container { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: start; }
+.data-table.selectable tbody tr:hover { background-color: #e9ecef; }
+.data-table.selectable tbody tr.item-in-cart { background-color: rgba(25, 135, 84, 0.08); border-left: 4px solid var(--action-success); }
+.data-table.selectable tbody tr.item-in-cart:hover { background-color: rgba(25, 135, 84, 0.15); }
+.side-cart .card { position: sticky; top: 30px; }
+.cart-header h2 i { color: var(--action-primary); }
+
+/* --- Página: Importação --- */
+.process-card { gap: 0; }
+.process-step { display: flex; width: 100%; padding: 20px 0; gap: 30px; position: relative; }
+.process-step:not(:last-child)::before { content: ''; position: absolute; left: 25px; top: 75px; height: calc(100% - 50px); width: 2px; background-color: var(--color-border); }
+.step-number { flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%; background-color: var(--action-primary); color: white; font-size: 1.5em; font-weight: 700; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.step-content { flex-grow: 1; padding-top: 10px; }
+.step-content h2 { margin-bottom: 10px; }
+
+.modal-content .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 25px; }
+
+.attachment-indicator-cell { text-align: center; color: var(--text-secondary); padding-left: 10px; padding-right: 0; }
+.management-container { display: flex; gap: 30px; align-items: flex-start; }
+.management-sidebar { flex-shrink: 0; width: 280px; background-color: var(--color-surface); padding: 15px; border-radius: 12px; box-shadow: var(--shadow); position: sticky; top: 30px; }
+.management-link { display: block; padding: 12px 15px; border-radius: 8px; text-decoration: none; color: var(--text-secondary); font-weight: 500; transition: background-color 0.2s, color 0.2s; text-transform: capitalize; }
+.management-link:hover { background-color: var(--color-background); color: var(--action-primary); }
+.management-link.active { background-color: var(--action-primary); color: var(--text-on-action); font-weight: 600; }
+.management-content { flex-grow: 1; }
+
+.editable-field-container { display: flex; align-items: center; gap: 10px; }
+.form-control-inline { padding: 5px 8px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 1em; font-family: 'Inter', sans-serif; background-color: var(--color-surface); }
+.form-control-inline:focus { outline: none; border-color: var(--action-primary); }
+
+.page-info-bar { background-color: var(--color-background); padding: 15px 20px; border-radius: 8px; margin-top: -15px; /* Puxa para perto do título */ margin-bottom: 30px; display: flex; gap: 30px; border: 1px solid var(--color-border); }
+.page-info-bar span { color: var(--text-secondary); }
+.page-info-bar strong { color: var(--text-primary); }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px 30px; width: 100%; margin-top: 15px; /* Espaço após o título "Status & Dados" */ }
+.status-grid .form-group { margin-bottom: 0; }
+.form-grid .span-2 { grid-column: span 2; }
+
+.main-panel { display: flex; flex-direction: column; gap: 30px; }
+.side-panel { display: flex; flex-direction: column; gap: 30px; position: sticky; top: 30px; }
+.side-panel .card h4 { width: 100%; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--color-border); }
+.status-overview { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; background-color: var(--color-background); padding: 20px; border-radius: 8px; margin-top: 15px; margin-bottom: 25px; }
+.status-overview .detail-item strong { font-size: 1.2em; }
+.status-overview .status-badge { font-size: 1em; padding: 6px 12px; }
+
+.status-overview .status-badge.blue { background-color: rgba(13, 110, 253, 0.1); color: var(--action-primary); }
+.btn-small { padding: 8px 15px; font-size: 0.9em; }
+
+.document-info { display: flex; justify-content: space-between; align-items: center; font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid #ccc; margin-bottom: 1.5cm; }
+.metadata-table { width: 100%; margin-bottom: 1.5cm; font-size: 11pt; border-collapse: collapse; }
+.metadata-table td { padding: 4px 0; }
+.metadata-table td:first-child { width: 8%; font-weight: 700; }
+.content-paragraph { text-align: justify; text-indent: 4em;  margin-bottom: 1.5cm; }
+.total-value-box { text-align: center; font-weight: 700; border: 1px solid #333; padding: 10px; margin: 1.5cm auto; width: 80%; }
+.obs-paragraph { text-align: center; font-style: italic; color: #555; margin-bottom: 1.5cm; }
+.closing-paragraph { margin-bottom: 2cm; }
+
+/* ================================================================ */
+/* 5. ESTILOS PARA GERAÇÃO DE PDF (v3.0 - COMPATIBILIDADE MÁXIMA)
+/* ================================================================ */
+
+/* --- Estilos Gerais para PDF --- */
+/* (Aplicados quando renderizando templates que herdam de relatorios_base.html) */
+
+.pdf-body { /* Adicionaremos essa classe ao body no relatorios_base.html */
+    font-family: Arial, sans-serif; /* Fonte padrão segura */
+    font-size: 10pt;
+    color: #333;
+    line-height: 1.4;
+    margin: 1.5cm;
+}
+
+/* --- Cabeçalho com Tabela --- */
+.pdf-body .header-table {
+    width: 100%;
+    border-bottom: 1.5pt solid #000;
+    padding-bottom: 10pt;
+    margin-bottom: 1.5cm;
+    border-collapse: collapse; /* Garante que as bordas se comportem */
+}
+.pdf-body .header-table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 0 5pt; /* Adiciona um pequeno padding */
+}
+.pdf-body .header-table img {
+    width: 70px;
+    height: 70px;
+    display: block;
+}
+.pdf-body .header-text h2, .pdf-body .header-text h3 {
+    margin: 1pt 0;
+    padding: 0;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.pdf-body .header-text h2 { font-size: 12pt; }
+.pdf-body .header-text h3 { font-size: 10pt; font-weight: normal; }
+
+/* --- Título do Documento --- */
+.pdf-body .title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 11pt;
+    border: 1pt solid #555;
+    padding: 8pt;
+    margin: 1.5cm 0;
+    background-color: #f0f0f0;
+}
+
+/* --- Tabela de Metadados (DE/PARA) --- */
+.pdf-body .metadata-table {
+    width: 100%;
+    margin-bottom: 1.5cm;
+    font-size: 10pt;
+    border-collapse: collapse;
+}
+.pdf-body .metadata-table td {
+    padding: 3pt 0;
+    vertical-align: top;
+}
+.pdf-body .metadata-table td.label {
+    width: auto;
+    font-weight: bold;
+    padding-right: 5pt;
+    white-space: nowrap;
+}
+
+/* --- Parágrafos --- */
+.pdf-body .content-paragraph {
+    text-align: justify !important;
+    text-indent: 3cm;
+    margin-bottom: 1.5cm;
+    font-size: 10pt;
+}
+.pdf-body .closing-paragraph {
+    margin-bottom: 2cm;
+    font-size: 10pt;
+}
+.pdf-body .obs-paragraph {
+    text-align: center;
+    font-style: italic;
+    color: #555;
+    margin: 1.5cm 0;
+    font-size: 9.5pt;
+}
+
+/* --- Total --- */
+.pdf-body .total-summary {
+    text-align: center;
+    font-weight: bold;
+    font-size: 10pt;
+    margin: 1.5cm auto;
+    padding: 8pt;
+    border: 1pt solid #333;
+    background-color: #f8f9fa;
+    width: 80%;
+}
+
+/* --- Tabela de Itens --- */
+.pdf-body .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10pt;
+}
+.pdf-body .items-table th, .pdf-body .items-table td {
+    border: 0.5pt solid #999;
+    padding: 5pt;
+    text-align: center;
+    font-size: 9pt;
+    vertical-align: middle;
+}
+.pdf-body .items-table th {
+    background-color: #e9ecef;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 8pt;
+}
+.pdf-body .items-table .item-description { text-align: left; }
+.pdf-body .items-table .text-right { text-align: right; }
+.pdf-body .items-table .total-row td {
+    font-weight: bold;
+    background-color: #e9ecef;
+    border-top: 1pt solid #555;
+}
+
+/* --- Assinatura e Rodapé --- */
+.pdf-body .footer {
+    margin-top: 2cm;
+}
+.pdf-body .signature-block {
+     width: 50%;
+     margin: 0 auto;
+     text-align: center;
+}
+.pdf-body .signature-block .line {
+     border-top: 0.5pt solid #000;
+     margin: 0 auto 5pt auto;
+     width: 90%;
+}
+.pdf-body .signature-block p {
+     font-size: 9.5pt;
+     line-height: 1.3;
+     margin: 0;
+}
+.pdf-body .signature-title {
+     font-weight: bold;
+     font-size: 9pt;
+}
+.pdf-body .document-tracking-footer {
+    margin-top: 2.5cm;
+    border-top: 0.5pt dashed #aaa;
+    padding-top: 8pt;
+    font-size: 7.5pt;
+    color: #666;
+    width: 100%;
+    border-collapse: collapse; /* Para a tabela funcionar bem */
+}
+.pdf-body .document-tracking-footer td {
+    padding: 0 5pt;
+    white-space: nowrap;
+    text-align: center; /* Centraliza o texto nas colunas */
+}
+    
+/* =================================================================== */
+/* 5. DESIGN RESPONSIVO
+/* =================================================================== */
+
+@media (max-width: 768px) {
+.app-container { flex-direction: column; }
+.sidebar { width: 100%; height: auto; flex-direction: row; justify-content: space-around; align-items: center; padding: 10px; border-right: none; border-bottom: 1px solid var(--color-border); }
+.sidebar-header { display: none; }
+.sidebar-nav { display: flex; flex-direction: row; gap: 10px;}
+.nav-link span { display: none; }
+.nav-link i { margin-right: 0; font-size: 1.5em; }
+.main-content { padding: 20px; }
+.details-card { grid-template-columns: 1fr; gap: 20px;}
+.detail-item.wide { grid-column: auto; }
+.form-grid-details, 
+.modal-content 
+.form-grid, 
+.status-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo_relatorio }}</title>
+    <style>
+        body { font-family: 'Roboto', Arial, sans-serif; font-size: 9pt; color: #333; }
+        .header { display: flex; align-items: center; padding-bottom: 10px; border-bottom: 2px solid #333; margin-bottom: 20px; }
+        .header img { width: 60px; height: 60px; margin-right: 20px; }
+        .header-text { text-align: center; flex-grow: 1; }
+        .header-text h2, .header-text h3 { margin: 0; padding: 0; text-transform: uppercase; }
+        .header-text h2 { font-size: 12pt; }
+        .header-text h3 { font-size: 10pt; font-weight: normal; }
+        .report-title { text-align: center; font-weight: bold; font-size: 11pt; background-color: #f0f0f0; border: 1px solid #ccc; padding: 8px; margin-bottom: 20px; }
+        .items-table { width: 100%; border-collapse: collapse; }
+        .items-table th, .items-table td { border: 1px solid #dee2e6; padding: 6px; text-align: left; font-size: 8.5pt; }
+        .items-table th { background-color: #f8f9fa; font-weight: bold; }
+        .footer { text-align: right; margin-top: 20px; font-size: 8pt; color: #777; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="{{ logo_url }}" alt="Logo">
+        <div class="header-text">
+            <h2>MUNICÍPIO DE BRAÚNAS</h2>
+            <h3>ESTADO DE MINAS GERAIS</h3>
+        </div>
+    </header>
+
+    <main>
+        <div class="report-title">{{ titulo_relatorio }}</div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    {% for coluna in colunas %}
+                        <th>{{ coluna.header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if resultados %}
+                    {% for item in resultados %}
+                    <tr>
+                        {% for coluna in colunas %}
+                            <td>{{ item[coluna.key] }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="{{ colunas|length }}">Nenhum dado encontrado.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </main>
+
+    <footer class="footer">
+        Gerado em: {{ data_geracao }} | GestãoPRO v{{ versao_software }}
+    </footer>
+</body>
+</html>

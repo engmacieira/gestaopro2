@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Consultas Avançadas - GestãoPRO{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Consultas Avançadas</h1>
+    <p class="subtitle">Encontre contratos ou pedidos com base em seus vínculos no sistema.</p>
+</header>
+
+<div class="card full-width">
+    <form id="form-consulta" class="filter-controls-form">
+        <div class="form-group" style="flex: 1;">
+            <label for="tipo-consulta">Tipo de Consulta</label>
+            <select id="tipo-consulta" class="form-control">
+                <option value="" disabled selected>Selecione um tipo de consulta...</option>
+                {% for key, config in entidades_pesquisaveis.items() %}
+                    <option value="{{ key }}">{{ config.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="container-valor-consulta" class="form-group" style="flex: 2; display: none;">
+            <label for="valor-consulta" id="label-valor-consulta">Selecione o Valor</label>
+            <select id="valor-consulta" class="form-control"></select>
+        </div>
+
+        <div class="form-group" style="align-self: flex-end;">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i> Consultar</button>
+        </div>
+    </form>
+</div>
+
+<div id="area-resultados" style="margin-top: 30px;">
+    <div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h2>Aguardando sua consulta</h2><p>Selecione um tipo de consulta e um valor para buscar os resultados.</p></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const tipoConsultaSelect = document.getElementById('tipo-consulta');
+    const valorConsultaContainer = document.getElementById('container-valor-consulta');
+    const valorConsultaSelect = document.getElementById('valor-consulta');
+    const valorConsultaLabel = document.getElementById('label-valor-consulta');
+    const formConsulta = document.getElementById('form-consulta');
+    const areaResultados = document.getElementById('area-resultados');
+
+    const configEntidades = {{ entidades_pesquisaveis|tojson }};
+
+    tipoConsultaSelect.addEventListener('change', async function() {
+        const tipo = this.value;
+        valorConsultaSelect.innerHTML = '<option value="">Carregando...</option>';
+        valorConsultaSelect.disabled = true;
+
+        if (!tipo) {
+            valorConsultaContainer.style.display = 'none';
+            return;
+        }
+
+        const config = configEntidades[tipo];
+        valorConsultaLabel.innerText = config.label;
+        valorConsultaContainer.style.display = 'block';
+
+        try {
+            const response = await fetch(`/api/consultas/entidades/${tipo}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.erro || 'Erro ao carregar opções.');
+
+            valorConsultaSelect.innerHTML = '<option value="" disabled selected>Selecione...</option>';
+            data.forEach(item => {
+                valorConsultaSelect.innerHTML += `<option value="${item.id}">${item.texto}</option>`;
+            });
+            valorConsultaSelect.disabled = false;
+        } catch (error) {
+            valorConsultaSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+            console.error(error);
+        }
+    });
+
+    formConsulta.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const tipo = tipoConsultaSelect.value;
+        const valor = valorConsultaSelect.value;
+
+        if (!tipo || !valor) { return; }
+
+        areaResultados.innerHTML = '<div class="empty-state mini"><i class="fa-solid fa-spinner fa-spin"></i><p>Buscando...</p></div>';
+
+        try {
+            const response = await fetch(`/api/consultas?tipo=${tipo}&valor=${valor}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.erro || 'Erro na consulta.');
+            renderizarResultados(data);
+        } catch (error) {
+            areaResultados.innerHTML = `<p style="color: red;">${error.message}</p>`;
+        }
+    });
+    
+    function renderizarResultados(data) {
+        if (!data.resultados || data.resultados.length === 0) {
+            areaResultados.innerHTML = '<div class="empty-state mini"><p>Nenhum resultado encontrado.</p></div>';
+            return;
+        }
+
+        const colunasMap = {
+                    'processo_licitatorio': [
+                        { header: 'Contrato', key: 'numero_contrato', link: '/contrato/' },
+                        { header: 'Fornecedor', key: 'fornecedor' },
+                        { header: 'Categoria', key: 'nome_categoria' },
+                        { header: 'Status', key: 'ativo', format: (val) => `<span class="status-badge ${val ? 'green' : 'gray'}">${val ? 'Ativo' : 'Inativo'}</span>` }
+                    ],
+                    'unidade_requisitante': [ 
+                        { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' },
+                        { header: 'Data', key: 'data_criacao' },
+                        { header: 'Fornecedor', key: 'fornecedor' }
+                    ],
+                    'local_entrega': [
+                        { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' },
+                        { header: 'Data', key: 'data_criacao' },
+                        { header: 'Fornecedor', key: 'fornecedor' }
+                    ],
+                    'dotacao': [
+                        { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' },
+                        { header: 'Data', key: 'data_criacao' },
+                        { header: 'Fornecedor', key: 'fornecedor' }
+                    ]
+                };
+
+        const colunas = colunasMap[data.tipo];
+        if (!colunas) { areaResultados.innerHTML = '<p>Erro de configuração de renderização.</p>'; return; }
+
+        let tableHtml = `
+            <div class="card full-width">
+                <h2>Resultados da Consulta (${data.resultados.length})</h2>
+                <div class="table-wrapper"><table class="data-table">
+                    <thead><tr>${colunas.map(c => `<th>${c.header}</th>`).join('')}</tr></thead>
+                    <tbody>
+        `;
+
+        data.resultados.forEach(item => {
+            tableHtml += '<tr>';
+            colunas.forEach(col => {
+                let valor = item[col.key];
+                if (col.format) valor = col.format(valor);
+                if (col.link) valor = `<a href="${col.link}${item.id || item.numero_aocs}"><strong>${valor}</strong></a>`;
+                tableHtml += `<td>${valor}</td>`;
+            });
+            tableHtml += '</tr>';
+        });
+
+        tableHtml += '</tbody></table></div></div>';
+        areaResultados.innerHTML = tableHtml;
+    }
+});
+</script>
+{% endblock %}

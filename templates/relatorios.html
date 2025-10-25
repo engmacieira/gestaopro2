@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Central de Relatórios - GestãoPRO{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Central de Relatórios e Impressões</h1>
+    <p class="subtitle">Selecione um relatório, configure as opções e gere um PDF para visualização ou impressão.</p>
+</header>
+
+<div class="card full-width">
+    <h2>Relatórios Disponíveis</h2>
+
+    <div class="report-selection-grid">
+
+        {% for key, config in relatorios.items() %}
+        <div class="report-item">
+            <div class="report-info">
+                <h4>{{ config.titulo }}</h4>
+                <p>{{ config.descricao }}</p>
+            </div>
+            <div class="report-actions">
+                <div class="form-group">
+                    <label for="ordenacao-{{ key }}">Ordenar por:</label>
+                    <select id="ordenacao-{{ key }}" class="form-control">
+                        {% for sort_key, sort_config in config.ordenacao_opcoes.items() %}
+                            <option value="{{ sort_key }}">{{ sort_config.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <a href="#" class="btn btn-primary" onclick="gerarRelatorio('{{ key }}')"><i class="fa-solid fa-file-pdf"></i> Gerar PDF</a>
+            </div>
+        </div>
+        {% endfor %}
+        
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function gerarRelatorio(nomeRelatorio) {
+    const selectOrdenacao = document.getElementById(`ordenacao-${nomeRelatorio}`);
+    const ordenacao = selectOrdenacao.value;
+    
+    const url = `/api/relatorios/${nomeRelatorio}?ordenacao=${ordenacao}`;
+    
+    window.open(url, '_blank');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Pedido - {{ categoria.nome }}{% endblock %}
+
+{% block content %}
+<div id="notification-area"></div>
+
+<header class="main-header">
+    <a href="{{ url_for('contratos_por_categoria', id_categoria=categoria.id) }}" class="back-link">
+        &larr; Voltar para o Catálogo
+    </a>
+    <h1>Novo Pedido: <span class="text-blue">{{ categoria.nome }}</span></h1>
+    <p class="subtitle">Adicione itens do catálogo ao seu pedido.</p>
+</header>
+
+<div class="pedido-container">
+    <div class="card full-width">
+        <div class="card-actions">
+            <div class="search-form">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="search" id="campo-busca" placeholder="Buscar por descrição do item..." class="form-control">
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table selectable" id="tabela-itens-catalogo">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="numero_item" style="width: 10%;">Nº Item <i class="fa-solid fa-sort"></i></th>
+                        <th class="sortable" data-sort="descricao" style="width: 40%;">Descrição do Item <i class="fa-solid fa-sort"></i></th>
+                        <th class="sortable" data-sort="saldo" class="text-center">Saldo <i class="fa-solid fa-sort"></i></th>
+                        <th class="sortable" data-sort="valor_unitario" class="text-center">Valor Unit. <i class="fa-solid fa-sort"></i></th>
+                        <th class="text-center">Qtd. a Pedir</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela-itens">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="side-cart">
+        <div class="card full-width">
+            <div class="cart-header">
+                <h2><i class="fa-solid fa-cart-shopping"></i> Pedido Atual</h2>
+                <button id="btn-limpar-carrinho" class="btn-link-action red">Limpar</button>
+            </div>
+            <div id="carrinho-itens" class="cart-items-container">
+                <div class="empty-state mini"><i class="fa-solid fa-dolly"></i><p>Seu carrinho está vazio.</p></div>
+            </div>
+            <div id="carrinho-total" class="cart-total">
+                <span>Total Geral:</span>
+                <strong>R$ 0.00</strong>
+            </div>
+            <div class="cart-actions">
+                <button id="btn-finalizar-pedido" class="btn btn-primary" style="width: 100%;" disabled>
+                    <i class="fa-solid fa-check"></i> Finalizar Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-finalizar-pedido" class="modal-overlay">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h2>Finalizar e Enviar Pedido</h2>
+            <button id="btn-fechar-modal" class="close-button">&times;</button>
+        </div>
+        <form id="form-finalizar-pedido">
+            <div class="modal-body">
+                <p>Preencha os dados da AOCS. Se houver itens de múltiplos contratos no carrinho, será gerada uma AOCS para cada um.</p>
+                
+                <div class="form-grid">
+                    <div class="form-group span-2">
+                        <label for="aocs-unidade">Unidade Requisitante</label>
+                        <select id="aocs-unidade" name="unidade_requisitante" class="form-control" required>
+                            <option value="" disabled selected>Selecione...</option>
+                            {% for unidade in unidades %}
+                                <option value="{{ unidade }}">{{ unidade }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label for="aocs-justificativa">Justificativa da Compra/Serviço</label>
+                        <input type="text" id="aocs-justificativa" name="justificativa" class="form-control" required>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label for="aocs-orcamento">Informação Orçamentária/Financeira</label>
+                        <select id="aocs-orcamento" name="info_orcamentaria" class="form-control" required>
+                            <option value="" disabled selected>Selecione...</option>
+                            {% for dotacao in dotacoes %}
+                                <option value="{{ dotacao }}">{{ dotacao }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label for="aocs-local-entrega">Local de Entrega</label>
+                        <select id="aocs-local-entrega" name="local_entrega" class="form-control" required>
+                            <option value="" disabled selected>Selecione...</option>
+                            {% for local in locais %}
+                                <option value="{{ local }}">{{ local }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aocs-responsavel">Agente Responsável</label>
+                        <select id="aocs-responsavel" name="agente_responsavel" class="form-control" required>
+                            <option value="" disabled selected>Selecione...</option>
+                            {% for responsavel in responsaveis %}
+                                <option value="{{ responsavel }}">{{ responsavel }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <hr style="width:100%; margin: 25px 0; border-color: var(--color-border);">
+
+                <h4>Números das AOCS por Contrato</h4>
+                <div id="aocs-por-contrato-container">
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
+                <button type="button" id="btn-enviar-pedido" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Confirmar e Enviar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    let carrinho = [];
+    const idCategoria = {{ categoria.id }};
+    let sortColumn = 'descricao';
+    let sortDirection = 'asc';
+
+    const corpoTabelaItens = document.getElementById('corpo-tabela-itens');
+    const divItensCarrinho = document.getElementById('carrinho-itens');
+    const divTotalCarrinho = document.getElementById('carrinho-total');
+    const campoBusca = document.getElementById('campo-busca');
+    const btnLimparCarrinho = document.getElementById('btn-limpar-carrinho');
+    const btnFinalizarPedido = document.getElementById('btn-finalizar-pedido');
+    const modal = document.getElementById('modal-finalizar-pedido');
+    const formFinalizar = document.getElementById('form-finalizar-pedido');
+    const btnFecharModal = document.getElementById('btn-fechar-modal');
+    const btnCancelarModal = document.getElementById('btn-cancelar-modal');
+    const btnEnviarPedido = document.getElementById('btn-enviar-pedido');
+    const notificationArea = document.getElementById('notification-area');
+    
+    const divPaginacao = document.createElement('div');
+    divPaginacao.className = 'card-footer';
+    document.querySelector('.pedido-container .card.full-width').appendChild(divPaginacao);
+
+    // --- FUNÇÕES ---
+    function showNotification(message, type = 'error') {
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
+    async function fetchItens(page = 1, busca = '') {
+        corpoTabelaItens.innerHTML = '<tr><td colspan="5">Carregando itens...</td></tr>';
+        try {
+            const url = `/api/categorias/${idCategoria}/itens?page=${page}&busca=${busca}&sort_by=${sortColumn}&order=${sortDirection}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.erro || 'Falha ao carregar dados.');
+            
+            renderizarTabelaItens(data.itens);
+            renderizarPaginacao(data.total_paginas, data.pagina_atual);
+            updateSortIcons();
+
+        } catch (error) {
+            console.error('Erro ao buscar itens:', error);
+            showNotification(error.message);
+        }
+    }
+    
+    function updateSortIcons() {
+        document.querySelectorAll('th.sortable i').forEach(icon => icon.className = 'fa-solid fa-sort');
+        const activeIcon = document.querySelector(`th[data-sort="${sortColumn}"] i`);
+        if (activeIcon) {
+            activeIcon.className = sortDirection === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+        }
+    }
+    
+    function handleSort(coluna) {
+        if (sortColumn === coluna) {
+            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortColumn = coluna;
+            sortDirection = 'asc';
+        }
+        fetchItens(1, campoBusca.value);
+    }
+
+    function renderizarTabelaItens(itens) {
+        corpoTabelaItens.innerHTML = '';
+        if (itens.length === 0) {
+            corpoTabelaItens.innerHTML = '<tr><td colspan="5"><div class="empty-state mini"><p>Nenhum item encontrado.</p></div></td></tr>';
+            return;
+        }
+        itens.forEach(item => {
+            const itemNoCarrinho = carrinho.find(c => c.id === item.id);
+            const quantidadeNoCarrinho = itemNoCarrinho ? itemNoCarrinho.quantidade : '';
+            const linha = document.createElement('tr');
+            linha.className = itemNoCarrinho ? 'item-in-cart' : '';
+            linha.innerHTML = `
+                <td>${item.numero_item}</td>
+                <td><strong>${item.descricao}</strong><br><small>Contrato: ${item.numero_contrato}</small></td>
+                <td class="text-center" style="font-weight: 600;">${item.saldo}</td>
+                <td class="text-center">R$ ${parseFloat(item.valor_unitario).toFixed(2)}</td>
+                <td class="text-center">
+                    <input type="number" class="form-control small-input" min="1" max="${item.saldo}" data-item-id="${item.id}" data-item-full='${JSON.stringify(item)}' value="${quantidadeNoCarrinho}" placeholder="0">
+                </td>
+            `;
+            const inputQtd = linha.querySelector('input[type="number"]');
+            inputQtd.addEventListener('change', (e) => handleQuantidadeChange(e.target));
+            corpoTabelaItens.appendChild(linha);
+        });
+    }
+
+    function renderizarPaginacao(total_paginas, pagina_atual) {
+        divPaginacao.innerHTML = '';
+        if (total_paginas <= 1) return;
+        let paginationHtml = '<nav class="pagination-nav"><ul class="pagination">';
+        for (let i = 1; i <= total_paginas; i++) {
+            paginationHtml += `<li class="page-item ${i === pagina_atual ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+        }
+        paginationHtml += '</ul></nav>';
+        divPaginacao.innerHTML = paginationHtml;
+        divPaginacao.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = parseInt(e.target.dataset.page);
+                fetchItens(page, campoBusca.value);
+            });
+        });
+    }
+
+    function renderizarCarrinho() {
+        if (carrinho.length === 0) {
+            divItensCarrinho.innerHTML = '<div class="empty-state mini"><i class="fa-solid fa-dolly"></i><p>Seu carrinho está vazio.</p></div>';
+            btnFinalizarPedido.disabled = true;
+        } else {
+            divItensCarrinho.innerHTML = '';
+            carrinho.forEach(item => {
+                divItensCarrinho.innerHTML += `<div class="cart-item"><div class="cart-item-info"><span class="cart-item-name">${item.nome}</span><span class="cart-item-price">${item.quantidade} x R$ ${parseFloat(item.preco).toFixed(2)}</span></div><strong class="cart-item-subtotal">R$ ${item.subtotal.toFixed(2)}</strong></div>`;
+            });
+            btnFinalizarPedido.disabled = false;
+        }
+        const totalGeral = carrinho.reduce((acc, item) => acc + item.subtotal, 0);
+        divTotalCarrinho.querySelector('strong').innerText = `R$ ${totalGeral.toFixed(2)}`;
+    }
+
+    function handleQuantidadeChange(input) {
+        const itemId = parseInt(input.dataset.itemId);
+        let quantidade = parseFloat(input.value);
+        const itemDoCatalogo = JSON.parse(input.dataset.itemFull);
+        if (isNaN(quantidade) || quantidade <= 0) {
+            carrinho = carrinho.filter(item => item.id !== itemId);
+        } else {
+            if (quantidade > itemDoCatalogo.saldo) {
+                showNotification(`Saldo insuficiente! O máximo para "${itemDoCatalogo.descricao}" é ${itemDoCatalogo.saldo}.`);
+                quantidade = itemDoCatalogo.saldo;
+                input.value = quantidade;
+            }
+            const valorUnitarioNumerico = parseFloat(itemDoCatalogo.valor_unitario);
+            const itemExistente = carrinho.find(item => item.id === itemId);
+            if (itemExistente) {
+                itemExistente.quantidade = quantidade;
+                itemExistente.subtotal = quantidade * itemExistente.preco;
+            } else {
+                carrinho.push({ id: itemId, nome: itemDoCatalogo.descricao, quantidade: quantidade, preco: valorUnitarioNumerico, subtotal: quantidade * valorUnitarioNumerico, idContrato: itemDoCatalogo.id_contrato, numeroContrato: itemDoCatalogo.numero_contrato });
+            }
+        }
+        renderizarCarrinho();
+        input.closest('tr').classList.toggle('item-in-cart', quantidade > 0);
+    }
+
+    function abrirModalFinalizar() {
+        if (carrinho.length === 0) return;
+        const containerAOCS = document.getElementById('aocs-por-contrato-container');
+        containerAOCS.innerHTML = '';
+        const contratosNoCarrinho = [...new Map(carrinho.map(item => [item.idContrato, { numeroContrato: item.numeroContrato, idContrato: item.idContrato }])).values()];
+        contratosNoCarrinho.forEach(itemContrato => {
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
+            formGroup.innerHTML = `<label for="aocs-contrato-${itemContrato.idContrato}">Nº AOCS para Contrato: <strong>${itemContrato.numeroContrato}</strong></label><input type="text" id="aocs-contrato-${itemContrato.idContrato}" data-id-contrato="${itemContrato.idContrato}" class="form-control aocs-input" required>`;
+            containerAOCS.appendChild(formGroup);
+        });
+        modal.style.display = 'flex';
+    }
+    
+    const fecharModal = () => modal.style.display = 'none';
+    
+    async function enviarPedido() {
+        if (carrinho.length === 0) { showNotification('O carrinho está vazio.'); return; }
+        const aocsDadosMestre = {
+            unidade_requisitante: document.getElementById('aocs-unidade').value,
+            justificativa: document.getElementById('aocs-justificativa').value,
+            info_orcamentaria: document.getElementById('aocs-orcamento').value,
+            local_entrega: document.getElementById('aocs-local-entrega').value,
+            agente_responsavel: document.getElementById('aocs-responsavel').value,
+            local_data: `Braúnas/MG, ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
+        };
+        const contratosAgrupados = {};
+        carrinho.forEach(item => {
+            if (!contratosAgrupados[item.idContrato]) { contratosAgrupados[item.idContrato] = []; }
+            contratosAgrupados[item.idContrato].push({id: item.id, quantidade: item.quantidade});
+        });
+        const promessasDeFetch = [];
+        const inputsAOCS = document.querySelectorAll('.aocs-input');
+        for (const input of inputsAOCS) {
+            const idContrato = parseInt(input.dataset.idContrato);
+            const numeroAOCS = input.value.trim();
+            if (!numeroAOCS) { showNotification('Preencha o número da AOCS para todos os contratos.'); return; }
+            const payload = {
+                aocs_dados: { ...aocsDadosMestre, numero_aocs: numeroAOCS },
+                itens_pedido: contratosAgrupados[idContrato]
+            };
+            const promessa = fetch('/api/aocs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(response => {
+                if (!response.ok) { return response.json().then(err => Promise.reject(err)); }
+                return response.json();
+            });
+            promessasDeFetch.push(promessa);
+        }
+        btnEnviarPedido.disabled = true;
+        btnEnviarPedido.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+        try {
+            const resultados = await Promise.all(promessasDeFetch);
+            showNotification(`${resultados.length} AOCS(s) criada(s) com sucesso!`, 'success');
+            setTimeout(() => { window.location.href = "/pedidos-ui"; }, 2000);
+        } catch (error) {
+            showNotification(`Erro ao criar AOCS: ${error.erro || 'Erro desconhecido.'}`);
+        } finally {
+            btnEnviarPedido.disabled = false;
+            btnEnviarPedido.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar e Enviar';
+            fecharModal();
+        }
+    }
+
+    campoBusca.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            fetchItens(1, campoBusca.value);
+        }
+    });
+
+    btnLimparCarrinho.addEventListener('click', () => {
+        if (confirm('Tem certeza que deseja limpar todos os itens do pedido?')) {
+            carrinho = [];
+            renderizarCarrinho();
+            fetchItens();
+        }
+    });
+
+    btnFinalizarPedido.addEventListener('click', abrirModalFinalizar);
+    btnFecharModal.addEventListener('click', fecharModal);
+    btnCancelarModal.addEventListener('click', fecharModal);
+    btnEnviarPedido.addEventListener('click', enviarPedido);
+    window.addEventListener('click', (event) => { if (event.target == modal) fecharModal(); });
+
+    document.querySelectorAll('th.sortable').forEach(header => {
+        header.addEventListener('click', () => {
+            const coluna = header.dataset.sort;
+            handleSort(coluna);
+        });
+    });
+
+    fetchItens();
+});
+</script>
+{% endblock %}

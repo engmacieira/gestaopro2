@@ -1,0 +1,26 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <h2>Registrar Entrega</h2>
+        {# Adicionado type="button" para clareza e semântica #}
+        <button type="button" class="close-button">&times;</button>
+    </div>
+    <form id="form-registrar-entrega">
+        <div class="modal-body">
+            {# Melhorando a clareza da descrição do item #}
+            <p style="margin-bottom: 20px;">
+                <strong style="color: var(--text-secondary);">Item:</strong> 
+                <span id="modal-entrega-descricao">[Nome do Item]</span>
+            </p>
+            <div class="form-group">
+                <label for="input-entrega-quantidade">Quantidade Recebida:</label>
+                <input type="number" id="input-entrega-quantidade" name="quantidade" class="form-control" required min="0.01" step="any">
+                <small>Informe a quantidade que está sendo entregue *neste momento*.</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            {# Botão Cancelar agora também tem a classe close-button #}
+            <button type="button" class="close-button btn btn-secondary">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Confirmar Entrega</button>
+        </div>
+    </form>
+</div>

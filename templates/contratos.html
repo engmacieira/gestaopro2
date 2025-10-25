@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% from '_pagination.html' import render_pagination %}
+
+{% block title %}Gestão de Contratos - GestãoPRO{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Gerenciar Contratos</h1>
+    <p class="subtitle">Busque, visualize, adicione, edite ou exclua contratos do sistema.</p>
+</header>
+
+<div class="card full-width">
+    <div class="card-actions">
+        <form method="GET" action="{{ url_for('contratos_ui') }}" class="filter-controls-form">
+            <div class="search-form">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="search" name="busca" placeholder="Buscar por nº, fornecedor ou categoria..." value="{{ termo_busca or '' }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="checkbox-label"><input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if mostrar_inativos %}checked{% endif %}> Mostrar Inativos</label>
+                <label class="checkbox-label"><input type="checkbox" name="mostrar_vencidos" value="true" onchange="this.form.submit()" {% if mostrar_vencidos %}checked{% endif %}> Mostrar Vencidos</label>
+            </div>
+            <button type="submit" class="btn btn-secondary">Buscar</button>
+        </form>
+        <button id="btn-abrir-modal" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Adicionar Contrato</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 1%;"></th> 
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'numero_contrato' and order == 'desc' else 'desc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'numero_contrato', 'order': next_order}) %}
+                        <a href="{{ url_for('contratos_ui', **params) }}">Número do Contrato {% if sort_by == 'numero_contrato' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'tipo' and order == 'desc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'tipo', 'order': next_order}) %}
+                        <a href="{{ url_for('contratos_ui', **params) }}">Tipo {% if sort_by == 'tipo' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'fornecedor' and order == 'desc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'fornecedor', 'order': next_order}) %}
+                        <a href="{{ url_for('contratos_ui', **params) }}">Fornecedor {% if sort_by == 'fornecedor' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'categoria' and order == 'desc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'categoria', 'order': next_order}) %}
+                        <a href="{{ url_for('contratos_ui', **params) }}">Categoria {% if sort_by == 'categoria' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    </th>
+                    <th>Status</th>
+                    <th style="width: 20%;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if contratos %}
+                    {% for contrato in contratos %}
+                    <tr class="{{ 'inactive-row' if not contrato.ativo }}">
+                        <td class="attachment-indicator-cell">
+                            {% if contrato.total_anexos > 0 %}
+                                <i class="fa-solid fa-paperclip" title="{{ contrato.total_anexos }} anexo(s)"></i>
+                            {% endif %}
+                        </td>
+                        <td><strong><a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id) }}">{{ contrato.numero_contrato }}</a></strong></td>
+                        <td>{{ contrato.tipo_contrato or 'N/D' }}</td>
+                        <td>{{ contrato.fornecedor }}</td>
+                        <td>{{ contrato.nome_categoria }}</td>
+                        <td>
+                            {% if contrato.ativo %}<span class="status-badge green">Ativo</span>
+                            {% else %}<span class="status-badge gray">Inativo</span>{% endif %}
+                        </td>
+                        <td class="actions-cell">
+                            <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id) }}" class="btn-link-action"><i class="fa-solid fa-eye"></i> Detalhes</a>
+                            <button class="btn-link-action" onclick="abrirModalParaEditar({{ contrato.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
+                            <button class="btn-link-action {{ 'red' if contrato.ativo else 'green' }}" onclick="toggleContratoStatus({{ contrato.id }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if contrato.ativo else 'Ativar' }}</button>
+                            <button class="btn-link-action red" onclick="excluirContrato({{ contrato.id }})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="7"><div class="empty-state mini"><p>Nenhum contrato encontrado para os filtros aplicados.</p></div></td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-footer">
+        {{ render_pagination(pagina_atual, total_paginas, 'contratos_ui', query_params) }}
+    </div>
+</div>
+
+<div id="modal-add-contrato" class="modal-overlay">
+    <div class="modal-content large">
+        <div class="modal-header">
+            <h2 id="modal-titulo">Cadastrar Novo Contrato</h2>
+            <button id="btn-fechar-modal" class="close-button">&times;</button>
+        </div>
+        <form id="form-contrato">
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="numero_contrato">Número do Contrato/Ata</label>
+                        <input type="text" id="numero_contrato" name="numero_contrato" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo_contrato">Tipo (Instrumento)</label>
+                        <select id="tipo_contrato" name="tipo_contrato" class="form-control" required>
+                            <option value="" disabled selected>Selecione...</option>
+                            {% for instrumento in instrumentos %}
+                                <option value="{{ instrumento }}">{{ instrumento }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoria-select">Categoria</label>
+                        <select id="categoria-select" name="id_categoria" class="form-control" required></select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fornecedor">Fornecedor</label>
+                        <input type="text" id="fornecedor" name="fornecedor" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cpf_cnpj">CPF/CNPJ</label>
+                        <input type="text" id="cpf_cnpj" name="cpf_cnpj" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" id="telefone" name="telefone" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="numero_processo">Número do Processo</label>
+                        <input type="text" id="numero_processo" name="numero_processo" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="modalidade">Modalidade</label>
+                        <select id="modalidade" name="modalidade" class="form-control" required>
+                            <option value="" disabled selected>Selecione...</option>
+                            {% for modalidade_opt in modalidades %}
+                                <option value="{{ modalidade_opt }}">{{ modalidade_opt }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numero_modalidade">Número da Modalidade</label>
+                        <input type="text" id="numero_modalidade" name="numero_modalidade" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="data_inicio">Data de Início</label>
+                        <input type="date" id="data_inicio" name="data_inicio" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="data_fim">Data de Fim</label>
+                        <input type="date" id="data_fim" name="data_fim" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancelar-modal" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar Contrato</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const modal = document.getElementById('modal-add-contrato');
+    const notificationArea = document.getElementById('notification-area');
+    const modalTitulo = document.getElementById('modal-titulo');
+    const formContrato = document.getElementById('form-contrato');
+    const selectCategoria = document.getElementById('categoria-select');
+    const btnAbrirModal = document.getElementById('btn-abrir-modal');
+    const btnFecharModal = document.getElementById('btn-fechar-modal');
+    const btnCancelarModal = document.getElementById('btn-cancelar-modal');
+    let idContratoEmEdicao = null;
+
+    function showNotification(message, type = 'error') {
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
+    function showNotificationAndReload(message, type = 'success') {
+        showNotification(message, type);
+        setTimeout(() => window.location.reload(), 1500);
+    }
+
+    const fecharModal = () => {
+        modal.style.display = 'none';
+        formContrato.reset();
+        idContratoEmEdicao = null;
+    };
+
+    async function carregarCategorias(idCategoriaSelecionada = null) {
+        try {
+            const response = await fetch('/api/categorias');
+            const categorias = await response.json();
+            selectCategoria.innerHTML = '<option value="">Selecione...</option>';
+            categorias.forEach(cat => {
+                if (cat.ativo) {
+                    const isSelected = cat.id === idCategoriaSelecionada ? 'selected' : '';
+                    selectCategoria.innerHTML += `<option value="${cat.id}" ${isSelected}>${cat.nome}</option>`;
+                }
+            });
+        } catch (error) {
+            console.error("Falha ao carregar categorias:", error);
+            showNotification('Não foi possível carregar as categorias.');
+        }
+    }
+
+    btnAbrirModal.addEventListener('click', async () => {
+        idContratoEmEdicao = null;
+        formContrato.reset();
+        modalTitulo.innerText = 'Cadastrar Novo Contrato';
+        await carregarCategorias();
+        modal.style.display = 'flex';
+    });
+
+    btnFecharModal.addEventListener('click', fecharModal);
+    btnCancelarModal.addEventListener('click', fecharModal);
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) fecharModal();
+    });
+
+    window.abrirModalParaEditar = async (id) => {
+        idContratoEmEdicao = id;
+        try {
+            const response = await fetch(`/api/contratos/${id}`);
+            const contrato = await response.json();
+            if (!response.ok) throw new Error(contrato.erro);
+
+            modalTitulo.innerText = 'Editar Contrato';
+            for (const key in contrato) {
+                if (formContrato.elements[key]) {
+                    formContrato.elements[key].value = contrato[key];
+                }
+            }
+            
+            await carregarCategorias(contrato.id_categoria);
+            modal.style.display = 'flex';
+        } catch (error) {
+            showNotification(`Erro ao buscar dados do contrato: ${error.message}`);
+        }
+    };
+
+    formContrato.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(formContrato);
+        const dados = Object.fromEntries(formData.entries());
+        
+        const url = idContratoEmEdicao ? `/api/contratos/${idContratoEmEdicao}` : '/api/contratos';
+        const method = idContratoEmEdicao ? 'PUT' : 'POST';
+        
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            
+            fecharModal();
+            showNotificationAndReload(resultado.mensagem, 'success');
+        } catch (error) {
+            showNotification(`Erro ao salvar: ${error.message}`);
+        }
+    });
+
+    window.toggleContratoStatus = async (id) => {
+        if (!confirm('Tem certeza que deseja alterar o status deste contrato?')) return;
+        try {
+            const response = await fetch(`/api/contratos/${id}/status`, { method: 'POST' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotificationAndReload(resultado.mensagem, 'success');
+        } catch(error) {
+            showNotification(`Erro: ${error.message}`);
+        }
+    };
+
+    window.excluirContrato = async (id) => {
+        if (!confirm('ATENÇÃO: Ação permanente.\n\nTem certeza que deseja excluir este contrato?')) return;
+        try {
+            const response = await fetch(`/api/contratos/${id}`, { method: 'DELETE' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotificationAndReload(resultado.mensagem, 'success');
+        } catch(error) {
+            showNotification(`Erro ao excluir: ${error.message}`);
+        }
+    };
+});
+</script>
+{% endblock %}

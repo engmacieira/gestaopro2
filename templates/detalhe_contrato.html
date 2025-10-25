@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% from '_pagination.html' import render_pagination %}
+
+{% block title %}Detalhes do Contrato - {{ contrato.numero_contrato }}{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <a href="{{ url_for('contratos_ui') }}" class="back-link">
+        &larr; Voltar para a lista de contratos
+    </a>
+    <h1>Contrato: <span class="text-blue">{{ contrato.numero_contrato }}</span></h1>
+    <p class="subtitle">Detalhes, itens e anexos do contrato.</p>
+</header>
+
+<div class="details-card">
+    <div class="detail-item wide"><span>Fornecedor</span><strong>{{ contrato.fornecedor }}</strong></div>
+    <div class="detail-item"><span>CNPJ</span><strong>{{ contrato.cpf_cnpj }}</strong></div>
+    <div class="detail-item"><span>Categoria</span><strong>{{ contrato.nome_categoria }}</strong></div>
+    <div class="detail-item"><span>Vigência</span><strong>{{ contrato.data_inicio_br }} a {{ contrato.data_fim_br }}</strong></div>
+    <div class="detail-item"><span>Instrumento</span><strong>{{ contrato.nome_instrumento }}</strong></div>
+    <div class="detail-item"><span>Processo</span><strong>{{ contrato.numero_processo }}</strong></div>
+    <div class="detail-item"><span>Modalidade</span><strong>{{ contrato.nome_modalidade }} nº {{ contrato.numero_modalidade_ano }}</strong></div>
+    <div class="detail-item wide"><span>Email</span><strong>{{ contrato.email or 'Não informado' }}</strong></div>
+    <div class="detail-item"><span>Telefone</span><strong>{{ contrato.telefone or 'Não informado' }}</strong></div>
+</div>
+
+<div class="card full-width" style="margin-bottom: 30px;">
+    <h2>Anexos do Contrato</h2>
+    <p class="subtitle" style="margin-bottom: 20px;">Adicione ou visualize os documentos vinculados a este contrato.</p>
+    <form action="{{ url_for('upload_anexo', id_contrato=contrato.id) }}" method="POST" enctype="multipart/form-data" class="upload-form">
+    
+    <div class="form-group" style="flex-grow: 2;">
+        <label for="tipo_documento_select">Tipo do Documento</label>
+        <select name="tipo_documento_select" id="tipo_documento_select" class="form-control" required>
+    <option value="" disabled selected>Selecione um tipo...</option>
+    
+    {% for tipo in tipos_documento %}
+        <option value="{{ tipo }}">{{ tipo }}</option>
+    {% endfor %}
+
+    <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
+</select>
+        
+        <input type="text" name="tipo_documento_novo" id="tipo_documento_novo" class="form-control" placeholder="Digite o novo tipo de documento" style="display: none; margin-top: 10px;">
+    </div>
+
+    <div class="form-group" style="flex-grow: 3;">
+        <label for="anexo">Arquivo</label>
+        <input type="file" name="anexo" id="anexo" class="form-control" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Enviar</button>
+    </form>
+
+    <div id="notification-area-anexos">
+        {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="notification {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+    </div>
+    {% if anexos %}
+    <div class="attachment-list-container">
+        <h4>Anexos existentes:</h4>
+        <ul class="attachment-list">
+            {% for anexo in anexos %}
+    <tr>
+        <td>
+    <a href="{{ url_for('uploaded_file', filename=anexo.nome_seguro) }}" target="_blank">
+        <i class="fa-solid fa-link"></i> {{ anexo.tipo_documento }} - {{ contrato.nome_instrumento or 'Documento' }} {{ contrato.numero_contrato }}
+    </a>
+</td>
+        <td class="meta-info">
+            Enviado em: {{ anexo.data_upload_br }}
+        </td>
+        <td class="actions-cell" style="width: 1%;">
+            <button class="btn-link-action red" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_seguro }}', '{{ anexo.nome_original }}')">
+                <i class="fa-solid fa-trash-can"></i> Excluir
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card full-width">
+    <div class="card-actions">
+        <h2>Itens do Contrato</h2>
+        <div class="actions-group">
+            <form method="GET" action="" class="filter-form">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if 'mostrar_inativos' in query_params %}checked{% endif %}>
+                    Mostrar Itens Inativos
+                </label>
+            </form>
+            <a href="{{ url_for('importar_itens_ui', id_contrato=contrato.id) }}" class="btn btn-secondary"><i class="fa-solid fa-file-excel"></i> Importar</a>
+            <button id="btn-toggle-form" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Adicionar Item</button>
+        </div>
+    </div>
+
+    <div id="form-container" class="collapsible-section" style="display: none;">
+        <form id="form-item">
+            <h3 id="form-item-titulo" style="margin-bottom: 20px;">Adicionar Novo Item</h3>
+            <div class="form-grid-details">
+                <div class="form-group"><label for="numero_item">Nº</label><input type="number" id="numero_item" name="numero_item" class="form-control" required></div>
+                <div class="form-group desc-group"><label for="descricao">Descrição</label><input type="text" id="descricao" name="descricao" class="form-control" required></div>
+                <div class="form-group"><label for="marca">Marca</label><input type="text" id="marca" name="marca" class="form-control"></div>
+                <div class="form-group"><label for="unidade_medida">Unid.</label><input type="text" id="unidade_medida" name="unidade_medida" class="form-control" required></div>
+                <div class="form-group"><label for="quantidade">Qtd.</label><input type="number" id="quantidade" name="quantidade" class="form-control" required></div>
+                <div class="form-group"><label for="valor_unitario">Valor Unit.</label><input type="text" id="valor_unitario" name="valor_unitario" class="form-control" placeholder="12.50" required></div>
+                <div class="form-group action-group"><button type="submit" class="btn btn-primary">Salvar</button></div>
+            </div>
+        </form>
+    </div>
+
+   <div class="table-wrapper">
+       <table class="data-table">
+        <thead>
+            <tr>
+                <th class="sortable-header" style="width: 5%;">
+                    {% set next_order = 'desc' if sort_by == 'numero_item' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'numero_item', 'order': next_order}) %}
+                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Nº {% if sort_by == 'numero_item' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                </th>
+                <th class="sortable-header">
+                    {% set next_order = 'desc' if sort_by == 'descricao' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'descricao', 'order': next_order}) %}
+                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Descrição {% if sort_by == 'descricao' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                </th>
+                <th>Marca</th>
+                <th>Qtd. Contratada</th>
+                <th class="sortable-header">
+                    {% set next_order = 'desc' if sort_by == 'valor' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'valor', 'order': next_order}) %}
+                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Valor Unit. (R$) {% if sort_by == 'valor' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                </th>
+                <th class="sortable-header text-green">
+                    {% set next_order = 'desc' if sort_by == 'saldo' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'saldo', 'order': next_order}) %}
+                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Saldo {% if sort_by == 'saldo' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                </th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if itens %}
+                {% for item in itens %}
+                <tr class="{{ 'inactive-row' if not item.ativo }}">
+                    <td>{{ item.numero_item }}</td>
+                    <td><strong>{{ item.descricao }}</strong></td>
+                    <td>{{ item.marca or 'N/D' }}</td>
+                    <td>{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %} {{ item.unidade_medida }}(s)</td>
+                    <td>{{ "%.2f"|format(item.valor_unitario) }}</td>
+                    <td class="{{ 'text-red' if item.saldo == 0 else 'text-green' }}" style="font-weight: 700;">
+                        {% if item.saldo == item.saldo|int %}
+                            {{ item.saldo|int }}
+                        {% else %}
+                            {{ "%.2f"|format(item.saldo)|replace('.', ',') }}
+                        {% endif %}
+                    </td>
+                    <td>{% if item.ativo %}<span class="status-badge green">Ativo</span>{% else %}<span class="status-badge gray">Inativo</span>{% endif %}</td>
+                    <td class="actions-cell">
+                        <button class="btn-link-action" onclick="abrirFormParaEditarItem({{ item.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
+                        <button class="btn-link-action {{ 'red' if item.ativo else 'green' }}" onclick="toggleItemStatus({{ item.id }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if item.ativo else 'Ativar' }}</button>
+                        <button class="btn-link-action red" onclick="excluirItem({{ item.id }})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                 <tr><td colspan="8"><div class="empty-state mini"><p>Nenhum item encontrado para os filtros aplicados.</p></div></td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+   </div>
+   <div class="card-footer">
+        {{ render_pagination(pagina_atual, total_paginas, 'detalhe_contrato', {'id_contrato': contrato.id}, query_params) }}
+   </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+     const formContainer = document.getElementById('form-container');
+    const formItem = document.getElementById('form-item');
+    const formItemTitulo = document.getElementById('form-item-titulo');
+    const notificationArea = document.getElementById('notification-area');
+    let idItemEmEdicao = null;
+
+    function showNotification(message, type = 'error') {
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        const notificationDiv = document.createElement('div');
+        notificationDiv.className = `notification ${type}`;
+        notificationDiv.textContent = message;
+        const flashedMessages = notificationArea.querySelectorAll('.notification');
+        flashedMessages.forEach(msg => msg.remove());
+        notificationArea.appendChild(notificationDiv);
+        setTimeout(() => {
+            notificationDiv.style.opacity = '0';
+            notificationDiv.addEventListener('transitionend', () => notificationDiv.remove());
+        }, 5000);
+    }
+
+    function reloadPageWithMessage(message, type = 'success') {
+        sessionStorage.setItem('notificationMessage', message);
+        sessionStorage.setItem('notificationType', type);
+        location.reload();
+    }
+
+    const msg = sessionStorage.getItem('notificationMessage');
+    if (msg) {
+        showNotification(msg, sessionStorage.getItem('notificationType'));
+        sessionStorage.removeItem('notificationMessage');
+        sessionStorage.removeItem('notificationType');
+    }
+
+    document.getElementById('btn-toggle-form').addEventListener('click', () => {
+        idItemEmEdicao = null;
+        formItemTitulo.innerText = 'Adicionar Novo Item';
+        formItem.reset();
+        const isHidden = formContainer.style.display === 'none';
+        formContainer.style.display = isHidden ? 'block' : 'none';
+    });
+
+    async function abrirFormParaEditarItem(id) {
+        idItemEmEdicao = id;
+        try {
+            const response = await fetch(`/api/itens/${id}`);
+            const item = await response.json();
+            if (!response.ok) throw new Error(item.erro);
+            
+            formItemTitulo.innerText = 'Editar Item';
+            for (const key in item) {
+                if(formItem.elements[key]) {
+                    formItem.elements[key].value = item[key];
+                }
+            }
+            formContainer.style.display = 'block';
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (error) {
+            showNotification(`Erro ao buscar item: ${error.message}`);
+        }
+    }
+
+    formItem.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const idContrato = {{ contrato.id }};
+        const dados = Object.fromEntries(new FormData(formItem).entries());
+        const url = idItemEmEdicao ? `/api/itens/${idItemEmEdicao}` : `/api/contratos/${idContrato}/itens`;
+        const method = idItemEmEdicao ? 'PUT' : 'POST';
+        try {
+            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } catch (error) {
+            showNotification(`Erro ao salvar: ${error.message}`);
+        }
+    });
+
+    async function toggleItemStatus(id) {
+        if (!confirm('Tem certeza?')) return;
+        try {
+            const response = await fetch(`/api/itens/${id}/status`, { method: 'POST' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } catch(error) {
+            showNotification(`Erro: ${error.message}`);
+        }
+    }
+
+    async function excluirItem(id) {
+        if (!confirm('ATENÇÃO: Ação permanente. Tem certeza?')) return;
+        try {
+            const response = await fetch(`/api/itens/${id}`, { method: 'DELETE' });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+            showNotification(resultado.mensagem, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } catch(error) {
+            showNotification(`Erro ao excluir: ${error.message}`);
+        }
+    }
+
+    async function excluirAnexo(idAnexo, nomeSeguro, nomeOriginal) {
+        const mensagemAlerta = `Você está prestes a excluir o registro do anexo "${nomeOriginal}".\n\nATENÇÃO: Esta ação NÃO apaga o arquivo do servidor. Lembre-se de apagar o arquivo físico '${nomeSeguro}' da pasta 'uploads' no servidor, se necessário.\n\nDeseja continuar?`;
+        if (!confirm(mensagemAlerta)) return;
+
+        try {
+            const response = await fetch(`/api/anexos/${idAnexo}`, {
+                method: 'DELETE'
+            });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.erro);
+
+            reloadPageWithMessage(resultado.mensagem, 'success');
+
+        } catch (error) {
+            showNotification(`Erro ao excluir anexo: ${error.message}`);
+        }
+    }
+
+    window.abrirFormParaEditarItem = abrirFormParaEditarItem;
+    window.toggleItemStatus = toggleItemStatus;
+    window.excluirItem = excluirItem;
+    window.excluirAnexo = excluirAnexo;
+
+const tipoDocumentoSelect = document.getElementById('tipo_documento_select');
+const tipoDocumentoNovoInput = document.getElementById('tipo_documento_novo');
+
+tipoDocumentoSelect.addEventListener('change', function() {
+    if (this.value === 'NOVO') {
+        tipoDocumentoNovoInput.style.display = 'block';
+        tipoDocumentoNovoInput.required = true; 
+    } else {
+        tipoDocumentoNovoInput.style.display = 'none';
+        tipoDocumentoNovoInput.required = false; 
+        tipoDocumentoNovoInput.value = ''; 
+    }
+});
+
+});
+</script>
+{% endblock %}

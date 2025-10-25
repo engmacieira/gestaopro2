@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Ferramentas de Importação - GestãoPRO{% endblock %}
+
+{% block content %}
+<div id="notification-area"></div>
+
+<header class="main-header">
+    <a href="{{ url_for('home') }}" class="back-link">
+        &larr; Voltar para o Painel de Controle
+    </a>
+    <h1>Ferramentas de Importação</h1>
+    <p class="subtitle">Envie múltiplos contratos ou itens de uma só vez usando um arquivo .xlsx.</p>
+</header>
+
+<div class="tabs-container">
+    <div class="tabs-nav">
+        <button class="tab-link active" data-tab="tab-contratos">
+            <i class="fa-solid fa-file-signature"></i> Importar Contratos
+        </button>
+        <button class="tab-link" data-tab="tab-itens">
+            <i class="fa-solid fa-file-excel"></i> Importar Itens em Massa
+        </button>
+    </div>
+
+    <div id="tab-contratos" class="tab-content active">
+        <div class="card full-width">
+            <h2>1. Envie sua Planilha de Contratos</h2>
+            <div class="instructions">
+                <p>A planilha deve conter as seguintes colunas:</p>
+                <code>id_categoria</code>, <code>numero_contrato</code>, <code>fornecedor</code>, <code>cpf_cnpj</code>, <code>numero_processo</code>, <code>modalidade</code>, <code>numero_modalidade</code>, <code>data_inicio</code>, <code>data_fim</code>, <code>tipo_contrato</code>, <code>email</code>, <code>telefone</code>
+            </div>
+            <form id="form-upload-contratos" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="arquivo_excel_contratos">Selecione o arquivo Excel:</label>
+                    <input type="file" name="arquivo_excel" id="arquivo_excel_contratos" class="form-control" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar</button>
+            </form>
+            <div id="error-message-contratos" class="error-message"></div>
+        </div>
+        <div id="preview-container-contratos" class="card full-width" style="display: none; margin-top: 30px;">
+            <h2>2. Pré-visualização dos Contratos</h2>
+            <div class="table-wrapper"><table id="preview-table-contratos" class="data-table"></table></div>
+            <br>
+            <div class="form-actions"><button id="btn-salvar-contratos" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar Contratos</button></div>
+        </div>
+    </div>
+
+    <div id="tab-itens" class="tab-content">
+        <div class="card full-width">
+            <h2>1. Envie sua Planilha de Itens</h2>
+            <div class="instructions">
+                <p>A planilha deve conter as seguintes colunas:</p>
+                <code>numero_contrato</code>, <code>tipo_contrato</code>, <code>numero_item</code>, <code>descricao</code>, <code>unidade_medida</code>, <code>quantidade</code>, <code>valor_unitario</code>
+            </div>
+            <form id="form-upload-itens" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="arquivo_excel_itens">Selecione o arquivo Excel:</label>
+                    <input type="file" name="arquivo_excel" id="arquivo_excel_itens" class="form-control" accept=".xlsx" required>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar Itens</button>
+            </form>
+            <div id="error-message-itens" class="error-message"></div>
+        </div>
+        <div id="preview-container-itens" class="card full-width" style="display: none; margin-top: 30px;">
+            <h2>2. Pré-visualização dos Itens</h2>
+            <div class="table-wrapper"><table id="preview-table-itens" class="data-table"></table></div>
+            <br>
+            <div class="form-actions"><button id="btn-salvar-itens" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar Itens</button></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const tabId = link.dataset.tab;
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            link.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+
+    function showNotification(message, type = 'error') {
+        const notificationArea = document.getElementById('notification-area');
+        if (!notificationArea) return;
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
+        }, 5000);
+    }
+
+    function setupImportSection(formId, previewContainerId, previewTableId, errorDivId, saveBtnId, previewUrl, saveUrl, redirectUrl) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+
+        const previewContainer = document.getElementById(previewContainerId);
+        const previewTable = document.getElementById(previewTableId);
+        const errorDiv = document.getElementById(errorDivId);
+        const saveBtn = document.getElementById(saveBtnId);
+        let dataToSave = [];
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            errorDiv.textContent = '';
+            previewContainer.style.display = 'none';
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Carregando...';
+
+            try {
+                const response = await fetch(previewUrl, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.erro || 'Erro desconhecido');
+                dataToSave = result;
+                renderPreview(dataToSave, previewTable, errorDiv, previewContainer);
+            } catch (error) {
+                errorDiv.textContent = `Erro: ${error.message}`;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar';
+            }
+        });
+
+        saveBtn.addEventListener('click', async function() {
+            if (dataToSave.length === 0) return showNotification('Não há dados para salvar.');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+            try {
+                const response = await fetch(saveUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSave)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.erro);
+                showNotification(result.mensagem, 'success');
+                setTimeout(() => { window.location.href = redirectUrl; }, 2000);
+            } catch (error) {
+                showNotification(`Erro: ${error.message}`);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Definitivamente';
+            }
+        });
+    }
+    
+    function renderPreview(data, table, errorDiv, container) {
+        if (!data || data.length === 0) {
+            errorDiv.textContent = 'Nenhum dado válido encontrado na planilha.';
+            return;
+        }
+        container.style.display = 'block';
+        const thead = table.querySelector('thead') || table.createTHead();
+        const tbody = table.querySelector('tbody') || table.createTBody();
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+
+        const headers = Object.keys(data[0]);
+        thead.innerHTML = `<tr>${headers.map(h => `<th>${h.replace(/_/g, ' ')}</th>`).join('')}</tr>`;
+        
+        tbody.innerHTML = data.map(row => `
+            <tr>
+                ${headers.map(h => {
+                    let value = row[h];
+                    if ((h === 'data_inicio' || h === 'data_fim') && value) {
+                        const [year, month, day] = value.split('T')[0].split('-');
+                        value = `${day}/${month}/${year}`;
+                    }
+                    return `<td>${value !== null ? value : ''}</td>`;
+                }).join('')}
+            </tr>
+        `).join('');
+    }
+
+    setupImportSection(
+        'form-upload-contratos', 'preview-container-contratos', 'preview-table-contratos',
+        'error-message-contratos', 'btn-salvar-contratos',
+        '/api/importar/contratos/preview',  
+        '/api/importar/contratos/salvar',     
+        "{{ url_for('contratos_ui') }}"        
+    );
+
+    setupImportSection(
+        'form-upload-itens', 'preview-container-itens', 'preview-table-itens',
+        'error-message-itens', 'btn-salvar-itens',
+        '/api/importar/itens/global/preview', 
+        '/api/importar/itens/global/salvar',   
+        "{{ url_for('contratos_ui') }}"        
+    );
+});
+</script>
+{% endblock %}

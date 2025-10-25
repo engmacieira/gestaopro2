@@ -2,6 +2,7 @@ import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
 from datetime import date
+from decimal import Decimal # Adicionado para garantir precisão
 import logging
 from app.models.pedido_model import Pedido 
 from app.schemas.pedido_schema import PedidoCreateRequest, PedidoUpdateRequest 
@@ -27,10 +28,45 @@ class PedidoRepository:
                 quantidade_pedida=row['quantidade_pedida'],
                 status_entrega=row['status_entrega'],
                 quantidade_entregue=row['quantidade_entregue'],
+                data_pedido=row['data_pedido']
             )
         except KeyError as e:
             logger.error(f"Erro de mapeamento Pedido: Coluna '{e}' não encontrada.")
             return None
+
+    def get_total_requested_quantity(self, id_item_contrato: int, exclude_pedido_id: int | None = None) -> Decimal:
+        """Calcula a quantidade total já pedida (reservada) para um item de contrato, EXCLUINDO APENAS pedidos Cancelados.
+        Pedidos concluídos ('Completo') continuam reservando o saldo do contrato.
+        """
+        cursor = None
+        try:
+            cursor = self.db_conn.cursor(cursor_factory=DictCursor)
+            
+            # Pedidos com qualquer status, EXCETO 'Cancelado', reservam o saldo.
+            sql = """
+                SELECT COALESCE(SUM(quantidade_pedida), 0) AS total_reservado
+                FROM pedidos
+                WHERE id_item_contrato = %s
+                  AND status_entrega != 'Cancelado' 
+            """
+            params = [id_item_contrato]
+
+            if exclude_pedido_id is not None:
+                sql += " AND id != %s"
+                params.append(exclude_pedido_id)
+
+            cursor.execute(sql, params)
+            total_reservado = cursor.fetchone()['total_reservado']
+            
+            # Garante que o retorno é Decimal para cálculos precisos
+            return total_reservado if isinstance(total_reservado, Decimal) else Decimal(str(total_reservado or '0.0'))
+
+        except Exception as error:
+             logger.exception(f"Erro ao calcular quantidade pedida total para Item ID {id_item_contrato}: {error}")
+             raise
+        finally:
+            if cursor: cursor.close()
+
 
     def create(self, id_aocs: int, pedido_create_req: PedidoCreateRequest) -> Pedido:
         cursor = None
@@ -43,20 +79,41 @@ class PedidoRepository:
             if not item:
                 raise ValueError(f"ItemContrato ID {pedido_create_req.item_contrato_id} não encontrado.")
             
+            if not item.ativo:
+                raise ValueError(f"Item de Contrato ID {item.id} não está ativo e não pode receber novos pedidos.")
+
+            # --- VALIDAÇÃO DE SALDO (VSP) ---
+            quantidade_pedida_decimal = pedido_create_req.quantidade_pedida 
+            
+            total_reservado = self.get_total_requested_quantity(item.id)
+            
+            quantidade_total_solicitada = total_reservado + quantidade_pedida_decimal
+            
+            if quantidade_total_solicitada > item.quantidade:
+                saldo_disponivel = item.quantidade - total_reservado
+                # Garantindo formatação de duas casas decimais para a mensagem de erro
+                error_msg = (f"A quantidade pedida ({quantidade_pedida_decimal:.2f}) excede o saldo disponível "
+                             f"do item. Total do Contrato: {item.quantidade:.2f}, Já reservado: {total_reservado:.2f}, "
+                             f"Saldo: {saldo_disponivel:.2f}")
+                logger.warning(error_msg)
+                raise ValueError(error_msg)
+            # --- FIM VALIDAÇÃO DE SALDO (VSP) ---
+
+
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             sql = """
                 INSERT INTO pedidos (id_item_contrato, id_aocs, quantidade_pedida,
                                    status_entrega, quantidade_entregue)
-                                   -- data_pedido talvez venha da AOCS?
+                                   -- data_pedido é obtido no RETURNING do JOIN com aocs
                 VALUES (%s, %s, %s, %s, %s)
-                RETURNING *, %s AS data_pedido -- Adiciona data_pedido da AOCS ao RETURNING
+                RETURNING *, %s AS data_pedido -- Adiciona data_pedido da AOCS ao RETURNING para mapeamento
             """
             status_inicial = "Pendente"
-            qtd_entregue_inicial = 0
+            qtd_entregue_inicial = Decimal('0.0') 
             params = (
                 item.id,
                 aocs.id,
-                pedido_create_req.quantidade_pedida,
+                quantidade_pedida_decimal,
                 status_inicial,
                 qtd_entregue_inicial,
                 aocs.data_criacao 
@@ -76,7 +133,7 @@ class PedidoRepository:
         except (ValueError, Exception, psycopg2.DatabaseError) as error:
             if self.db_conn: self.db_conn.rollback()
             if isinstance(error, ValueError):
-                 logger.warning(f"Erro ao validar FKs durante criação do Pedido (Req: {pedido_create_req}): {error}")
+                 logger.warning(f"Erro ao validar FKs/Saldo durante criação do Pedido (Req: {pedido_create_req}): {error}")
             elif isinstance(error, psycopg2.IntegrityError):
                  logger.warning(f"Erro de integridade ao criar Pedido (Item já existe na AOCS?) (Req: {pedido_create_req}): {error}")
             else:
@@ -212,7 +269,7 @@ class PedidoRepository:
             self.db_conn.commit()
 
             if rowcount > 0:
-                logger.info(f"Pedido ID {id} (Item ID: {pedido_para_deletar.id_item_contrato}, AOCS ID: {pedido_para_deletar.id_aocs}) deletado.")
+                logger.info(f"Pedido ID {id} (Item ID: {pedido_para_deletar.id_item_contrato}, AOCS ID: {pedido_para_deletar.id_aocs}) deletado e saldo liberado.")
             return rowcount > 0
 
         except psycopg2.IntegrityError as fk_error: 

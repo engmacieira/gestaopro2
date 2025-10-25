@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GestãoPRO{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Sunny Tech Logo" class="sidebar-logo">
+                <h3>GestãoPRO</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('home') }}" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i><span>Painel</span>
+                </a>
+                <a href="{{ url_for('categorias_ui') }}" class="nav-link {% if 'categoria' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-tags"></i><span>Categorias</span>
+                </a>
+                <a href="{{ url_for('contratos_ui') }}" class="nav-link {% if 'contrato' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-file-signature"></i><span>Contratos</span>
+                </a>
+                <a href="{{ url_for('pedidos_ui') }}" class="nav-link {% if 'pedido' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-box-archive"></i><span>Histórico de Pedidos</span>
+                </a>
+                <a href="{{ url_for('consultas_ui') }}" class="nav-link {% if 'consultas' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i><span>Consultas</span>
+                </a>
+                <a href="{{ url_for('relatorios_ui') }}" class="nav-link {% if 'relatorios' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-print"></i><span>Relatórios</span>
+                </a>
+                <a href="{{ url_for('importar_ui') }}" class="nav-link {% if 'importar' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-file-import"></i><span>Importar</span>
+                </a>
+                <a href="{{ url_for('gerenciar_tabelas_ui') }}" class="nav-link {% if 'tabelas' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-cogs"></i><span>Tabelas do Sistema</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-link">
+                    <i class="fa-solid fa-right-from-bracket"></i><span>Sair</span>
+                </a>
+                {% if current_user.nivel_acesso == 1 %}
+                <a href="{{ url_for('gerenciar_usuarios_ui') }}" class="nav-link {% if 'usuarios' in request.endpoint %}active{% endif %}">
+                    <i class="fa-solid fa-users-cog"></i><span>Usuários</span>
+                </a>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div id="notification-area">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="notification {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <strong>SunnyTech Solucions</strong> &copy; 2025 - v{{ versao_software }}
+    </footer>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

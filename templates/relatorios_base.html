@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block relatorio_title %}Relatório do Sistema{% endblock %}</title>
+    <style>
+        /* ================================================================ */
+        /* ESTILO MESTRE PARA RELATÓRIOS E DOCUMENTOS PDF (v2.0 - REFINADO)
+        /* ================================================================ */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        /* --- Configurações Gerais --- */
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            font-size: 9.5pt;
+            color: #212529;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Cabeçalho --- */
+        .header {
+            display: flex;
+            align-items: center; /* Alinha verticalmente */
+            padding-bottom: 15px;
+            border-bottom: 2px solid #333;
+            margin-bottom: 25px;
+        }
+        .header img {
+            width: 75px; /* Tamanho bem dimensionado */
+            height: 75px;
+            margin-right: 25px;
+        }
+        .header-text {
+            text-align: center;
+            flex-grow: 1; /* Faz o texto ocupar o espaço restante */
+        }
+        .header-text h2, .header-text h3 {
+            margin: 2px 0;
+            padding: 0;
+            text-transform: uppercase;
+        }
+        .header-text h2 { font-size: 13pt; font-weight: 700; }
+        .header-text h3 { font-size: 11pt; font-weight: 400; }
+
+        /* --- Título Principal do Documento --- */
+        .title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 12pt;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 25px 0;
+        }
+
+        /* --- Caixas de Seção --- */
+        .section-box {
+            border: 1px solid #dee2e6;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .section-box .section-title {
+            font-weight: 700;
+            font-size: 9pt;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        .section-box p, .section-box table {
+            font-size: 9.5pt;
+            margin: 0;
+        }
+        .section-box table td { padding: 3px 0; }
+        .section-box table strong { color: #343a40; }
+
+        /* --- Tabela de Itens --- */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+            font-size: 9pt;
+            vertical-align: top;
+        }
+        .items-table th {
+            background-color: #f8f9fa;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 8.5pt;
+        }
+        .items-table .item-description { text-align: left; }
+        .items-table .text-right { text-align: right; }
+        .items-table .total-row td {
+            font-weight: 700;
+            background-color: #f8f9fa;
+            border-top: 2px solid #adb5bd;
+        }
+
+        /* --- Rodapé e Assinatura --- */
+        .footer {
+            margin-top: 60px;
+        }
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 10pt;
+        }
+        .signature-block {
+            text-align: center;
+            width: 320px;
+        }
+        .signature-block .line {
+            border-top: 1px solid #333;
+            margin-bottom: 8px;
+        }
+        .signature-block p {
+            margin: 0;
+            line-height: 1.4;
+            font-size: 9.5pt;
+        }
+
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="{{ logo_url }}" alt="Brasão do Município">
+        <div class="header-text">
+            <h2>MUNICÍPIO DE BRAÚNAS</h2>
+            <h3>ESTADO DE MINAS GERAIS</h3>
+            <h3>{% block unidade_requisitante %}UNIDADE REQUISITANTE{% endblock %}</h3>
+        </div>
+    </header>
+
+    <main>
+        {% block relatorio_content %}{% endblock %}
+    </main>
+</body>
+</html>

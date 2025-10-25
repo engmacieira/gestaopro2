@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% from '_pagination.html' import render_pagination %}
+
+{% block title %}Histórico de Pedidos - GestãoPRO{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1>Histórico de Pedidos (AOCS)</h1>
+    <p class="subtitle">Visualize e acompanhe todos os pedidos registrados no sistema.</p>
+</header>
+
+<div class="card full-width">
+    <div class="card-actions">
+        <form method="GET" action="{{ url_for('pedidos_ui') }}" class="search-form">
+            <i class="fa-solid fa-search search-icon"></i>
+            <input type="search" name="busca" placeholder="Buscar por nº AOCS ou item..." value="{{ termo_busca or '' }}" class="form-control">
+            <button type="submit" class="btn btn-secondary">Buscar</button>
+        </form>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'aocs' and order == 'desc' else 'desc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'aocs', 'order': next_order}) %}
+                        <a href="{{ url_for('pedidos_ui', **params) }}">Nº AOCS {% if sort_by == 'aocs' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    </th>
+                    <th>Nº Pedido</th>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'fornecedor' and order == 'desc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'fornecedor', 'order': next_order}) %}
+                        <a href="{{ url_for('pedidos_ui', **params) }}">Fornecedor {% if sort_by == 'fornecedor' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'valor' and order == 'desc' else 'desc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'valor', 'order': next_order}) %}
+                        <a href="{{ url_for('pedidos_ui', **params) }}">Valor Total (R$) {% if sort_by == 'valor' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'data' and order == 'desc' else 'desc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'data', 'order': next_order}) %}
+                        <a href="{{ url_for('pedidos_ui', **params) }}">Data {% if sort_by == 'data' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    </th>
+                    <th class="sortable-header">
+                        {% set next_order = 'asc' if sort_by == 'status' and order == 'desc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'status', 'order': next_order}) %}
+                        <a href="{{ url_for('pedidos_ui', **params) }}">Status da Entrega {% if sort_by == 'status' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    </th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if pedidos_lista %}
+                    {% for pedido in pedidos_lista %}
+                    <tr>
+                        <td><strong><a href="{{ url_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
+                        <td>{{ pedido.numero_pedido or 'N/A' }}</td>
+                        <td>{{ pedido.fornecedor }}</td>
+                        <td>{{ "%.2f"|format(pedido.valor_total) }}</td>
+                        <td>{{ pedido.data_pedido.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            {% set status_class = 'gray' %}
+                            {% if pedido.status_entrega == 'Entregue' %}{% set status_class = 'green' %}{% endif %}
+                            {% if pedido.status_entrega == 'Entrega Parcial' %}{% set status_class = 'orange' %}{% endif %}
+                            <span class="status-badge {{ status_class }}">{{ pedido.status_entrega }}</span>
+                        </td>
+                        <td class="actions-cell">
+                            <a href="{{ url_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}" class="btn-link-action">
+                                <i class="fa-solid fa-eye"></i> Ver Detalhes
+                            </a>
+    
+                            <a href="{{ url_for('imprimir_aocs', numero_aocs=pedido.numero_aocs) }}" class="btn-link-action" target="_blank">
+                                <i class="fa-solid fa-print"></i> Imprimir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="7"><div class="empty-state mini"><p>Nenhum pedido encontrado para os filtros aplicados.</p></div></td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-footer">
+        {{ render_pagination(pagina_atual, total_paginas, 'pedidos_ui', query_params=query_params) }}
+    </div>
+</div>
+{% endblock %}

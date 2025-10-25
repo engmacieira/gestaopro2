@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% from '_pagination.html' import render_pagination %}
+
+{% block title %}Painel de Controle - GestãoPRO v2.0{% endblock %}
+
+{% block content %}
+<div id="notification-area"></div>
+
+<div class="dashboard-header">
+    <div class="header-intro">
+        <h1>Painel de Controle</h1>
+        <p class="subtitle">Bem-vindo! Aqui está um resumo da sua atividade.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('importar_ui') }}" class="btn btn-secondary"><i class="fa-solid fa-file-import"></i> Ferramentas de Importação</a>
+        <button id="btn-iniciar-pedido-modal" class="btn btn-primary"><i class="fa-solid fa-cart-plus"></i> Iniciar Novo Pedido</button>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <div class="card-icon blue"><i class="fa-solid fa-file-signature"></i></div>
+        <div class="card-info">
+            <span class="card-value">{{ indicadores.contratos_ativos }}</span>
+            <span class="card-title">Contratos Ativos</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-icon green"><i class="fa-solid fa-box-archive"></i></div>
+        <div class="card-info">
+            <span class="card-value">{{ indicadores.pedidos_mes }}</span>
+            <span class="card-title">Pedidos este Mês</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-icon orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="card-info">
+            <span class="card-value">{{ indicadores.contratos_a_vencer }}</span>
+            <span class="card-title">Contratos a Vencer (60d)</span>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-main-grid">
+    <div class="card full-width">
+        <h2><i class="fa-solid fa-clock-rotate-left" style="margin-right: 8px; color: var(--action-primary);"></i> Pedidos Pendentes</h2>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nº AOCS</th>
+                        <th>Contrato</th>
+                        <th>Data</th>
+                        <th>Dias Passados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pedidos_pendentes %}
+                        {% for pedido in pedidos_pendentes %}
+                        <tr>
+                            <td><strong><a href="{{ url_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
+                            <td>{{ pedido.numero_contrato }}</td>
+                            <td>{{ pedido.data_pedido | replace('-', '/') }}</td>
+                            <td class="{{ 'overdue-days' if pedido.dias_passados > 30 }}">{{ pedido.dias_passados }} dias</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state mini">
+                                    <i class="fa-solid fa-check-circle" style="color: var(--action-success);"></i>
+                                    <p>Nenhum pedido pendente. Bom trabalho!</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer">
+            {{ render_pagination(pagina_atual, total_paginas, 'home') }}
+        </div>
+    </div>
+
+    <div class="shortcut-card">
+        <h3>Atalhos do Sistema</h3>
+        <a href="{{ url_for('categorias_ui') }}" class="action-button"><i class="fa-solid fa-tags"></i><span>Gerenciar Categorias</span></a>
+        <a href="{{ url_for('contratos_ui') }}" class="action-button"><i class="fa-solid fa-file-signature"></i><span>Gerenciar Contratos</span></a>
+    </div>
+</div>
+
+<div id="modal-novo-pedido" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Iniciar Novo Pedido</h2>
+            <button id="btn-fechar-modal-pedido" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Para qual categoria você deseja criar um pedido?</p>
+            <div class="form-group">
+                <label for="categoria-pedido-select">Selecione a Categoria</label>
+                <select id="categoria-pedido-select" class="form-control" required>
+                    <option value="">Carregando categorias...</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btn-cancelar-modal-pedido" class="btn btn-secondary">Cancelar</button>
+            <button type="button" id="btn-continuar-pedido" class="btn btn-primary">
+                Continuar <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const modalPedido = document.getElementById('modal-novo-pedido');
+    const btnAbrirModalPedido = document.getElementById('btn-iniciar-pedido-modal');
+    const notificationArea = document.getElementById('notification-area');
+
+    function showNotification(message, type = 'error') {
+        const existing = notificationArea.querySelector('.notification');
+        if(existing) existing.remove();
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        notificationArea.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    }
+    
+    if(btnAbrirModalPedido) {
+        const btnFecharModalPedido = document.getElementById('btn-fechar-modal-pedido');
+        const btnCancelarModalPedido = document.getElementById('btn-cancelar-modal-pedido');
+        const btnContinuarPedido = document.getElementById('btn-continuar-pedido');
+        const selectCategoriaPedido = document.getElementById('categoria-pedido-select');
+
+        btnAbrirModalPedido.addEventListener('click', async () => {
+            modalPedido.style.display = 'flex';
+            try {
+                const response = await fetch("{{ url_for('api_gerenciar_categorias') }}");
+                if (!response.ok) throw new Error('Falha na rede');
+                const categorias = await response.json();
+                
+                selectCategoriaPedido.innerHTML = '<option value="">Selecione uma categoria ativa</option>';
+                categorias.forEach(cat => {
+                    if (cat.ativo) {
+                        const option = new Option(cat.nome, cat.id);
+                        selectCategoriaPedido.add(option);
+                    }
+                });
+            } catch (error) {
+                selectCategoriaPedido.innerHTML = '<option value="">Erro ao carregar categorias</option>';
+                console.error("Erro ao buscar categorias:", error);
+            }
+        });
+
+        const fecharModalPedido = () => modalPedido.style.display = 'none';
+
+        btnFecharModalPedido.addEventListener('click', fecharModalPedido);
+        btnCancelarModalPedido.addEventListener('click', fecharModalPedido);
+        window.addEventListener('click', (event) => {
+            if (event.target == modalPedido) fecharModalPedido();
+        });
+
+        btnContinuarPedido.addEventListener('click', () => {
+            const categoriaId = selectCategoriaPedido.value;
+            if (categoriaId) {
+                window.location.href = `/categoria/${categoriaId}/novo-pedido`;
+            } else {
+                showNotification('Por favor, selecione uma categoria para continuar.');
+            }
+        });
+    }
+
+});
+</script>
+{% endblock %}
