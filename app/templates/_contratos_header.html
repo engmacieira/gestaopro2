@@ -5,10 +5,11 @@
 </header>
 
 <div class="card-actions" style="flex-wrap: wrap; justify-content: space-between;">
-    <form method="GET" action="{{ url_for('contratos_ui') }}" class="search-form" style="flex: 1 1 70%;">
+    {# Alterado url_for para request.app.url_path_for #}
+    <form method="GET" action="{{ request.app.url_path_for('contratos_ui') }}" class="search-form" style="flex: 1 1 70%;">
         <i class="fa-solid fa-search search-icon"></i>
         <input type="search" name="busca" placeholder="Buscar por número ou fornecedor..." value="{{ query_params.busca or '' }}" class="form-control" style="flex: 1;">
-        
+
         {# Filtro de Status de Contrato (Ativo, Inativo, Expirado) #}
         <select name="status" class="form-control filter-select" style="max-width: 200px;">
             <option value="">Status (Todos)</option>
@@ -19,11 +20,13 @@
 
         <button type="submit" class="btn btn-secondary">Filtrar</button>
         {% if query_params.busca or query_params.status %}
-            <a href="{{ url_for('contratos_ui') }}" class="btn btn-secondary btn-icon" title="Limpar Filtros"><i class="fa-solid fa-times"></i></a>
+            {# Alterado url_for para request.app.url_path_for #}
+            <a href="{{ request.app.url_path_for('contratos_ui') }}" class="btn btn-secondary btn-icon" title="Limpar Filtros"><i class="fa-solid fa-times"></i></a>
         {% endif %}
     </form>
-    
-    <a href="{{ url_for('novo_contrato_ui') }}" class="btn btn-primary" style="flex-shrink: 0; min-width: 200px;">
+
+    {# Alterado url_for para request.app.url_path_for - VERIFICAR NOME DA ROTA 'novo_contrato_ui' #}
+    <a href="{{ request.app.url_path_for('novo_contrato_ui') }}" class="btn btn-primary" style="flex-shrink: 0; min-width: 200px;">
         <i class="fa-solid fa-file-contract"></i>
         Novo Contrato
     </a>

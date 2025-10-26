@@ -9,7 +9,7 @@
 </header>
 
 <div class="card full-width">
-    {# 1. INCLUSÃO DO COMPONENTE DO CABEÇALHO DA TABELA #}
+    {# 1. INCLUSÃO DO COMPONENTE DO CABEÇALHO DA TABELA (Já verificado) #}
     {% include '_usuarios_table_header.html' %}
 
     <div class="table-wrapper">
@@ -23,199 +23,45 @@
                 </tr>
             </thead>
             <tbody>
-                {% for usuario in usuarios %}
-                <tr>
-                    <td><strong>{{ usuario.username }}</strong></td>
-                    <td>
-                        {% if usuario.nivel_acesso == 1 %}Admin
-                        {% elif usuario.nivel_acesso == 2 %}Usuário Completo
-                        {% else %}Visualização
-                        {% endif %}
-                    </td>
-                    <td>
-                        <span class="status-badge {{ 'green' if usuario.ativo else 'gray' }}">
-                            {{ 'Ativo' if usuario.ativo else 'Inativo' }}
-                        </span>
-                    </td>
-                    <td class="actions-cell">
-                        <button class="btn-link-action" onclick="abrirModalParaEditar({{ usuario.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
-                        <button class="btn-link-action" onclick="resetarSenha({{ usuario.id }})"><i class="fa-solid fa-key"></i> Redefinir Senha</button>
-                        {# A função toggleUserStatus foi ajustada para receber o status atual e calcular o PUT correto #}
-                        <button class="btn-link-action {{ 'red' if usuario.ativo else 'green' }}" onclick="toggleUserStatus({{ usuario.id }}, {{ 'true' if usuario.ativo else 'false' }})">
-                            <i class="fa-solid fa-power-off"></i> {{ 'Inativar' if usuario.ativo else 'Ativar' }}
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
+                {% if usuarios %} {# Adicionado if para caso a lista esteja vazia #}
+                    {% for usuario in usuarios %}
+                    <tr class="{{ 'inactive-row' if not usuario.ativo }}"> {# Adicionado classe para inativos #}
+                        <td><strong>{{ usuario.username }}</strong></td>
+                        <td>
+                            {% if usuario.nivel_acesso == 1 %}Admin
+                            {% elif usuario.nivel_acesso == 2 %}Usuário Completo
+                            {% else %}Visualização
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge {{ 'green' if usuario.ativo else 'gray' }}">
+                                {{ 'Ativo' if usuario.ativo else 'Inativo' }}
+                            </span>
+                        </td>
+                        <td class="actions-cell">
+                            {# Onclick mantido, chama JS #}
+                            <button class="btn-link-action" onclick="abrirModalParaEditar({{ usuario.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
+                            <button class="btn-link-action" onclick="resetarSenha({{ usuario.id }})"><i class="fa-solid fa-key"></i> Redefinir Senha</button>
+                            {# Passa o status booleano para a função JS #}
+                            <button class="btn-link-action {{ 'red' if usuario.ativo else 'green' }}" onclick="toggleUserStatus({{ usuario.id }}, {{ 'true' if usuario.ativo else 'false' }})">
+                                <i class="fa-solid fa-power-off"></i> {{ 'Inativar' if usuario.ativo else 'Ativar' }}
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                     <tr><td colspan="4"><div class="empty-state mini"><p>Nenhum usuário encontrado.</p></div></td></tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
 </div>
 
-{# 2. INCLUSÃO DO COMPONENTE MODAL #}
+{# 2. INCLUSÃO DO COMPONENTE MODAL (Já verificado) #}
 {% include '_modal_gerenciar_usuarios.html' %}
 {% endblock %}
 
 {% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    const modal = document.getElementById('modal-user');
-    const modalTitle = document.getElementById('modal-user-title');
-    const formUser = document.getElementById('form-user');
-    const passwordGroup = document.getElementById('password-group');
-    const btnAddUser = document.getElementById('btn-add-user');
-    const notificationArea = document.querySelector('.main-content #notification-area');
-    let idUsuarioEmEdicao = null;
-
-    function showNotification(message, type = 'error') {
-        const existing = notificationArea.querySelector('.notification');
-        if(existing) existing.remove();
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        notificationArea.prepend(notification);
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.addEventListener('transitionend', () => notification.remove());
-        }, 5000);
-    }
-    
-    function showNotificationAndReload(message, type = 'success') {
-         sessionStorage.setItem('notificationMessage', message);
-         sessionStorage.setItem('notificationType', type);
-         window.location.reload();
-    }
-    
-    // Exibir notificação após redirecionamento
-    const msg = sessionStorage.getItem('notificationMessage');
-    if (msg) {
-        showNotification(msg, sessionStorage.getItem('notificationType'));
-        sessionStorage.removeItem('notificationMessage');
-        sessionStorage.removeItem('notificationType');
-    }
-
-    const fecharModal = () => {
-        modal.style.display = 'none';
-        formUser.reset();
-        idUsuarioEmEdicao = null;
-    };
-
-    const abrirModalParaCriar = () => {
-        idUsuarioEmEdicao = null;
-        formUser.reset();
-        modalTitle.textContent = 'Adicionar Novo Usuário';
-        passwordGroup.style.display = 'block';
-        formUser.elements.password.required = true;
-        modal.style.display = 'flex';
-    };
-    
-    window.abrirModalParaEditar = async (id) => {
-        idUsuarioEmEdicao = id;
-        formUser.reset();
-        try {
-            // Chamada GET para buscar o usuário (API: /users/{id})
-            const response = await fetch(`/api/users/${id}`); 
-            const usuario = await response.json();
-            
-            if (!response.ok) throw new Error(usuario.detail || 'Erro ao carregar usuário');
-            
-            modalTitle.textContent = 'Editar Usuário';
-            formUser.elements.username.value = usuario.username;
-            formUser.elements.nivel_acesso.value = usuario.nivel_acesso;
-            
-            // Esconde o campo de senha na edição
-            passwordGroup.style.display = 'none'; 
-            formUser.elements.password.required = false;
-            
-            modal.style.display = 'flex';
-        } catch (error) {
-            showNotification(`Erro ao carregar usuário: ${error.message}`);
-        }
-    };
-
-    // Função para Ativar/Inativar (PUT com campo ativo: true/false)
-    window.toggleUserStatus = async (id, statusAtual) => {
-         if (!confirm('Tem certeza que deseja alterar o status deste usuário?')) return;
-         
-         // Inverte o status booleano (string 'true'/'false' => boolean true/false)
-         const novoStatus = statusAtual === 'true' ? false : true;
-         
-         try {
-             // Chamada PUT para alterar o campo 'ativo' (API: /users/{id})
-             const response = await fetch(`/api/users/${id}`, {
-                 method: 'PUT',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ ativo: novoStatus })
-             });
-             const resultado = await response.json();
-             
-             if (!response.ok) throw new Error(resultado.detail || 'Erro ao alterar status');
-             
-             const acao = novoStatus ? 'ativado' : 'inativado';
-             showNotificationAndReload(`Usuário ${acao} com sucesso!`, 'success');
-
-         } catch (error) {
-             showNotification(`Erro ao alterar status: ${error.message}`);
-         }
-    };
-
-    window.resetarSenha = async (id) => {
-        if (!confirm('ATENÇÃO: Isso irá gerar uma nova senha para o usuário e invalidar a antiga. Deseja continuar?')) return;
-        try {
-            // Chamada POST para resetar senha (API: /users/{id}/reset-password)
-            const response = await fetch(`/api/users/${id}/reset-password`, { method: 'POST' });
-            const resultado = await response.json();
-            
-            if (!response.ok) throw new Error(resultado.detail || 'Erro ao resetar senha');
-            
-            alert(`Senha redefinida com sucesso!\n\nA nova senha temporária é:\n\n${resultado.new_password}\n\nCopie esta senha e a entregue ao usuário de forma segura.`);
-            
-        } catch (error) {
-            showNotification(`Erro ao redefinir senha: ${error.message}`);
-        }
-    };
-
-    btnAddUser.addEventListener('click', abrirModalParaCriar);
-    modal.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', fecharModal));
-    window.addEventListener('click', (event) => { if (event.target == modal) fecharModal(); });
-
-    formUser.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        
-        const formData = new FormData(formUser);
-        const dados = Object.fromEntries(formData.entries());
-        
-        const url = idUsuarioEmEdicao ? `/api/users/${idUsuarioEmEdicao}` : '/api/users/';
-        const method = idUsuarioEmEdicao ? 'PUT' : 'POST';
-        
-        // Remove a senha se for PUT e estiver vazia, para não sobrescrever o hash
-        if (method === 'PUT' && dados.password === "") {
-            delete dados.password;
-        }
-
-        const submitButton = this.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dados)
-            });
-            const resultado = await response.json();
-            
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
-
-            showNotificationAndReload(resultado.mensagem || `Usuário ${idUsuarioEmEdicao ? 'atualizado' : 'criado'} com sucesso!`, 'success');
-
-        } catch (error) {
-            showNotification(`Erro: ${error.message}`);
-        } finally {
-            submitButton.disabled = false;
-        }
-    });
-
-});
-</script>
+{# Bloco de scripts agora apenas inclui o ficheiro externo #}
+<script src="{{ request.app.url_path_for('static', path='js/gerenciar_usuarios.js') }}" defer></script>
 {% endblock %}

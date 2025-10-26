@@ -17,9 +17,10 @@
                 {% if pedidos_pendentes %}
                     {% for pedido in pedidos_pendentes %}
                     <tr>
-                        <td><strong><a href="{{ url_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
+                        {# Alterado url_for para request.app.url_path_for #}
+                        <td><strong><a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
                         <td>{{ pedido.numero_contrato }}</td>
-                        <td>{{ pedido.data_pedido | replace('-', '/') }}</td>
+                        <td>{{ pedido.data_pedido | replace('-', '/') }}</td> {# Assume que data_pedido já vem formatado ou é objeto date #}
                         {# Lógica de Cores UX Melhorada #}
                         {% set dias_passados = pedido.dias_passados %}
                         {% set dias_class = '' %}
@@ -46,8 +47,9 @@
             </tbody>
         </table>
     </div>
-    
+
     <div class="card-footer">
-        {{ render_pagination(pagina_atual, total_paginas, 'home') }}
+        {# A chamada da macro está correta, mas a macro em _pagination.html precisa ser refatorada #}
+        {{ render_pagination(pagina_atual, total_paginas, 'home_ui') }} {# Nota: O nome da rota é 'home_ui' no ui_router.py #}
     </div>
 </div>

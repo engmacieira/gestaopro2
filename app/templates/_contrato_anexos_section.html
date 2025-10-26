@@ -4,37 +4,44 @@
 <div class="card full-width" style="margin-bottom: 30px;">
     <h2>Anexos do Contrato</h2>
     <p class="subtitle" style="margin-bottom: 20px;">Adicione ou visualize os documentos vinculados a este contrato.</p>
-    
-    {# O form deve apontar para o endpoint da API Anexo, mas mantemos o URL Flask antigo para compatibilidade do Template #}
-    <form action="{{ url_for('upload_anexo', id_contrato=contrato.id) }}" method="POST" enctype="multipart/form-data" class="upload-form">
-    
-    <div class="form-group" style="flex-grow: 2;">
-        <label for="tipo_documento_select_anexo">Tipo do Documento</label>
-        <select name="tipo_documento_select" id="tipo_documento_select_anexo" class="form-control" required>
-            <option value="" disabled selected>Selecione um tipo...</option>
-            
-            {% for tipo in tipos_documento %}
-                <option value="{{ tipo }}">{{ tipo }}</option>
-            {% endfor %}
 
-            <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
-        </select>
-        
-        <input type="text" name="tipo_documento_novo" id="tipo_documento_novo_anexo" class="form-control" placeholder="Digite o novo tipo de documento" style="display: none; margin-top: 10px;">
-    </div>
+    {# Action aponta para a API, nomes dos campos ajustados #}
+    <form action="/api/anexos/upload/" method="POST" enctype="multipart/form-data" class="upload-form" id="form-upload-anexo-contrato"> {# Adicionado ID para possível interceptação JS #}
 
-    <div class="form-group" style="flex-grow: 3;">
-        <label for="anexo_file">Arquivo</label>
-        <input type="file" name="anexo" id="anexo_file" class="form-control" required>
-    </div>
+        {# Campos ocultos para enviar contexto para a API #}
+        <input type="hidden" name="id_entidade" value="{{ contrato.id }}">
+        <input type="hidden" name="tipo_entidade" value="contrato">
 
-    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Enviar</button>
+        <div class="form-group" style="flex-grow: 2;">
+            <label for="tipo_documento_select_anexo">Tipo do Documento</label>
+            {# Nome do campo principal é 'tipo_documento' #}
+            <select name="tipo_documento" id="tipo_documento_select_anexo" class="form-control" required>
+                <option value="" disabled selected>Selecione um tipo...</option>
+
+                {% for tipo in tipos_documento %}
+                    <option value="{{ tipo }}">{{ tipo }}</option>
+                {% endfor %}
+
+                <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
+            </select>
+
+            {# Nome do campo para novo tipo mantido #}
+            <input type="text" name="tipo_documento_novo" id="tipo_documento_novo_anexo" class="form-control" placeholder="Digite o novo tipo de documento" style="display: none; margin-top: 10px;">
+        </div>
+
+        <div class="form-group" style="flex-grow: 3;">
+            <label for="anexo_file">Arquivo</label>
+            {# Nome do campo de arquivo é 'file' #}
+            <input type="file" name="file" id="anexo_file" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Enviar</button>
     </form>
 
     <div id="notification-area-anexos">
         {# Manter a área para as mensagens flash/JS da rota de upload #}
     </div>
-    
+
     {% if anexos %}
     <div class="attachment-list-container">
         <h4>Anexos existentes ({{ anexos | length }}):</h4>
@@ -43,13 +50,16 @@
             <li class="attachment-item">
                 <div class="attachment-file">
                     <i class="fa-solid fa-paperclip"></i>
-                    <a href="{{ url_for('uploaded_file', filename=anexo.nome_seguro) }}" title="{{ anexo.nome_original }}" target="_blank">
+                    {# Link de download usa a rota API via request.app.url_path_for #}
+                    <a href="{{ request.app.url_path_for('download_anexo_file', id=anexo.id) }}" title="{{ anexo.nome_original }}" target="_blank">
                         {{ anexo.tipo_documento or 'Documento' }} - {{ contrato.numero_contrato }}
                     </a>
                 </div>
                 <div class="attachment-meta">
-                    Enviado em: {{ anexo.data_upload_br }}
-                    <button class="btn-link-action red" title="Excluir" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_seguro }}', '{{ anexo.nome_original }}')">
+                    {# Formatando a data que vem do banco #}
+                    Enviado em: {{ anexo.data_upload.strftime('%d/%m/%Y') if anexo.data_upload else 'Data Indisponível' }}
+                    {# Onclick mantido, pois a lógica JS deve chamar a API DELETE correta #}
+                    <button class="btn-link-action red" title="Excluir" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_seguro }}', '{{ anexo.nome_original | e }}')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>

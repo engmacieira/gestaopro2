@@ -1,35 +1,54 @@
 {% macro render_pagination(pagina_atual, total_paginas, endpoint, route_params={}, query_params={}) %}
     {% if total_paginas > 1 %}
-        {% set base_params = route_params.copy() %}
-        {% set _ = base_params.update(query_params) %}
+        {# Generate the base path using path parameters only #}
+        {% set base_path = request.app.url_path_for(endpoint, **route_params) %}
         {% set window = 2 %}
     {% endif %}
 
     {% if total_paginas > 1 %}
     <nav class="pagination-nav" aria-label="Navegação de página">
         <ul class="pagination">
-            
-            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': 1}) %}
+
+            {# --- First Link --- #}
+            {% set temp_params_first = query_params.copy() %}
+            {% set _ = temp_params_first.update({'page': 1}) %}
+            {# Build query string manually #}
+            {% set query_parts_first = [] %}
+            {% for key, value in temp_params_first.items() if value is not none and value != '' %}
+                {% set _ = query_parts_first.append(key ~ "=" ~ (value|string)) %}
+            {% endfor %}
+            {% set query_string_first = "?" ~ (query_parts_first | join("&")) if query_parts_first else "" %}
             <li class="page-item {% if pagina_atual == 1 %}disabled{% endif %}">
-                {# Primeiro link usa ícones de navegação rápida #}
-                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Primeira"><i class="fa-solid fa-backward-fast"></i></a>
+                <a class="page-link" href="{{ base_path }}{{ query_string_first }}" aria-label="Primeira"><i class="fa-solid fa-backward-fast"></i></a>
             </li>
 
-            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': pagina_atual - 1}) %}
+            {# --- Previous Link --- #}
+            {% set temp_params_prev = query_params.copy() %}
+            {% set _ = temp_params_prev.update({'page': pagina_atual - 1}) %}
+            {% set query_parts_prev = [] %}
+            {% for key, value in temp_params_prev.items() if value is not none and value != '' %}
+                 {% set _ = query_parts_prev.append(key ~ "=" ~ (value|string)) %}
+            {% endfor %}
+            {% set query_string_prev = "?" ~ (query_parts_prev | join("&")) if query_parts_prev else "" %}
             <li class="page-item {% if pagina_atual == 1 %}disabled{% endif %}">
-                {# Anterior #}
-                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Anterior"><i class="fa-solid fa-backward-step"></i></a>
+                <a class="page-link" href="{{ base_path }}{{ query_string_prev }}" aria-label="Anterior"><i class="fa-solid fa-backward-step"></i></a>
             </li>
 
+            {# --- Page Number Links --- #}
             {% set ellipsis_shown = false %}
             {% for p in range(1, total_paginas + 1) %}
-                {# Lógica para mostrar a primeira, última e páginas vizinhas #}
                 {% set show_page = (p == 1) or (p == total_paginas) or (p >= pagina_atual - window and p <= pagina_atual + window) %}
-                
+
                 {% if show_page %}
-                    {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': p}) %}
+                    {% set temp_params_p = query_params.copy() %}
+                    {% set _ = temp_params_p.update({'page': p}) %}
+                    {% set query_parts_p = [] %}
+                    {% for key, value in temp_params_p.items() if value is not none and value != '' %}
+                        {% set _ = query_parts_p.append(key ~ "=" ~ (value|string)) %}
+                    {% endfor %}
+                    {% set query_string_p = "?" ~ (query_parts_p | join("&")) if query_parts_p else "" %}
                     <li class="page-item {% if p == pagina_atual %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for(endpoint, **link_params) }}">{{ p }}</a>
+                        <a class="page-link" href="{{ base_path }}{{ query_string_p }}">{{ p }}</a>
                     </li>
                     {% set ellipsis_shown = false %}
                 {% elif not ellipsis_shown %}
@@ -38,16 +57,28 @@
                 {% endif %}
             {% endfor %}
 
-            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': pagina_atual + 1}) %}
+            {# --- Next Link --- #}
+            {% set temp_params_next = query_params.copy() %}
+            {% set _ = temp_params_next.update({'page': pagina_atual + 1}) %}
+            {% set query_parts_next = [] %}
+            {% for key, value in temp_params_next.items() if value is not none and value != '' %}
+                 {% set _ = query_parts_next.append(key ~ "=" ~ (value|string)) %}
+            {% endfor %}
+            {% set query_string_next = "?" ~ (query_parts_next | join("&")) if query_parts_next else "" %}
             <li class="page-item {% if pagina_atual == total_paginas %}disabled{% endif %}">
-                {# Próxima #}
-                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Próxima"><i class="fa-solid fa-forward-step"></i></a>
+                <a class="page-link" href="{{ base_path }}{{ query_string_next }}" aria-label="Próxima"><i class="fa-solid fa-forward-step"></i></a>
             </li>
 
-            {% set link_params = base_params.copy() %}{% set _ = link_params.update({'page': total_paginas}) %}
+            {# --- Last Link --- #}
+            {% set temp_params_last = query_params.copy() %}
+            {% set _ = temp_params_last.update({'page': total_paginas}) %}
+            {% set query_parts_last = [] %}
+            {% for key, value in temp_params_last.items() if value is not none and value != '' %}
+                {% set _ = query_parts_last.append(key ~ "=" ~ (value|string)) %}
+            {% endfor %}
+            {% set query_string_last = "?" ~ (query_parts_last | join("&")) if query_parts_last else "" %}
             <li class="page-item {% if pagina_atual == total_paginas %}disabled{% endif %}">
-                {# Última #}
-                <a class="page-link" href="{{ url_for(endpoint, **link_params) }}" aria-label="Última"><i class="fa-solid fa-forward-fast"></i></a>
+                <a class="page-link" href="{{ base_path }}{{ query_string_last }}" aria-label="Última"><i class="fa-solid fa-forward-fast"></i></a>
             </li>
         </ul>
     </nav>

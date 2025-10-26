@@ -4,7 +4,7 @@
 {% block title %}Contratos{% endblock %}
 
 {% block content %}
-{# 1. INCLUSÃO DO COMPONENTE HEADER/ACTIONS #}
+{# 1. INCLUSÃO DO COMPONENTE HEADER/ACTIONS (Já refatorado) #}
 {% include '_contratos_header.html' %}
 
 <div class="card full-width" style="margin-top: 20px;">
@@ -14,46 +14,61 @@
             <thead>
                 <tr>
                     <th class="sortable-header" style="width: 20%;">
-                        {% set next_order = 'desc' if sort_by == 'numero_contrato' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'numero_contrato', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_ui', **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_num = 'desc' if sort_by == 'numero_contrato' and order == 'asc' else 'asc' %}
+                        {% set params_num = query_params.copy() %}
+                        {% set _ = params_num.update({'sort_by': 'numero_contrato', 'order': next_order_num}) %}
+                        {% set base_path_num = request.app.url_path_for('contratos_ui') %}
+                        {% set query_parts_num = [] %}{% for key, value in params_num.items() if value is not none and value != '' %}{% set _ = query_parts_num.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_num = "?" ~ (query_parts_num | join('&')) if query_parts_num else "" %}
+                        <a href="{{ base_path_num }}{{ query_string_num }}">
                             Nº Contrato
                             {% if sort_by == 'numero_contrato' %}<i class="fa-solid {{ 'fa-arrow-down-9-1' if order == 'desc' else 'fa-arrow-up-1-9' }}"></i>{% endif %}
                         </a>
                     </th>
                     <th class="sortable-header" style="width: 20%;">
-                        {% set next_order = 'desc' if sort_by == 'processo_licitatorio' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'processo_licitatorio', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_ui', **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_proc = 'desc' if sort_by == 'processo_licitatorio' and order == 'asc' else 'asc' %}
+                        {% set params_proc = query_params.copy() %}
+                        {% set _ = params_proc.update({'sort_by': 'processo_licitatorio', 'order': next_order_proc}) %}
+                        {% set base_path_proc = request.app.url_path_for('contratos_ui') %}
+                        {% set query_parts_proc = [] %}{% for key, value in params_proc.items() if value is not none and value != '' %}{% set _ = query_parts_proc.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_proc = "?" ~ (query_parts_proc | join('&')) if query_parts_proc else "" %}
+                        <a href="{{ base_path_proc }}{{ query_string_proc }}">
                             Processo Licitatório
                             {% if sort_by == 'processo_licitatorio' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}
                         </a>
                     </th>
                     <th class="sortable-header" style="width: 25%;">
-                        {% set next_order = 'desc' if sort_by == 'fornecedor' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'fornecedor', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_ui', **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_forn = 'desc' if sort_by == 'fornecedor' and order == 'asc' else 'asc' %}
+                        {% set params_forn = query_params.copy() %}
+                        {% set _ = params_forn.update({'sort_by': 'fornecedor', 'order': next_order_forn}) %}
+                        {% set base_path_forn = request.app.url_path_for('contratos_ui') %}
+                        {% set query_parts_forn = [] %}{% for key, value in params_forn.items() if value is not none and value != '' %}{% set _ = query_parts_forn.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_forn = "?" ~ (query_parts_forn | join('&')) if query_parts_forn else "" %}
+                        <a href="{{ base_path_forn }}{{ query_string_forn }}">
                             Fornecedor
                             {% if sort_by == 'fornecedor' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}
                         </a>
                     </th>
                     <th class="sortable-header text-right">
-                        {% set next_order = 'desc' if sort_by == 'data_vigencia_fim' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'data_vigencia_fim', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_ui', **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_fim = 'desc' if sort_by == 'data_vigencia_fim' and order == 'asc' else 'asc' %}
+                        {% set params_fim = query_params.copy() %}
+                        {% set _ = params_fim.update({'sort_by': 'data_vigencia_fim', 'order': next_order_fim}) %}
+                        {% set base_path_fim = request.app.url_path_for('contratos_ui') %}
+                        {% set query_parts_fim = [] %}{% for key, value in params_fim.items() if value is not none and value != '' %}{% set _ = query_parts_fim.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_fim = "?" ~ (query_parts_fim | join('&')) if query_parts_fim else "" %}
+                        <a href="{{ base_path_fim }}{{ query_string_fim }}">
                             Fim da Vigência
                             {% if sort_by == 'data_vigencia_fim' %}<i class="fa-solid {{ 'fa-arrow-down-9-1' if order == 'desc' else 'fa-arrow-up-1-9' }}"></i>{% endif %}
                         </a>
                     </th>
                     <th class="sortable-header text-center">
-                        {% set next_order = 'desc' if sort_by == 'status_ativo' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'status_ativo', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_ui', **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_status = 'desc' if sort_by == 'status_ativo' and order == 'asc' else 'asc' %}
+                        {% set params_status = query_params.copy() %}
+                        {% set _ = params_status.update({'sort_by': 'status_ativo', 'order': next_order_status}) %}
+                        {% set base_path_status = request.app.url_path_for('contratos_ui') %}
+                        {% set query_parts_status = [] %}{% for key, value in params_status.items() if value is not none and value != '' %}{% set _ = query_parts_status.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_status = "?" ~ (query_parts_status | join('&')) if query_parts_status else "" %}
+                        <a href="{{ base_path_status }}{{ query_string_status }}">
                             Status
                             {% if sort_by == 'status_ativo' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}
                         </a>
@@ -64,16 +79,18 @@
                 {% for contrato in contratos %}
                     {% set is_ativo = contrato.status_ativo %}
                     {% set data_fim = contrato.data_vigencia_fim %}
-                    {# A variável 'hoje' deve ser passada pelo router para fazer esta verificação no frontend #}
-                    {% set is_expirado = data_fim and data_fim < hoje %} 
+                    {# A variável 'hoje' deve ser passada pelo router #}
+                    {% set is_expirado = data_fim and data_fim < hoje %}
 
                     <tr>
-                        <td><a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id) }}"><strong>{{ contrato.numero_contrato }}</strong></a></td>
+                        {# Alterado url_for para request.app.url_path_for #}
+                        <td><a href="{{ request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) }}"><strong>{{ contrato.numero_contrato }}</strong></a></td>
                         <td>{{ contrato.processo_licitatorio }}</td>
                         <td>{{ contrato.fornecedor }}</td>
                         <td class="text-right">
+                            {# Formata a data se ela existir #}
                             {{ data_fim.strftime('%d/%m/%Y') if data_fim else 'N/D' }}
-                            {# Aviso de expiração, mesmo se Ativo, pois pode precisar de aditivo #}
+                            {# Aviso de expiração #}
                             {% if is_expirado and is_ativo %}
                                 <span class="status-badge orange" title="Contrato Ativo, mas Vigência Expirada">⚠️ Expirado</span>
                             {% elif is_expirado and not is_ativo %}
@@ -81,10 +98,13 @@
                             {% endif %}
                         </td>
                         <td class="text-center">
+                            {# Lógica de status combinando ativo e expirado #}
                             {% if is_ativo and not is_expirado %}
                                 <span class="status-badge green">Ativo</span>
-                            {% else %}
+                            {% elif not is_ativo and not is_expirado %} {# Explicitamente Inativo antes de expirar #}
                                 <span class="status-badge gray">Inativo</span>
+                            {% else %} {# Casos: expirado ativo (mostra Expirado acima), expirado inativo #}
+                                <span class="status-badge gray">Inativo</span> {# Assume Inativo se expirado #}
                             {% endif %}
                         </td>
                     </tr>
@@ -92,16 +112,18 @@
             </tbody>
         </table>
     </div>
-    
+
     <div class="card-footer">
+        {# Chamada da macro já refatorada #}
         {{ render_pagination(pagina_atual, total_paginas, 'contratos_ui', {}, query_params) }}
     </div>
-    
+
     {% else %}
     <div class="empty-state">
         <i class="fa-solid fa-file-contract"></i>
         <h2>Nenhum Contrato Encontrado</h2>
-        <p>Ajuste os filtros ou <a href="{{ url_for('novo_contrato_ui') }}">crie um novo contrato</a> para começar.</p>
+        {# Alterado url_for para request.app.url_path_for - VERIFICAR NOME DA ROTA 'novo_contrato_ui' #}
+        <p>Ajuste os filtros ou <a href="{{ request.app.url_path_for('novo_contrato_ui') }}">crie um novo contrato</a> para começar.</p>
     </div>
     {% endif %}
 

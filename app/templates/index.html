@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Painel de Controle - GestãoPRO v2.0{% endblock %}
+{% block title %}Painel de Controle - GestãoPRO{% endblock %} {# Removido v2.0 do título #}
 
 {% block content %}
+{# Área de notificação movida para base.html, mas mantemos o ID aqui se o JS o usar especificamente #}
 <div id="notification-area"></div>
 
 <div class="dashboard-header">
@@ -11,100 +12,29 @@
         <p class="subtitle">Bem-vindo! Aqui está um resumo da sua atividade.</p>
     </div>
     <div class="header-actions">
-        <a href="{{ url_for('importar_ui') }}" class="btn btn-secondary"><i class="fa-solid fa-file-import"></i> Ferramentas de Importação</a>
+        {# Alterado url_for para request.app.url_path_for #}
+        <a href="{{ request.app.url_path_for('importar_ui') }}" class="btn btn-secondary"><i class="fa-solid fa-file-import"></i> Ferramentas de Importação</a>
         <button id="btn-iniciar-pedido-modal" class="btn btn-primary"><i class="fa-solid fa-cart-plus"></i> Iniciar Novo Pedido</button>
     </div>
 </div>
 
-{# 1. INCLUSÃO DO COMPONENTE INDICADORES #}
+{# 1. INCLUSÃO DO COMPONENTE INDICADORES (Já verificado) #}
 {% include '_dashboard_indicators.html' %}
 
 <div class="dashboard-main-grid">
-    
-    {# 2. INCLUSÃO DO COMPONENTE TABELA PENDENTE #}
-    {# O partial agora é responsável pela tabela e pela paginação #}
+
+    {# 2. INCLUSÃO DO COMPONENTE TABELA PENDENTE (Já refatorado HTML, depende da macro) #}
     {% include '_dashboard_pending_table.html' %}
 
-    {# 3. INCLUSÃO DO COMPONENTE ATALHOS #}
+    {# 3. INCLUSÃO DO COMPONENTE ATALHOS (Já refatorado) #}
     {% include '_dashboard_shortcuts.html' %}
 </div>
 
-{# 4. INCLUSÃO DO COMPONENTE MODAL #}
+{# 4. INCLUSÃO DO COMPONENTE MODAL (Já verificado) #}
 {% include '_modal_novo_pedido.html' %}
 {% endblock %}
 
 {% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // --- Referências e Lógica do Modal/Atalhos ---
-    const modalPedido = document.getElementById('modal-novo-pedido');
-    // Botões que abrem o modal (Header e Atalho)
-    const btnAbrirModalPedido = document.getElementById('btn-iniciar-pedido-modal');
-    const btnAbrirModalShortcut = document.getElementById('btn-iniciar-pedido-shortcut');
-    const notificationArea = document.getElementById('notification-area');
-
-    function showNotification(message, type = 'error') {
-        const existing = notificationArea.querySelector('.notification');
-        if(existing) existing.remove();
-        
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        notificationArea.appendChild(notification);
-        setTimeout(() => notification.remove(), 5000);
-    }
-    
-    // --- Lógica do Modal ---
-    const btnFecharModalPedido = document.getElementById('btn-fechar-modal-pedido');
-    const btnCancelarModalPedido = document.getElementById('btn-cancelar-modal-pedido');
-    const btnContinuarPedido = document.getElementById('btn-continuar-pedido');
-    const selectCategoriaPedido = document.getElementById('categoria-pedido-select');
-
-    async function carregarCategoriasEAbrirModal() {
-        modalPedido.style.display = 'flex';
-        try {
-            // Chamada à API refatorada
-            const response = await fetch("/api/categorias?mostrar_inativos=false");
-            if (!response.ok) throw new Error('Falha na rede ou na API de categorias.');
-            
-            const categorias = await response.json();
-            
-            selectCategoriaPedido.innerHTML = '<option value="">Selecione uma categoria ativa</option>';
-            categorias.forEach(cat => {
-                // A API /api/categorias com ?mostrar_inativos=false já retorna apenas ativos
-                const option = new Option(cat.nome, cat.id);
-                selectCategoriaPedido.add(option);
-            });
-        } catch (error) {
-            selectCategoriaPedido.innerHTML = '<option value="">Erro ao carregar categorias</option>';
-            console.error("Erro ao buscar categorias:", error);
-            showNotification(`Erro ao carregar categorias: ${error.message}`, 'error');
-        }
-    }
-    
-    const fecharModalPedido = () => modalPedido.style.display = 'none';
-
-    // Atribuir eventos de abertura do modal
-    btnAbrirModalPedido.addEventListener('click', carregarCategoriasEAbrirModal);
-    btnAbrirModalShortcut.addEventListener('click', carregarCategoriasEAbrirModal);
-
-    btnFecharModalPedido.addEventListener('click', fecharModalPedido);
-    btnCancelarModalPedido.addEventListener('click', fecharModalPedido);
-    window.addEventListener('click', (event) => {
-        if (event.target == modalPedido) fecharModalPedido();
-    });
-
-    btnContinuarPedido.addEventListener('click', () => {
-        const categoriaId = selectCategoriaPedido.value;
-        if (categoriaId) {
-            // Redirecionamento usando a rota Flask/FastAPI
-            window.location.href = `/categoria/${categoriaId}/novo-pedido`;
-        } else {
-            showNotification('Por favor, selecione uma categoria para continuar.');
-        }
-    });
-
-});
-</script>
+{# Bloco de scripts agora apenas inclui o ficheiro externo #}
+<script src="{{ request.app.url_path_for('static', path='js/index.js') }}" defer></script>
 {% endblock %}

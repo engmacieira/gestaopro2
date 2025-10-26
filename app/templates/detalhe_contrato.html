@@ -5,13 +5,15 @@
 
 {% block content %}
 <header class="main-header">
-    <a href="{{ url_for('contratos_ui') }}" class="back-link">
+    {# Alterado url_for para request.app.url_path_for #}
+    <a href="{{ request.app.url_path_for('contratos_ui') }}" class="back-link">
         &larr; Voltar para a lista de contratos
     </a>
     <h1>Contrato: <span class="text-blue">{{ contrato.numero_contrato }}</span></h1>
     <p class="subtitle">Detalhes, itens e anexos do contrato.</p>
 </header>
 
+{# Exibe os detalhes principais do contrato #}
 <div class="details-card">
     <div class="detail-item wide"><span>Fornecedor</span><strong>{{ contrato.fornecedor }}</strong></div>
     <div class="detail-item"><span>CNPJ</span><strong>{{ contrato.cpf_cnpj }}</strong></div>
@@ -24,7 +26,7 @@
     <div class="detail-item"><span>Telefone</span><strong>{{ contrato.telefone or 'Não informado' }}</strong></div>
 </div>
 
-{# 1. INCLUSÃO DO COMPONENTE DE ANEXOS #}
+{# 1. INCLUSÃO DO COMPONENTE DE ANEXOS (Já refatorado) #}
 {% include '_contrato_anexos_section.html' %}
 
 
@@ -32,18 +34,20 @@
     <div class="card-actions">
         <h2>Itens do Contrato</h2>
         <div class="actions-group">
+            {# O form de filtro agora submete para a URL atual (construída pelo FastAPI) #}
             <form method="GET" action="" class="filter-form">
                 <label class="checkbox-label">
-                    <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if 'mostrar_inativos' in query_params %}checked{% endif %}>
+                    <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if query_params.get('mostrar_inativos') == 'true' %}checked{% endif %}>
                     Mostrar Itens Inativos
                 </label>
             </form>
-            <a href="{{ url_for('importar_itens_ui', id_contrato=contrato.id) }}" class="btn btn-secondary"><i class="fa-solid fa-file-excel"></i> Importar</a>
+            {# Alterado url_for para request.app.url_path_for #}
+            <a href="{{ request.app.url_path_for('importar_itens_ui', id_contrato=contrato.id) }}" class="btn btn-secondary"><i class="fa-solid fa-file-excel"></i> Importar</a>
             <button id="btn-toggle-form" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Adicionar Item</button>
         </div>
     </div>
 
-    {# 2. INCLUSÃO DO COMPONENTE DE FORMULÁRIO DE ITEM #}
+    {# 2. INCLUSÃO DO COMPONENTE DE FORMULÁRIO DE ITEM (Já verificado) #}
     {% include '_contrato_item_form.html' %}
 
    <div class="table-wrapper">
@@ -51,22 +55,42 @@
         <thead>
             <tr>
                 <th class="sortable-header" style="width: 5%;">
-                    {% set next_order = 'desc' if sort_by == 'numero_item' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'numero_item', 'order': next_order}) %}
-                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Nº {% if sort_by == 'numero_item' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                    {# Link de ordenação refatorado #}
+                    {% set next_order_num = 'desc' if sort_by == 'numero_item' and order == 'asc' else 'asc' %}
+                    {% set params_num = query_params.copy() %}
+                    {% set _ = params_num.update({'sort_by': 'numero_item', 'order': next_order_num}) %}
+                    {% set base_path_num = request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) %}
+                    {% set query_parts_num = [] %}{% for key, value in params_num.items() if value is not none and value != '' %}{% set _ = query_parts_num.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_num = "?" ~ (query_parts_num | join('&')) if query_parts_num else "" %}
+                    <a href="{{ base_path_num }}{{ query_string_num }}">Nº {% if sort_by == 'numero_item' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
                 </th>
                 <th class="sortable-header">
-                    {% set next_order = 'desc' if sort_by == 'descricao' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'descricao', 'order': next_order}) %}
-                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Descrição {% if sort_by == 'descricao' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
+                    {# Link de ordenação refatorado #}
+                    {% set next_order_desc = 'desc' if sort_by == 'descricao' and order == 'asc' else 'asc' %}
+                    {% set params_desc = query_params.copy() %}
+                    {% set _ = params_desc.update({'sort_by': 'descricao', 'order': next_order_desc}) %}
+                    {% set base_path_desc = request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) %}
+                    {% set query_parts_desc = [] %}{% for key, value in params_desc.items() if value is not none and value != '' %}{% set _ = query_parts_desc.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_desc = "?" ~ (query_parts_desc | join('&')) if query_parts_desc else "" %}
+                    <a href="{{ base_path_desc }}{{ query_string_desc }}">Descrição {% if sort_by == 'descricao' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
                 </th>
                 <th>Marca</th>
                 <th>Qtd. Contratada</th>
-                <th class="sortable-header">
-                    {% set next_order = 'desc' if sort_by == 'valor' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'valor', 'order': next_order}) %}
-                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Valor Unit. (R$) {% if sort_by == 'valor' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                <th class="sortable-header text-right"> {# Adicionado text-right #}
+                    {# Link de ordenação refatorado #}
+                    {% set next_order_valor = 'desc' if sort_by == 'valor' and order == 'asc' else 'asc' %}
+                    {% set params_valor = query_params.copy() %}
+                    {% set _ = params_valor.update({'sort_by': 'valor', 'order': next_order_valor}) %}
+                    {% set base_path_valor = request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) %}
+                    {% set query_parts_valor = [] %}{% for key, value in params_valor.items() if value is not none and value != '' %}{% set _ = query_parts_valor.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_valor = "?" ~ (query_parts_valor | join('&')) if query_parts_valor else "" %}
+                    <a href="{{ base_path_valor }}{{ query_string_valor }}">Valor Unit. (R$) {% if sort_by == 'valor' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
                 </th>
-                <th class="sortable-header text-green">
-                    {% set next_order = 'desc' if sort_by == 'saldo' and order == 'asc' else 'asc' %}{% set params = query_params.copy() %}{% set _ = params.update({'sort_by': 'saldo', 'order': next_order}) %}
-                    <a href="{{ url_for('detalhe_contrato', id_contrato=contrato.id, **params) }}">Saldo {% if sort_by == 'saldo' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
+                <th class="sortable-header text-green text-right">
+                    {# Link de ordenação refatorado #}
+                    {% set next_order_saldo = 'desc' if sort_by == 'saldo' and order == 'asc' else 'asc' %}
+                    {% set params_saldo = query_params.copy() %}
+                    {% set _ = params_saldo.update({'sort_by': 'saldo', 'order': next_order_saldo}) %}
+                    {% set base_path_saldo = request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) %}
+                    {% set query_parts_saldo = [] %}{% for key, value in params_saldo.items() if value is not none and value != '' %}{% set _ = query_parts_saldo.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_saldo = "?" ~ (query_parts_saldo | join('&')) if query_parts_saldo else "" %}
+                    <a href="{{ base_path_saldo }}{{ query_string_saldo }}">Saldo {% if sort_by == 'saldo' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
                 </th>
                 <th>Status</th>
                 <th>Ações</th>
@@ -75,261 +99,52 @@
         <tbody>
             {% if itens %}
                 {% for item in itens %}
+                {# Assume que 'item' agora vem da API e tem a estrutura do ItemResponse #}
                 <tr class="{{ 'inactive-row' if not item.ativo }}">
                     <td>{{ item.numero_item }}</td>
-                    <td><strong>{{ item.descricao }}</strong></td>
+                    <td><strong>{{ item.descricao.descricao }}</strong></td> {# Acesso à descrição aninhada #}
                     <td>{{ item.marca or 'N/D' }}</td>
-                    <td>{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %} {{ item.unidade_medida }}(s)</td>
-                    <td>{{ "%.2f"|format(item.valor_unitario) }}</td>
-                    <td class="{{ 'text-red' if item.saldo <= 0 else 'text-green' }}" style="font-weight: 700;">
-                        {% if item.saldo == item.saldo|int %}
-                            {{ item.saldo|int }}
+                    {# Formatação de quantidade e valor #}
+                    <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %} {{ item.unidade_medida }}(s)</td>
+                    <td class="text-right">{{ "%.2f"|format(item.valor_unitario)|replace('.', ',') }}</td>
+                    {# Saldo precisa ser calculado ou passado pela rota/API #}
+                    {% set saldo_item = item.quantidade - (item.total_pedido if item.total_pedido is defined else 0) %} {# Exemplo de cálculo, idealmente viria da API #}
+                    <td class="text-right {{ 'text-red' if saldo_item <= 0 else 'text-green' }}" style="font-weight: 700;">
+                        {% if saldo_item == saldo_item|int %}
+                            {{ saldo_item|int }}
                         {% else %}
-                            {{ "%.2f"|format(item.saldo)|replace('.', ',') }}
+                            {{ "%.2f"|format(saldo_item)|replace('.', ',') }}
                         {% endif %}
                     </td>
                     <td>{% if item.ativo %}<span class="status-badge green">Ativo</span>{% else %}<span class="status-badge gray">Inativo</span>{% endif %}</td>
                     <td class="actions-cell">
+                        {# Onclick mantido, chama JS #}
                         <button class="btn-link-action" onclick="abrirFormParaEditarItem({{ item.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
-                        <button class="btn-link-action {{ 'red' if item.ativo else 'green' }}" onclick="toggleItemStatus({{ item.id }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if item.ativo else 'Ativar' }}</button>
+                        {# Passa o status booleano para a função JS #}
+                        <button class="btn-link-action {{ 'red' if item.ativo else 'green' }}" onclick="toggleItemStatus({{ item.id }}, {{ 'true' if item.ativo else 'false' }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if item.ativo else 'Ativar' }}</button>
                         <button class="btn-link-action red" onclick="excluirItem({{ item.id }})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
                     </td>
                 </tr>
-                {% endfor %}
-            {% else %}
+                {% else %} {# Adicionado else #}
                  <tr><td colspan="8"><div class="empty-state mini"><p>Nenhum item encontrado para os filtros aplicados.</p></div></td></tr>
+                {% endfor %}
             {% endif %}
         </tbody>
     </table>
    </div>
    <div class="card-footer">
+        {# Chamada da macro já refatorada #}
         {{ render_pagination(pagina_atual, total_paginas, 'detalhe_contrato', {'id_contrato': contrato.id}, query_params) }}
    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+{# Bloco de scripts agora apenas inclui o ficheiro externo #}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    const formContainer = document.getElementById('form-container-item'); 
-    const formItem = document.getElementById('form-item');
-    const formItemTitulo = document.getElementById('form-item-titulo');
-    const notificationArea = document.getElementById('notification-area');
-    let idItemEmEdicao = null;
-    const idContrato = {{ contrato.id }}; 
-    const nomeContrato = "{{ contrato.numero_contrato }}"; 
-    
-    // --- Funções de UI Auxiliares ---
-    function showNotification(message, type = 'error') {
-        const existing = notificationArea.querySelector('.notification');
-        if(existing) existing.remove();
-        const notificationDiv = document.createElement('div');
-        notificationDiv.className = `notification ${type}`;
-        notificationDiv.textContent = message;
-        const flashedMessages = notificationArea.querySelectorAll('.notification');
-        flashedMessages.forEach(msg => msg.remove());
-        notificationArea.appendChild(notificationDiv);
-        setTimeout(() => {
-            notificationDiv.style.opacity = '0';
-            notificationDiv.addEventListener('transitionend', () => notificationDiv.remove());
-        }, 5000);
-    }
-
-    function reloadPageWithMessage(message, type = 'success') {
-        sessionStorage.setItem('notificationMessage', message);
-        sessionStorage.setItem('notificationType', type);
-        location.reload();
-    }
-
-    // Exibir notificação após redirecionamento
-    const msg = sessionStorage.getItem('notificationMessage');
-    if (msg) {
-        showNotification(msg, sessionStorage.getItem('notificationType'));
-        sessionStorage.removeItem('notificationMessage');
-        sessionStorage.removeItem('notificationType');
-    }
-
-    // --- Lógica do Formulário de Item ---
-    
-    // Lógica para alternar o formulário de item
-    document.getElementById('btn-toggle-form').addEventListener('click', () => {
-        idItemEmEdicao = null;
-        formItemTitulo.innerText = 'Adicionar Novo Item';
-        formItem.reset();
-        const isHidden = formContainer.style.display === 'none';
-        formContainer.style.display = isHidden ? 'block' : 'none';
-        if (isHidden) { formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-    });
-
-    // Função global para edição
-    window.abrirFormParaEditarItem = async (id) => {
-        idItemEmEdicao = id;
-        try {
-            const response = await fetch(`/api/itens/${id}`);
-            const item = await response.json();
-            if (!response.ok) throw new Error(item.detail || item.erro);
-            
-            formItemTitulo.innerText = 'Editar Item';
-            
-            // Preenche os campos do formulário
-            for (const key in item) {
-                // Trata a descrição que está aninhada no esquema
-                if (key === 'descricao') {
-                    formItem.elements['descricao'].value = item[key].descricao;
-                } 
-                // Trata campos de valor (convertendo de . para ,)
-                else if (key === 'quantidade' || key === 'valor_unitario') {
-                     if (formItem.elements[key]) {
-                        formItem.elements[key].value = parseFloat(item[key]).toFixed(2).replace('.', ',');
-                     }
-                }
-                // Trata campos simples
-                else if(formItem.elements[key]) {
-                    formItem.elements[key].value = item[key];
-                }
-            }
-            
-            formContainer.style.display = 'block';
-            formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } catch (error) {
-            showNotification(`Erro ao buscar item: ${error.message}`);
-        }
-    };
-
-    // Lógica de Submissão (POST / PUT)
-    formItem.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        
-        const dados = Object.fromEntries(new FormData(formItem).entries());
-        
-        // 1. Lógica de Conversão de , para . e Validação
-        try {
-            dados.quantidade = String(dados.quantidade).replace('.', '').replace(',', '.');
-            dados.valor_unitario = String(dados.valor_unitario).replace('.', '').replace(',', '.');
-            
-            const qtdNumerica = parseFloat(dados.quantidade);
-            const valorNumerico = parseFloat(dados.valor_unitario);
-            
-            if (isNaN(qtdNumerica) || isNaN(valorNumerico)) {
-                throw new Error("Quantidade e Valor Unitário devem ser números válidos (use vírgula ou ponto como separador decimal).");
-            }
-        } catch (e) {
-            showNotification(e.message);
-            return;
-        }
-
-        // 2. Monta o Payload para a API (Schema ItemRequest)
-        const payload = {
-            numero_item: dados.numero_item,
-            marca: dados.marca,
-            unidade_medida: dados.unidade_medida,
-            quantidade: dados.quantidade,
-            valor_unitario: dados.valor_unitario,
-            contrato_nome: nomeContrato, 
-            descricao: { 
-                descricao: dados.descricao 
-            }
-        };
-
-        const url = idItemEmEdicao ? `/api/itens/${idItemEmEdicao}` : `/api/itens`;
-        const method = idItemEmEdicao ? 'PUT' : 'POST';
-        
-        const submitButton = this.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-
-        try {
-            const response = await fetch(url, { 
-                method, 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(payload)
-            });
-            const resultado = await response.json();
-            
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
-            
-            showNotification(resultado.mensagem || `Item ${idItemEmEdicao ? 'atualizado' : 'cadastrado'} com sucesso!`, 'success');
-            setTimeout(() => location.reload(), 1500);
-        } catch (error) {
-            showNotification(`Erro ao salvar: ${error.message}`);
-        } finally {
-            submitButton.disabled = false;
-        }
-    });
-
-    // Lógica para Ativar/Inativar (PATCH com parâmetro)
-    window.toggleItemStatus = async (id) => {
-        if (!confirm('Tem certeza que deseja alterar o status deste item?')) return;
-        try {
-            const getResponse = await fetch(`/api/itens/${id}`);
-            if (!getResponse.ok) throw new Error("Item não encontrado para status.");
-            const item = await getResponse.json();
-            const novoStatus = !item.ativo; 
-            
-            const response = await fetch(`/api/itens/${id}/status?activate=${novoStatus}`, { method: 'PATCH' });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
-            
-            reloadPageWithMessage(resultado.mensagem || `Status do item alterado com sucesso para ${novoStatus ? 'Ativo' : 'Inativo'}!`, 'success');
-        } catch(error) {
-            showNotification(`Erro: ${error.message}`);
-        }
-    }
-
-    // Lógica para Excluir (DELETE)
-    window.excluirItem = async (id) => {
-        if (!confirm('ATENÇÃO: Ação permanente. Tem certeza que deseja excluir este item?')) return;
-        try {
-            const response = await fetch(`/api/itens/${id}`, { method: 'DELETE' });
-            if (response.status === 204) { 
-                reloadPageWithMessage("Item excluído com sucesso!", 'success');
-                return;
-            }
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
-        } catch(error) {
-            showNotification(`Erro ao excluir: ${error.message}`);
-        }
-    }
-    
-    // --- Lógica de Anexos ---
-
-    // Lógica para excluir o anexo
-    window.excluirAnexo = async function(idAnexo, nomeSeguro, nomeOriginal) {
-        const mensagemAlerta = `Você está prestes a excluir o anexo "${nomeOriginal}". Deseja continuar?`;
-        if (!confirm(mensagemAlerta)) return;
-
-        try {
-            const response = await fetch(`/api/anexos/${idAnexo}`, { method: 'DELETE' });
-            
-            if (response.status === 204) {
-                 reloadPageWithMessage("Registro do anexo excluído com sucesso.", 'success');
-                 return;
-            }
-
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
-
-        } catch (error) {
-            showNotification(`Erro ao excluir anexo: ${error.message}`);
-        }
-    }
-    
-    // Lógica para o formulário de anexos (CRIAR NOVO TIPO)
-    const tipoDocumentoSelectAnexo = document.getElementById('tipo_documento_select_anexo');
-    const tipoDocumentoNovoInputAnexo = document.getElementById('tipo_documento_novo_anexo');
-
-    if (tipoDocumentoSelectAnexo && tipoDocumentoNovoInputAnexo) {
-        tipoDocumentoSelectAnexo.addEventListener('change', function() {
-            const isNovo = this.value === 'NOVO';
-            tipoDocumentoNovoInputAnexo.style.display = isNovo ? 'block' : 'none';
-            tipoDocumentoNovoInputAnexo.required = isNovo; 
-            if (!isNovo) {
-                tipoDocumentoNovoInputAnexo.value = '';
-            }
-        });
-    }
-
-});
+    // Passa dados do contrato para o JavaScript
+    const idContratoGlobal = {{ contrato.id }};
+    const nomeContratoGlobal = "{{ contrato.numero_contrato }}";
 </script>
+<script src="{{ request.app.url_path_for('static', path='js/detalhe_contrato.js') }}" defer></script>
 {% endblock %}

@@ -4,22 +4,27 @@
 
 {% block content %}
 <header class="main-header">
-    <a href="{{ url_for('detalhe_pedido', numero_aocs=numero_aocs) }}" class="back-link">&larr; Voltar para Detalhes do Pedido</a>
+    {# Alterado url_for para request.app.url_path_for #}
+    <a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=numero_aocs) }}" class="back-link">&larr; Voltar para Detalhes do Pedido</a>
     <h1>Nova Comunicação Interna de Pagamento</h1>
     <p class="subtitle">Vinculado à AOCS: <strong class="text-blue">{{ numero_aocs }}</strong></p>
 </header>
 
 <div class="card full-width">
-    
-    <form method="POST" action="{{ url_for('nova_ci_ui', numero_aocs=numero_aocs) }}">
-        
-        {# INCLUINDO O COMPONENTE DO FORMULÁRIO. Passamos um objeto 'ci' vazio para o contexto. #}
+
+    {# Alterado action para apontar para a rota POST 'nova_ci_post' #}
+    <form method="POST" action="{{ request.app.url_path_for('nova_ci_post', numero_aocs=numero_aocs) }}">
+
+        {# INCLUINDO O COMPONENTE DO FORMULÁRIO. Passamos um objeto 'ci' vazio ou o contexto para o include. #}
         {% include '_ci_form_fields.html' with context %}
 
         <div class="form-actions" style="margin-top: 30px;">
-            <a href="{{ url_for('detalhe_pedido', numero_aocs=numero_aocs) }}" class="btn btn-secondary">Cancelar</a>
+             {# Alterado url_for para request.app.url_path_for #}
+            <a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=numero_aocs) }}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Salvar CI</button>
         </div>
     </form>
 </div>
 {% endblock %}
+
+{# Não há bloco de scripts neste template #}

@@ -9,8 +9,10 @@
     {# Links Corrigidos #}
     <a href="{{ request.app.url_path_for('categorias_ui') }}" class="action-button"><i class="fa-solid fa-tags"></i><span>Gerenciar Categorias</span></a>
     <a href="{{ request.app.url_path_for('contratos_ui') }}" class="action-button"><i class="fa-solid fa-file-signature"></i><span>Gerenciar Contratos</span></a>
-    {# CORREÇÃO FINAL: Passar query parameters como keyword arguments #}
-    <a href="{{ request.app.url_path_for('contratos_ui', mostrar_vencidos='false', data_vencimento_filtro='60d') }}" class="action-button" style="border-color: var(--action-warning); color: #856404;">
+    {# CORREÇÃO: Gerar URL base e adicionar query parameters manualmente #}
+    {% set base_url = request.app.url_path_for('contratos_ui') %}
+    {% set query_string = "mostrar_vencidos=false&data_vencimento_filtro=60d" %}
+    <a href="{{ base_url }}?{{ query_string }}" class="action-button" style="border-color: var(--action-warning); color: #856404;">
         <i class="fa-solid fa-calendar-times" style="color: #856404;"></i><span>Contratos a Vencer (60 dias)</span>
     </a>
 </div>

@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - GestãoPRO</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+    {# Alterado url_for para request.app.url_path_for #}
+    <link rel="stylesheet" href="{{ request.app.url_path_for('static', path='style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,26 +45,24 @@
 <body>
     {# --- Área de Notificação Flutuante --- #}
     <div id="notification-area">
-    {# Substituído o bloco 'with messages = get_flashed_messages...' pela variável 'messages' injetada pelo router #}
+    {# Lógica de mensagens mantida #}
     {% if messages %}
         {% for category, message in messages %}
-            {# Removida a estilização estática para usar o CSS flutuante global #}
             <div class="notification {{ category }} flash">{{ message }}</div>
         {% endfor %}
     {% endif %}
-</div>
+    </div>
 
     <div class="card login-card">
         <div class="login-header">
-            {# --- Inclusão do logo para reforçar o branding --- #}
-            <img src="{{ url_for('static', path='images/logo.jpg') }}" alt="Logo GestãoPRO" class="login-logo">
+            {# --- Inclusão do logo - Alterado url_for para request.app.url_path_for --- #}
+            <img src="{{ request.app.url_path_for('static', path='images/logo.jpg') }}" alt="Logo GestãoPRO" class="login-logo">
             <h2>GestãoPRO</h2>
             <p class="subtitle">Faça o login para continuar</p>
         </div>
 
-        {# O bloco de notificação foi movido para o <div id="notification-area"> acima. #}
-
-        <form method="POST" action="{{ url_for('login') }}">
+        {# Action do formulário aponta para a rota POST 'login_post' #}
+        <form method="POST" action="{{ request.app.url_path_for('login_post') }}">
             <div class="form-group">
                 <label for="username">Usuário</label>
                 <input type="text" id="username" name="username" class="form-control" required>
@@ -76,19 +75,17 @@
         </form>
     </div>
 
-    {# Pequeno script para mover as notificações flash para a área de notificação flutuante #}
+    {# Script mantido como está #}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const notificationArea = document.getElementById('notification-area');
             const flashMessages = document.querySelectorAll('.notification.flash');
-            
-            // Inicia o fade out para notificações que foram carregadas no HTML
+
             flashMessages.forEach(notification => {
-                // Posiciona a notificação no topo direito (que é o padrão do CSS)
                 notification.style.position = 'fixed';
                 notification.style.top = '20px';
                 notification.style.right = '20px';
-                
+
                 setTimeout(() => {
                     notification.style.opacity = '0';
                     notification.addEventListener('transitionend', () => notification.remove());

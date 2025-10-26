@@ -6,7 +6,8 @@
 <div id="notification-area"></div>
 
 <header class="main-header">
-    <a href="{{ url_for('home') }}" class="back-link">
+    {# Alterado url_for para request.app.url_path_for (verificar nome 'home_ui') #}
+    <a href="{{ request.app.url_path_for('home_ui') }}" class="back-link">
         &larr; Voltar para o Painel de Controle
     </a>
     <h1>Ferramentas de Importação</h1>
@@ -24,183 +25,23 @@
     </div>
 
     <div id="tab-contratos" class="tab-content active">
-        {# INCLUINDO COMPONENTE DE CONTRATOS #}
+        {# INCLUINDO COMPONENTE DE CONTRATOS (Já verificado) #}
         {% include '_import_tab_contratos.html' %}
     </div>
 
     <div id="tab-itens" class="tab-content">
-        {# INCLUINDO COMPONENTE DE ITENS #}
+        {# INCLUINDO COMPONENTE DE ITENS (Já verificado) #}
         {% include '_import_tab_itens_global.html' %}
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+{# Bloco de scripts agora apenas inclui o ficheiro externo #}
+{# Passa as URLs de redirecionamento para o JS #}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    const tabLinks = document.querySelectorAll('.tab-link');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            const tabId = link.dataset.tab;
-            tabLinks.forEach(l => l.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            link.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        });
-    });
-
-    function showNotification(message, type = 'error') {
-        const notificationArea = document.getElementById('notification-area');
-        if (!notificationArea) return;
-        const existing = notificationArea.querySelector('.notification');
-        if(existing) existing.remove();
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        notificationArea.appendChild(notification);
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.addEventListener('transitionend', () => notification.remove());
-        }, 5000);
-    }
-
-    function setupImportSection(formId, previewContainerId, previewTableId, errorDivId, saveBtnId, previewUrl, saveUrl, redirectUrl) {
-        const form = document.getElementById(formId);
-        if (!form) return;
-
-        const previewContainer = document.getElementById(previewContainerId);
-        const previewTable = document.getElementById(previewTableId);
-        const errorDiv = document.getElementById(errorDivId);
-        const saveBtn = document.getElementById(saveBtnId);
-        let dataToSave = [];
-        
-        // Determina o texto do botão salvar (pega o último da string para 'Contratos' ou 'Itens')
-        const saveButtonText = saveBtn.textContent;
-
-        form.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            errorDiv.textContent = '';
-            previewContainer.style.display = 'none';
-            const formData = new FormData(form);
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Carregando...';
-
-            try {
-                // Rota de Preview da API
-                const response = await fetch(previewUrl, { method: 'POST', body: formData });
-                const result = await response.json();
-                
-                if (!response.ok) {
-                    // Tenta ler o erro do JSON da API (que é o comportamento esperado do FastAPI)
-                    let errorDetail = result.erro || 'Erro desconhecido.';
-                    if (result.detail && typeof result.detail === 'string') {
-                         errorDetail = result.detail;
-                    }
-                    throw new Error(errorDetail);
-                }
-                
-                dataToSave = result;
-                renderPreview(dataToSave, previewTable, errorDiv, previewContainer);
-                
-            } catch (error) {
-                errorDiv.textContent = `Erro: ${error.message}`;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Carregar e Pré-visualizar';
-            }
-        });
-
-        saveBtn.addEventListener('click', async function() {
-            if (dataToSave.length === 0) return showNotification('Não há dados para salvar.');
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-
-            try {
-                // Rota de Salvar da API
-                const response = await fetch(saveUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dataToSave)
-                });
-                const result = await response.json();
-                
-                if (!response.ok) {
-                    let errorDetail = result.erro || 'Erro desconhecido ao salvar.';
-                    if (result.detail && typeof result.detail === 'string') {
-                         errorDetail = result.detail;
-                    }
-                    throw new Error(errorDetail);
-                }
-                
-                showNotification(result.mensagem, 'success');
-                setTimeout(() => { window.location.href = redirectUrl; }, 2000);
-                
-            } catch (error) {
-                showNotification(`Erro: ${error.message}`);
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${saveButtonText}`;
-            }
-        });
-    }
-    
-    function renderPreview(data, table, errorDiv, container) {
-        if (!data || data.length === 0) {
-            errorDiv.textContent = 'Nenhum dado válido encontrado na planilha.';
-            return;
-        }
-        // Usamos flex para garantir que o layout da etapa 2 seja correto (process-step)
-        container.style.display = 'flex'; 
-        
-        const thead = table.querySelector('thead') || table.createTHead();
-        const tbody = table.querySelector('tbody') || table.createTBody();
-        thead.innerHTML = '';
-        tbody.innerHTML = '';
-
-        const headers = Object.keys(data[0]);
-        thead.innerHTML = `<tr>${headers.map(h => `<th>${h.replace(/_/g, ' ')}</th>`).join('')}</tr>`;
-        
-        tbody.innerHTML = data.map(row => `
-            <tr>
-                ${headers.map(h => {
-                    let value = row[h];
-                    // Formatação de data (melhorada)
-                    if ((h === 'data_inicio' || h === 'data_fim') && value) {
-                        try {
-                            const dateObj = new Date(value);
-                            // Usando toLocaleDateString para formato DD/MM/YYYY
-                            value = dateObj.toLocaleDateString('pt-BR');
-                        } catch (e) {
-                             value = String(value); 
-                        }
-                    } else if (value === null || value === undefined) {
-                         value = '';
-                    }
-                    return `<td>${value}</td>`;
-                }).join('')}
-            </tr>
-        `).join('');
-    }
-
-    // Inicialização do fluxo de Importação de Contratos
-    setupImportSection(
-        'form-upload-contratos', 'preview-container-contratos', 'preview-table-contratos',
-        'error-message-contratos', 'btn-salvar-contratos',
-        '/api/importar/contratos/preview',  
-        '/api/importar/contratos/salvar',     
-        "{{ url_for('contratos_ui') }}"        
-    );
-
-    // Inicialização do fluxo de Importação de Itens
-    setupImportSection(
-        'form-upload-itens', 'preview-container-itens', 'preview-table-itens',
-        'error-message-itens', 'btn-salvar-itens',
-        '/api/importar/itens/global/preview', 
-        '/api/importar/itens/global/salvar',   
-        "{{ url_for('contratos_ui') }}"        
-    );
-});
+    const redirectUrlContratos = "{{ request.app.url_path_for('contratos_ui') }}";
+    const redirectUrlItens = "{{ request.app.url_path_for('contratos_ui') }}"; // Ajustar se necessário
 </script>
+<script src="{{ request.app.url_path_for('static', path='js/importar.js') }}" defer></script>
 {% endblock %}

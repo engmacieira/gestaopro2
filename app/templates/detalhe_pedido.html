@@ -6,331 +6,49 @@
 {# Área para notificações dinâmicas via JavaScript #}
 <div id="notification-area"></div>
 
-{# --- 1. CABEÇALHO DA PÁGINA (Componente) --- #}
+{# --- 1. CABEÇALHO DA PÁGINA (Componente - verificar refatoração interna) --- #}
 {% include '_pedido_header.html' %}
 
-{# --- 2. BARRA DE STATUS/RESUMO (Novo Componente) --- #}
+{# --- 2. BARRA DE STATUS/RESUMO (Componente - Já verificado) --- #}
 {% include '_pedido_status_summary.html' %}
 
 {# --- 3. LAYOUT PRINCIPAL EM GRID --- #}
 <div class="dashboard-main-grid">
-    
+
     {# --- COLUNA PRINCIPAL (ESQUERDA) --- #}
     <div class="main-panel">
-        {# Card com Status e Dados Editáveis (Status já foi movido para o Summary) #}
-        {% include '_pedido_dados_status.html' %} 
-        {# Card com Tabela de Controle de Entrega #}
-        {% include '_pedido_controle_entrega.html' %} 
+        {# Card com Status e Dados Editáveis (Componente - Já verificado) #}
+        {% include '_pedido_dados_status.html' %}
+        {# Card com Tabela de Controle de Entrega (Componente - Já verificado) #}
+        {% include '_pedido_controle_entrega.html' %}
     </div>
 
     {# --- COLUNA LATERAL (DIREITA) --- #}
     <div class="side-panel">
-        {# Card com Tabela de CIs e Botão Nova CI #}
+        {# Card com Tabela de CIs e Botão Nova CI (Componente - verificar refatoração interna) #}
         {% include '_pedido_ci_section.html' %}
-        {# Card com Formulário de Upload e Lista de Anexos #}
+        {# Card com Formulário de Upload e Lista de Anexos (Componente - verificar refatoração interna) #}
         {% include '_pedido_anexos_section.html' %}
     </div>
 </div>
 
 {# --- MODAIS (Estrutura Overlay) --- #}
+{# Componente Modal Edição AOCS (Já verificado) #}
 <div id="modal-edicao-aocs" class="modal-overlay">
     {% include '_modal_editar_aocs.html' %}
 </div>
+{# Componente Modal Registo Entrega (Já verificado) #}
 <div id="modal-registrar-entrega" class="modal-overlay">
     {% include '_modal_registrar_entrega.html' %}
 </div>
 {% endblock %}
 
+{% block scripts %}
+{# Passa o número da AOCS para o JavaScript externo #}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // --- ESTADO GLOBAL E REFERÊNCIAS ---
-    const numeroAOCS = "{{ aocs.numero_aocs }}";
-    let idPedidoParaEntrega = null; 
-
-    // --- FUNÇÕES DE UI ---
-    function showNotification(message, type = 'error') {
-        const notificationArea = document.querySelector('.main-content #notification-area');
-        if (!notificationArea) { console.error("Notification area not found!"); return; }
-        // Remove notificação flash inicial se houver, para evitar duplicidade
-        const initialFlash = notificationArea.querySelector('.notification.flash');
-        if(initialFlash) initialFlash.remove();
-        
-        const existing = notificationArea.querySelector('.notification:not(.flash)');
-        if(existing) existing.remove();
-        
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        notificationArea.prepend(notification); // Usa prepend para aparecer no topo
-        setTimeout(() => {
-            if (notification) { // Verifica se a notificação ainda existe
-                notification.style.opacity = '0';
-                notification.addEventListener('transitionend', () => notification.remove());
-            }
-        }, 5000);
-    }
-
-    function reloadPageWithMessage(message, type = 'success') {
-        sessionStorage.setItem('notificationMessage', message);
-        sessionStorage.setItem('notificationType', type);
-        location.reload();
-    }
-
-    // --- FUNÇÕES DE LÓGICA (API CALLS) ---
-    async function updateAocsField(campo, valor) {
-        // ... (código da função sem alterações)
-        try {
-            const response = await fetch(`/api/aocs/${numeroAOCS}/dados-gerais`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ [campo]: valor })
-            });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-        } catch (error) {
-            showNotification(`Erro: ${error.message}`, 'error');
-        }
-    }
-    
-    async function updateAocsDate(data) {
-        // ... (código da função sem alterações)
-         try {
-            const response = await fetch(`/api/aocs/${numeroAOCS}/data`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: data })
-            });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            showNotification(resultado.mensagem, 'success');
-        } catch (error) {
-            showNotification(`Erro ao atualizar data: ${error.message}`, 'error');
-        }
-    }
-
-    // --- LÓGICA DO MODAL DE ENTREGA ---
-    const modalEntrega = document.getElementById('modal-registrar-entrega');
-    // Seleciona elementos DENTRO do contexto do modal de entrega
-    const formEntrega = modalEntrega?.querySelector('#form-registrar-entrega'); 
-    const inputQtdEntrega = modalEntrega?.querySelector('#input-entrega-quantidade'); 
-    const descModalEntrega = modalEntrega?.querySelector('#modal-entrega-descricao'); 
-    
-    if (modalEntrega && formEntrega && inputQtdEntrega && descModalEntrega) { 
-        window.abrirModalEntrega = function(idPedido, descricao, saldo) {
-            idPedidoParaEntrega = idPedido;
-            descModalEntrega.textContent = `Item: ${descricao}`;
-            inputQtdEntrega.value = saldo; 
-            inputQtdEntrega.max = saldo;
-            modalEntrega.style.display = 'flex';
-            inputQtdEntrega.focus();
-            inputQtdEntrega.select();
-        }
-
-        const fecharModalEntrega = () => { modalEntrega.style.display = 'none'; };
-        modalEntrega.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', fecharModalEntrega));
-        // Não adicionamos listener de clique fora aqui para evitar conflito com outro modal
-
-        formEntrega.addEventListener('submit', async function(event) {
-            // ... (código da função sem alterações)
-             event.preventDefault();
-            const quantidade = inputQtdEntrega.value;
-            const max = parseFloat(inputQtdEntrega.max);
-            const val = parseFloat(quantidade);
-            if (isNaN(val) || val <= 0 || val > max) {
-                 showNotification(`Quantidade inválida. Deve ser maior que 0 e no máximo ${max}.`); return;
-            }
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Confirmando...'; 
-            try {
-                const response = await fetch(`/api/pedidos/${idPedidoParaEntrega}/registrar-entrega`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ quantidade: quantidade })
-                });
-                const resultado = await response.json();
-                if (!response.ok) throw new Error(resultado.erro);
-                reloadPageWithMessage(resultado.mensagem, 'success');
-            } catch (error) {
-                showNotification(`Erro: ${error.message}`);
-                submitButton.disabled = false;
-                 submitButton.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Entrega'; 
-            }
-        });
-    } else {
-        console.error("Alerta: Elementos do modal de entrega não foram completamente encontrados. Verifique os IDs em _modal_registrar_entrega.html.");
-    }
-
-    // --- LÓGICA DOS CAMPOS INDIVIDUAIS (Status/Dados) ---
-    document.getElementById('numero-pedido-input')?.addEventListener('change', (e) => updateAocsField(e.target.dataset.campo, e.target.value));
-    document.getElementById('empenho-input')?.addEventListener('change', (e) => updateAocsField(e.target.dataset.campo, e.target.value));
-    document.getElementById('data_pedido_input')?.addEventListener('change', (e) => updateAocsDate(e.target.value));
-
-    // --- LÓGICA DO MODAL DE EDIÇÃO DA AOCS ---
-    const modalEdicao = document.getElementById('modal-edicao-aocs');
-    const btnAbrirModalEdicao = document.getElementById('btn-abrir-modal-edicao'); // Botão no Header
-    // Seleciona elementos DENTRO do contexto do modal de edição
-    const formEdicao = modalEdicao?.querySelector('#form-edicao-aocs'); 
-
-    if (modalEdicao && btnAbrirModalEdicao && formEdicao) { 
-        btnAbrirModalEdicao.addEventListener('click', async () => {
-             // ... (código para carregar dados no modal sem alterações)
-             try {
-                const response = await fetch(`/api/aocs/${numeroAOCS}`);
-                const aocsDados = await response.json();
-                if (!response.ok) throw new Error(aocsDados.erro);
-                // Preenche o formulário (sempre verificar se os elementos existem)
-                const unidadeSelect = formEdicao.elements.unidade_requisitante;
-                const justificativaInput = formEdicao.elements.justificativa;
-                const orcamentoSelect = formEdicao.elements.info_orcamentaria;
-                const localEntregaSelect = formEdicao.elements.local_entrega;
-                const responsavelSelect = formEdicao.elements.agente_responsavel;
-
-                if (unidadeSelect) unidadeSelect.value = aocsDados.nome_unidade || '';
-                if (justificativaInput) justificativaInput.value = aocsDados.justificativa || '';
-                if (orcamentoSelect) orcamentoSelect.value = aocsDados.info_dotacao || '';
-                if (localEntregaSelect) localEntregaSelect.value = aocsDados.desc_local_entrega || '';
-                if (responsavelSelect) responsavelSelect.value = aocsDados.nome_agente || '';
-                
-                modalEdicao.style.display = 'flex';
-            } catch (error) {
-                showNotification(`Erro ao carregar dados para edição: ${error.message}`, 'error');
-            }
-        });
-
-        const fecharModalEdicao = () => { modalEdicao.style.display = 'none'; };
-        modalEdicao.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', fecharModalEdicao));
-        // Não adicionamos listener de clique fora aqui para evitar conflito com outro modal
-
-        formEdicao.addEventListener('submit', async function(event) {
-            // ... (código da função sem alterações)
-            event.preventDefault();
-            const dadosParaSalvar = Object.fromEntries(new FormData(formEdicao).entries());
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-            try {
-                const response = await fetch(`/api/aocs/${numeroAOCS}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dadosParaSalvar)
-                });
-                const resultado = await response.json();
-                if (!response.ok) throw new Error(resultado.erro);
-                reloadPageWithMessage(resultado.mensagem, 'success');
-            } catch (error) {
-                showNotification(`Erro ao salvar: ${error.message}`, 'error');
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
-            }
-        });
-    } else {
-        console.error("Alerta: Elementos do modal de edição da AOCS não foram completamente encontrados. Verifique os IDs em _modal_editar_aocs.html e _pedido_header.html.");
-    }
-    
-    // --- LÓGICA DE ANEXOS ---
-    // Seleciona elementos DENTRO do contexto da seção de anexos
-    const formAnexos = document.querySelector('#form-anexos'); // Usando querySelector para ser mais flexível
-    const tipoDocumentoSelect = formAnexos?.querySelector('#tipo_documento_select'); 
-    const tipoDocumentoNovoInput = formAnexos?.querySelector('#tipo_documento_novo'); 
-    const anexoInput = formAnexos?.querySelector('#anexo'); 
-
-    if (formAnexos && tipoDocumentoSelect && tipoDocumentoNovoInput && anexoInput) { 
-        tipoDocumentoSelect.addEventListener('change', function() {
-            // ... (código sem alterações)
-            tipoDocumentoNovoInput.style.display = this.value === 'NOVO' ? 'block' : 'none';
-        });
-
-        formAnexos.addEventListener('submit', async function(event) {
-            // ... (código sem alterações)
-             event.preventDefault();
-            const tipoSelecionado = tipoDocumentoSelect.value;
-            const novoTipo = tipoDocumentoNovoInput.value.trim();
-
-            if (tipoSelecionado === "NOVO" && !novoTipo) {
-                showNotification("Por favor, digite o novo tipo de documento.", 'error'); return;
-            }
-            // CORREÇÃO: A validação do tipo selecionado precisa permitir 'NOVO'
-            if (tipoSelecionado === "" ) { 
-                showNotification("Por favor, selecione o tipo do documento.", 'error'); return;
-            }
-            if (!anexoInput.files[0]) {
-                showNotification("Por favor, selecione um arquivo para enviar.", 'error'); return;
-            }
-
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
-            const formData = new FormData(formAnexos);
-
-            try {
-                const response = await fetch(formAnexos.action, { method: 'POST', body: formData });
-                if (response.redirected || response.ok) { 
-                    reloadPageWithMessage('Anexo enviado com sucesso!', 'success'); 
-                } else {
-                    let errorMsg = 'Ocorreu um erro desconhecido no envio.';
-                    try { const resultado = await response.json(); errorMsg = resultado.erro || errorMsg; } 
-                    catch (jsonError) { console.warn("Resposta do envio de anexo não foi JSON:", response.status, response.statusText); }
-                    throw new Error(errorMsg);
-                }
-            } catch (error) {
-                showNotification(`Erro ao enviar anexo: ${error.message}`, 'error');
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fa-solid fa-upload"></i> Enviar Anexo';
-            }
-        });
-    } else {
-         console.error("Alerta: Elementos do formulário de anexos não foram completamente encontrados. Verifique os IDs em _pedido_anexos_section.html.");
-    }
-    
-    window.excluirAnexo = async function(idAnexo, nomeOriginal) {
-        // ... (código sem alterações)
-         if (!confirm(`Tem certeza que deseja excluir o anexo "${nomeOriginal}"?`)) return;
-        try {
-            const response = await fetch(`/api/anexos/${idAnexo}`, { method: 'DELETE' });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.erro);
-            reloadPageWithMessage(resultado.mensagem, 'success');
-        } catch (error) {
-            showNotification(`Erro ao excluir anexo: ${error.message}`);
-        }
-    }
-
-    // --- LÓGICA DE EXCLUSÃO DA AOCS ---
-    const btnExcluirAOCS = document.getElementById('btn-excluir-aocs'); // Botão no Header
-    if (btnExcluirAOCS) {
-        btnExcluirAOCS.addEventListener('click', async function() {
-            // ... (código sem alterações)
-            if (!confirm(`ATENÇÃO: Ação irreversível!\n\nExcluir a AOCS nº ${numeroAOCS} irá restaurar o saldo dos itens.\nDeseja continuar?`)) return;
-            try {
-                const response = await fetch(`/api/aocs/${numeroAOCS}`, { method: 'DELETE' });
-                const resultado = await response.json();
-                if (!response.ok) throw new Error(resultado.erro);
-                sessionStorage.setItem('notificationMessage', resultado.mensagem);
-                sessionStorage.setItem('notificationType', 'success');
-                window.location.href = "{{ url_for('pedidos_ui') }}";
-            } catch (error) {
-                showNotification(`Erro ao excluir AOCS: ${error.message}`, 'error');
-            }
-        });
-    }
-
-    // --- LÓGICA PARA NOTIFICAÇÕES APÓS REDIRECIONAMENTO ---
-    const msg = sessionStorage.getItem('notificationMessage');
-    if (msg) {
-        showNotification(msg, sessionStorage.getItem('notificationType') || 'success');
-        sessionStorage.removeItem('notificationMessage');
-        sessionStorage.removeItem('notificationType');
-    }
-    
-    // --- Listener global para fechar modais clicando fora ---
-     window.addEventListener('click', (event) => { 
-         if (event.target == modalEdicao) modalEdicao.style.display = 'none';
-         if (event.target == modalEntrega) modalEntrega.style.display = 'none';
-     });
-
-});
+    const numeroAOCSGlobal = "{{ aocs.numero_aocs }}";
+    // Poderia passar outras variáveis se o JS precisar
 </script>
+{# Inclui o ficheiro JS externo #}
+<script src="{{ request.app.url_path_for('static', path='js/detalhe_pedido.js') }}" defer></script>
 {% endblock %}

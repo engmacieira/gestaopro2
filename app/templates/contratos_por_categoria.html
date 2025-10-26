@@ -4,29 +4,35 @@
 {% block title %}Catálogo - {{ categoria.nome }}{% endblock %}
 
 {% block content %}
-{# 1. INCLUSÃO DO COMPONENTE HEADER/ACTIONS #}
+{# 1. INCLUSÃO DO COMPONENTE HEADER/ACTIONS (Já refatorado) #}
 {% include '_contratos_por_categoria_header.html' %}
 
 <div class="card full-width">
-    
+
     <div class="table-wrapper">
         <table class="data-table">
             <thead>
                 <tr>
                     <th class="sortable-header" style="width: 40%;">
-                        {% set next_order = 'desc' if sort_by == 'descricao' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'descricao', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_por_categoria', id_categoria=categoria.id, **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_desc = 'desc' if sort_by == 'descricao' and order == 'asc' else 'asc' %}
+                        {% set params_desc = query_params.copy() %}
+                        {% set _ = params_desc.update({'sort_by': 'descricao', 'order': next_order_desc}) %}
+                        {% set base_path_desc = request.app.url_path_for('contratos_por_categoria', id_categoria=categoria.id) %}
+                        {% set query_parts_desc = [] %}{% for key, value in params_desc.items() if value is not none and value != '' %}{% set _ = query_parts_desc.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_desc = "?" ~ (query_parts_desc | join('&')) if query_parts_desc else "" %}
+                        <a href="{{ base_path_desc }}{{ query_string_desc }}">
                             Descrição do Item
                             {% if sort_by == 'descricao' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}
                         </a>
                     </th>
                     <th class="sortable-header">
-                        {% set next_order = 'desc' if sort_by == 'contrato' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'contrato', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_por_categoria', id_categoria=categoria.id, **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_cont = 'desc' if sort_by == 'contrato' and order == 'asc' else 'asc' %}
+                        {% set params_cont = query_params.copy() %}
+                        {% set _ = params_cont.update({'sort_by': 'contrato', 'order': next_order_cont}) %}
+                        {% set base_path_cont = request.app.url_path_for('contratos_por_categoria', id_categoria=categoria.id) %}
+                        {% set query_parts_cont = [] %}{% for key, value in params_cont.items() if value is not none and value != '' %}{% set _ = query_parts_cont.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_cont = "?" ~ (query_parts_cont | join('&')) if query_parts_cont else "" %}
+                        <a href="{{ base_path_cont }}{{ query_string_cont }}">
                             Instrumento Contratual de Origem
                             {% if sort_by == 'contrato' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}
                         </a>
@@ -34,19 +40,25 @@
                     <th class="text-right">Qtd. Contratada</th>
                     <th class="text-right">Qtd. Pedida</th>
                     <th class="sortable-header text-green text-right">
-                        {% set next_order = 'desc' if sort_by == 'saldo' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'saldo', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_por_categoria', id_categoria=categoria.id, **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_saldo = 'desc' if sort_by == 'saldo' and order == 'asc' else 'asc' %}
+                        {% set params_saldo = query_params.copy() %}
+                        {% set _ = params_saldo.update({'sort_by': 'saldo', 'order': next_order_saldo}) %}
+                        {% set base_path_saldo = request.app.url_path_for('contratos_por_categoria', id_categoria=categoria.id) %}
+                        {% set query_parts_saldo = [] %}{% for key, value in params_saldo.items() if value is not none and value != '' %}{% set _ = query_parts_saldo.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_saldo = "?" ~ (query_parts_saldo | join('&')) if query_parts_saldo else "" %}
+                        <a href="{{ base_path_saldo }}{{ query_string_saldo }}">
                             Saldo Disponível
                             {% if sort_by == 'saldo' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}
                         </a>
                     </th>
                     <th class="sortable-header text-right">
-                        {% set next_order = 'desc' if sort_by == 'valor' and order == 'asc' else 'asc' %}
-                        {% set params = query_params.copy() %}
-                        {% set _ = params.update({'sort_by': 'valor', 'order': next_order}) %}
-                        <a href="{{ url_for('contratos_por_categoria', id_categoria=categoria.id, **params) }}">
+                        {# Link de ordenação refatorado #}
+                        {% set next_order_valor = 'desc' if sort_by == 'valor' and order == 'asc' else 'asc' %}
+                        {% set params_valor = query_params.copy() %}
+                        {% set _ = params_valor.update({'sort_by': 'valor', 'order': next_order_valor}) %}
+                        {% set base_path_valor = request.app.url_path_for('contratos_por_categoria', id_categoria=categoria.id) %}
+                        {% set query_parts_valor = [] %}{% for key, value in params_valor.items() if value is not none and value != '' %}{% set _ = query_parts_valor.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_valor = "?" ~ (query_parts_valor | join('&')) if query_parts_valor else "" %}
+                        <a href="{{ base_path_valor }}{{ query_string_valor }}">
                             Valor Unit. (R$)
                             {% if sort_by == 'valor' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}
                         </a>
@@ -54,32 +66,40 @@
                 </tr>
             </thead>
             <tbody>
-    {% for item in itens %}
-    <tr>
-        <td><strong>{{ item.descricao }}</strong></td>
-        <td><a href="{{ url_for('detalhe_contrato', id_contrato=item.id_contrato) }}">{{ item.numero_contrato }}</a></td>
-        
-        {# Qtd. Contratada - Alinhado à Direita, Formatação com vírgula #}
-        <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %}</td>
-        
-        {# Qtd. Pedida - Alinhado à Direita, Formatação com vírgula #}
-        <td class="text-right">{% if item.total_pedido == item.total_pedido|int %}{{ item.total_pedido|int }}{% else %}{{ "%.2f"|format(item.total_pedido)|replace('.', ',') }}{% endif %}</td>
-        
-        {# Saldo Disponível - Alinhado à Direita, Formatação com vírgula, Cor #}
-        <td class="text-right {{ 'text-red' if item.saldo == 0 else 'text-green' }}" style="font-weight: 700;">
-            {% if item.saldo == item.saldo|int %}{{ item.saldo|int }}{% else %}{{ "%.2f"|format(item.saldo)|replace('.', ',') }}{% endif %}
-        </td>
-        
-        {# Valor Unitário - Alinhado à Direita, Formatação com vírgula #}
-        <td class="text-right">{{ "%.2f"|format(item.valor_unitario)|replace('.', ',') }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
+                {% if itens %}
+                    {% for item in itens %}
+                    <tr>
+                        <td><strong>{{ item.descricao }}</strong></td>
+                        {# Alterado url_for para request.app.url_path_for #}
+                        <td><a href="{{ request.app.url_path_for('detalhe_contrato', id_contrato=item.id_contrato) }}">{{ item.numero_contrato }}</a></td>
+
+                        {# Qtd. Contratada - Alinhado à Direita, Formatação com vírgula #}
+                        <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %}</td>
+
+                        {# Qtd. Pedida - Alinhado à Direita, Formatação com vírgula #}
+                        <td class="text-right">{% if item.total_pedido == item.total_pedido|int %}{{ item.total_pedido|int }}{% else %}{{ "%.2f"|format(item.total_pedido)|replace('.', ',') }}{% endif %}</td>
+
+                        {# Saldo Disponível - Alinhado à Direita, Formatação com vírgula, Cor #}
+                        <td class="text-right {{ 'text-red' if item.saldo == 0 else 'text-green' }}" style="font-weight: 700;">
+                            {% if item.saldo == item.saldo|int %}{{ item.saldo|int }}{% else %}{{ "%.2f"|format(item.saldo)|replace('.', ',') }}{% endif %}
+                        </td>
+
+                        {# Valor Unitário - Alinhado à Direita, Formatação com vírgula #}
+                        <td class="text-right">{{ "%.2f"|format(item.valor_unitario)|replace('.', ',') }}</td>
+                    </tr>
+                    {% else %} {# Adicionado 'else' para o caso de não haver itens #}
+                    <tr><td colspan="6"><div class="empty-state mini"><p>Nenhum item encontrado para esta categoria ou filtro.</p></div></td></tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
         </table>
     </div>
-    
+
     <div class="card-footer">
+        {# Chamada da macro já refatorada #}
         {{ render_pagination(pagina_atual, total_paginas, 'contratos_por_categoria', {'id_categoria': categoria.id}, query_params) }}
     </div>
 </div>
 {% endblock %}
+
+{# Não há bloco de scripts neste template #}
