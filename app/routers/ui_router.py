@@ -236,69 +236,101 @@ async def categorias_ui(
     }
     return templates.TemplateResponse("categorias.html", context)
 
+# Garanta que Query está importado: from fastapi import Query
+
 @router.get("/contratos-ui", response_class=HTMLResponse, name="contratos_ui", dependencies=[Depends(require_access_level(3))])
 async def contratos_ui(
     request: Request,
     page: int = Query(1, alias="page"),
-    busca: str = Query(None),
-    status: str = Query(None), # Novo filtro de status
+    busca: str | None = Query(None),
+    status: str | None = Query(None),
     sort_by: str = Query('numero_contrato'),
     order: str = Query('asc'),
+    # --- PARÂMETROS ADICIONADOS ---
+    mostrar_vencidos: str | None = Query(None),
+    data_vencimento_filtro: str | None = Query(None),
+    # --- FIM DA ADIÇÃO ---
     current_user=Depends(get_current_user),
     db_conn: connection = Depends(get_db)
 ):
     """Renderiza a página de gerenciamento de contratos."""
-    contratos_db = []
+    contratos_view = [] # Inicializa com lista vazia
     total_paginas = 1
     hoje = date.today()
 
     try:
-        # Lógica de busca real (você precisará adaptar as queries complexas)
-        # Exemplo simplificado:
-        repo = ContratoRepository(db_conn)
-        # Adapte get_all para aceitar busca e status, ou filtre aqui
-        todos_contratos = repo.get_all(mostrar_inativos=True) # Busca todos inicialmente
+        logger.info(f"Buscando contratos: page={page}, busca={busca}, status={status}, sort={sort_by}, order={order}, mv={mostrar_vencidos}, dvf={data_vencimento_filtro}")
 
-        # Aplicar filtros
+        repo = ContratoRepository(db_conn)
+        # Busca inicial (considera inativos para filtros posteriores)
+        todos_contratos = repo.get_all(mostrar_inativos=True)
+
         contratos_filtrados = todos_contratos
+
+        # Aplicar filtro de busca textual
         if busca:
             termo = busca.lower()
             contratos_filtrados = [
-                c for c in contratos_filtrados if termo in c.numero_contrato.lower() or termo in c.fornecedor.nome.lower()
+                c for c in contratos_filtrados
+                if termo in c.numero_contrato.lower() or (c.fornecedor and termo in c.fornecedor.nome.lower())
             ]
+
+        # Aplicar filtro de status explícito da UI
         if status == 'ativo':
             contratos_filtrados = [c for c in contratos_filtrados if c.ativo and c.data_fim >= hoje]
         elif status == 'inativo':
-            contratos_filtrados = [c for c in contratos_filtrados if not c.ativo]
+            # Inclui inativos por flag E expirados que ainda estão marcados como ativos
+            contratos_filtrados = [c for c in contratos_filtrados if not c.ativo or (c.ativo and c.data_fim < hoje)]
         elif status == 'expirado':
              contratos_filtrados = [c for c in contratos_filtrados if c.data_fim < hoje]
 
-        # Simulação de paginação
+        # Aplicar filtros específicos do link "Contratos a Vencer"
+        # O link passa mostrar_vencidos='false' e data_vencimento_filtro='60d'
+        if mostrar_vencidos == 'false':
+             # Garante que apenas contratos não expirados sejam considerados
+             contratos_filtrados = [c for c in contratos_filtrados if c.data_fim >= hoje]
+
+        if data_vencimento_filtro == '60d':
+             limite_vencimento = hoje + timedelta(days=60)
+             # Filtra apenas os ativos que vencem nos próximos 60 dias
+             contratos_filtrados = [c for c in contratos_filtrados if c.ativo and c.data_fim >= hoje and c.data_fim <= limite_vencimento]
+
+        # Aplicar ordenação (Exemplo simples - Adapte conforme necessidade)
+        reverse_order = (order == 'desc')
+        if sort_by == 'numero_contrato':
+             # Ordenação numérica/alfabética simples (ajustar se necessário para formato X/YYYY)
+             contratos_filtrados.sort(key=lambda c: c.numero_contrato, reverse=reverse_order)
+        elif sort_by == 'fornecedor':
+             contratos_filtrados.sort(key=lambda c: c.fornecedor.nome if c.fornecedor else "", reverse=reverse_order)
+        elif sort_by == 'data_vigencia_fim':
+             contratos_filtrados.sort(key=lambda c: c.data_fim, reverse=reverse_order)
+        elif sort_by == 'status_ativo':
+             contratos_filtrados.sort(key=lambda c: c.ativo, reverse=reverse_order)
+        # Adicionar outras colunas de ordenação se necessário
+
+        # Paginação
         offset = (page - 1) * ITENS_POR_PAGINA
         total_itens = len(contratos_filtrados)
         contratos_paginados = contratos_filtrados[offset:offset + ITENS_POR_PAGINA]
-        total_paginas = math.ceil(total_itens / ITENS_POR_PAGINA)
+        total_paginas = math.ceil(total_itens / ITENS_POR_PAGINA) if total_itens > 0 else 1
 
-        # Mapear para dicionário com campos extras para o template
-        contratos_view = []
-        cat_repo = CategoriaRepository(db_conn) # Para buscar nomes
+        # Mapeamento para View (após paginação)
+        cat_repo = CategoriaRepository(db_conn)
         proc_repo = ProcessoLicitatorioRepository(db_conn)
         for c in contratos_paginados:
-             cat = cat_repo.get_by_id(c.id_categoria)
-             proc = proc_repo.get_by_id(c.id_processo_licitatorio)
+             # cat = cat_repo.get_by_id(c.id_categoria) # Otimizar: buscar todos os IDs necessários de uma vez
+             proc = proc_repo.get_by_id(c.id_processo_licitatorio) # Otimizar
              contratos_view.append({
                  'id': c.id,
                  'numero_contrato': c.numero_contrato,
                  'processo_licitatorio': proc.numero if proc else 'N/D',
-                 'fornecedor': c.fornecedor.nome,
+                 'fornecedor': c.fornecedor.nome if c.fornecedor else 'N/D',
                  'data_vigencia_fim': c.data_fim,
                  'status_ativo': c.ativo,
-                 # Adicione outros campos se o template precisar
              })
 
-
     except Exception as e:
-        logger.error(f"Erro ao buscar contratos para UI: {e}")
+        logger.exception(f"Erro ao buscar contratos para UI: {e}")
 
     query_params = dict(request.query_params)
 
@@ -306,18 +338,17 @@ async def contratos_ui(
         "request": request,
         "url_for": request.app.url_path_for,
         "current_user": current_user,
-        "contratos": contratos_view, # Usar a lista processada
+        "contratos": contratos_view,
         "pagina_atual": page,
         "total_paginas": total_paginas,
         "query_params": query_params,
         "sort_by": sort_by,
         "order": order,
-        "hoje": hoje, # Passar 'hoje' para o template
+        "hoje": hoje,
         "get_flashed_messages": lambda **kwargs: []
     }
     return templates.TemplateResponse("contratos.html", context)
-
-
+    
 # --- Rotas UI Adicionais (Estrutura Básica - PREENCHER LÓGICA) ---
 
 @router.get("/pedidos-ui", response_class=HTMLResponse, name="pedidos_ui", dependencies=[Depends(require_access_level(3))])
