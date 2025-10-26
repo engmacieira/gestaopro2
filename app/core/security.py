@@ -1,8 +1,8 @@
 import os
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from psycopg2.extensions import connection 
 from app.models.user_model import User
@@ -19,11 +19,11 @@ if not SECRET_KEY:
     logger.critical("Variável de ambiente SECRET_KEY não definida!")
     raise ValueError("Variável de ambiente SECRET_KEY não definida. Verifique seu .env")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
 #CRACHÁ
 def create_access_token(user: User) -> str:
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data_to_encode = {
         "sub": user.username,
         "id": user.id,
@@ -35,7 +35,8 @@ def create_access_token(user: User) -> str:
 
 #PORTEIRO
 def get_current_user(
-    token: str = Depends(oauth2_scheme), 
+    token_header: str | None = Depends(oauth2_scheme), # Agora pode ser None
+    access_token_cookie: str | None = Cookie(None, alias="access_token"), # Também é bom ser explícito que pode ser None
     db_conn: connection = Depends(get_db)) -> User:
     
     credentials_exception = HTTPException(
@@ -43,6 +44,17 @@ def get_current_user(
         detail="Não foi possível validar as credenciais",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    # Lógica de extração: Prioriza o Header (token_header), senão usa o Cookie.
+    token = token_header if token_header else access_token_cookie
+
+    if not token:
+        raise credentials_exception
+    
+    # Remove o prefixo "bearer " se estiver presente (está no cookie e no header)
+    if token.lower().startswith("bearer "):
+        token = token.split(" ")[1]
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")

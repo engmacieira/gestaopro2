@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GestãoPRO{% endblock %}</title>
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,16 +20,16 @@
 
         <main class="main-content">
             <div id="notification-area">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="notification {{ category }}">{{ message }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                {# Substituído o bloco 'with messages = get_flashed_messages...' pela variável 'messages' injetada pelo router #}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="notification {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
             </div>
             {% block content %}{% endblock %}
         </main>
+    
     </div>
 
     {# 2. INCLUSÃO DO COMPONENTE FOOTER #}
