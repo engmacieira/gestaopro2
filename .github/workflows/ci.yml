@@ -41,7 +41,7 @@ jobs:
 
     - name: 4. Rodar os Testes
       run: |
-        pytest --cov=app
+        python -m pytest --cov=app
       env:
         DATABASE_URL: postgresql://postgres:34251311@localhost:5432/gestaopro_test_ci
         SECRET_KEY: "J!lans@DflkaEs.Lo548,24a.sD5!As48as!!d42sa,.54dF847-24ASf4857aSdf4566GFg4"
