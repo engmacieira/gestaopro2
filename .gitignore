@@ -1,5 +1,6 @@
 # Senhas
 .env
+.env.test
 
 # Ambiente Virtual
 venv/

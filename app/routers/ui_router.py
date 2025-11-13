@@ -2,7 +2,9 @@
 
 import os
 import logging
-import math # Para paginação
+import math
+import psycopg2 
+from psycopg2.extras import DictCursor
 from datetime import date, datetime, timezone, timedelta
 from decimal import Decimal
 
@@ -92,7 +94,6 @@ async def login_ui(request: Request, msg: str = None, category: str = None):
     """Renderiza a página de login."""
     context = {
         "request": request,
-        "url_for": request.app.url_path_for, # Usar app.url_path_for
         "messages": [(category, msg)] if msg and category else None,
         # Adicionar get_flashed_messages simulado se necessário por algum template
         "get_flashed_messages": lambda **kwargs: [(category, msg)] if msg and category else []
@@ -180,7 +181,6 @@ async def home_ui(request: Request, current_user=Depends(get_current_user), db_c
 
     context = {
         "request": request,
-        "url_for": request.app.url_path_for,
         "current_user": current_user,
         "indicadores": indicadores,
         "pedidos_pendentes": pedidos_pendentes,
@@ -223,7 +223,6 @@ async def categorias_ui(
 
     context = {
         "request": request,
-        "url_for": request.app.url_path_for,
         "current_user": current_user,
         "categorias": categorias_paginadas, # Usar dados paginados
         "pagina_atual": page,
@@ -336,7 +335,6 @@ async def contratos_ui(
 
     context = {
         "request": request,
-        "url_for": request.app.url_path_for,
         "current_user": current_user,
         "contratos": contratos_view,
         "pagina_atual": page,
@@ -366,7 +364,7 @@ async def pedidos_ui(request: Request, current_user=Depends(get_current_user), d
     # Exemplo: Chamar um método de repositório que retorna a visão agregada
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "pedidos_lista": pedidos_lista, "pagina_atual": pagina_atual, "total_paginas": total_paginas,
         "query_params": query_params, "sort_by": sort_by, "order": order, "termo_busca": termo_busca,
         "get_flashed_messages": lambda **kwargs: []
@@ -377,7 +375,7 @@ async def pedidos_ui(request: Request, current_user=Depends(get_current_user), d
 async def consultas_ui(request: Request, current_user=Depends(get_current_user)):
     # Lógica para buscar opções dos selects (processos, unidades, etc.)
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "entidades_pesquisaveis": ENTIDADES_PESQUISAVEIS, # Passar config
          # Adicionar listas de opções para os selects, se necessário pré-carregar
         "processos": [], "unidades": [], "locais": [], "dotacoes": [],
@@ -388,7 +386,7 @@ async def consultas_ui(request: Request, current_user=Depends(get_current_user))
 @router.get("/relatorios", response_class=HTMLResponse, name="relatorios_ui", dependencies=[Depends(require_access_level(3))])
 async def relatorios_ui(request: Request, current_user=Depends(get_current_user)):
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "relatorios": RELATORIOS_DISPONIVEIS, # Passar config
         "get_flashed_messages": lambda **kwargs: []
     }
@@ -396,13 +394,19 @@ async def relatorios_ui(request: Request, current_user=Depends(get_current_user)
 
 @router.get("/importar", response_class=HTMLResponse, name="importar_ui", dependencies=[Depends(require_access_level(2))])
 async def importar_ui(request: Request, current_user=Depends(get_current_user)):
-    context = {"request": request, "url_for": request.app.url_path_for, "current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
+    context = {"request": request, "current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
+    return templates.TemplateResponse("importar.html", context)
+
+@router.get("/contratos/novo", response_class=HTMLResponse, name="novo_contrato_ui", dependencies=[Depends(require_access_level(2))])
+async def novo_contrato_ui(request: Request, current_user=Depends(get_current_user)):
+    # TODO: Criar o template novo_contrato.html
+    context = {"request": request, "current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
     return templates.TemplateResponse("importar.html", context)
 
 @router.get("/gerenciar-tabelas", response_class=HTMLResponse, name="gerenciar_tabelas_ui", dependencies=[Depends(require_access_level(2))])
 async def gerenciar_tabelas_ui(request: Request, current_user=Depends(get_current_user)):
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "tabelas": TABELAS_GERENCIAVEIS, # Passar config
         "get_flashed_messages": lambda **kwargs: []
     }
@@ -419,7 +423,7 @@ async def gerenciar_usuarios_ui(request: Request, current_user=Depends(get_curre
         logger.error(f"Erro ao buscar usuários para UI admin: {e}")
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "usuarios": usuarios,
         "get_flashed_messages": lambda **kwargs: []
     }
@@ -475,7 +479,7 @@ async def detalhe_contrato(request: Request, id_contrato: int, current_user=Depe
 
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "contrato": contrato_view, "itens": itens, "anexos": anexos,
         "tipos_documento": tipos_documento,
         "pagina_atual": 1, "total_paginas": 1, # Adicionar paginação real
@@ -489,25 +493,107 @@ async def detalhe_contrato(request: Request, id_contrato: int, current_user=Depe
 
 
 @router.get("/categoria/{id_categoria}/contratos", response_class=HTMLResponse, name="contratos_por_categoria", dependencies=[Depends(require_access_level(3))])
-async def contratos_por_categoria(request: Request, id_categoria: int, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
+async def contratos_por_categoria(
+    request: Request, 
+    id_categoria: int, 
+    page: int = Query(1, alias="page"),
+    busca: str = Query(None),
+    sort_by: str = Query("descricao"),
+    order: str = Query("asc"),
+    current_user=Depends(get_current_user), 
+    db_conn: connection = Depends(get_db)
+):
     # Lógica para buscar categoria e itens (com saldo), paginar, ordenar, filtrar
     cat_repo = CategoriaRepository(db_conn)
     categoria = cat_repo.get_by_id(id_categoria)
-    if not categoria: raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    if not categoria: 
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
 
-    # Usar a lógica de _get_itens_por_categoria_com_saldo adaptada
     itens = []
-    pagina_atual = int(request.query_params.get('page', 1))
     total_paginas = 1
     query_params = dict(request.query_params)
-    sort_by = request.query_params.get('sort_by', 'descricao')
-    order = request.query_params.get('order', 'asc')
+
+    # --- LÓGICA DA API COLADA AQUI ---
+    ITENS_POR_PAGINA = 10 # Você pode ajustar isso
+    cursor = None
+
+    try:
+        cursor = db_conn.cursor(cursor_factory=DictCursor)
+
+        # 1. Montagem da Query
+        params = [id_categoria]
+        where_clause = "WHERE c.id_categoria = %s AND c.ativo = TRUE AND ic.ativo = TRUE"
+
+        if busca:
+            where_clause += " AND ic.descricao ILIKE %s"
+            params.append(f"%{busca}%")
+
+        colunas_ordenaveis = {
+            'descricao': 'ic.descricao', 
+            'contrato': 'c.numero_contrato',
+            'saldo': 'saldo', 
+            'valor': 'ic.valor_unitario', # 'valor' é o nome usado no template
+            'numero_item': 'ic.numero_item'
+        }
+        coluna_ordenacao = colunas_ordenaveis.get(sort_by, 'ic.descricao')
+        direcao_ordenacao = 'DESC' if order == 'desc' else 'ASC'
+        order_by_clause = f"ORDER BY {coluna_ordenacao} {direcao_ordenacao}"
+
+        offset = (page - 1) * ITENS_POR_PAGINA
+        limit_offset_clause = "LIMIT %s OFFSET %s"
+        params.extend([ITENS_POR_PAGINA, offset])
+
+        sql_select = f"""
+            SELECT
+                ic.*, 
+                c.id AS id_contrato, 
+                c.numero_contrato, 
+                c.fornecedor,
+                COALESCE(pedidos_sum.total_pedido, 0) AS total_pedido,
+                (ic.quantidade - COALESCE(pedidos_sum.total_pedido, 0)) AS saldo,
+                COUNT(*) OVER() as total_geral
+            FROM itenscontrato ic
+            JOIN contratos c ON ic.id_contrato = c.id
+            LEFT JOIN (
+                SELECT id_item_contrato, SUM(quantidade_pedida) as total_pedido
+                FROM pedidos GROUP BY id_item_contrato
+            ) AS pedidos_sum ON ic.id = pedidos_sum.id_item_contrato
+            {where_clause} 
+            {order_by_clause} 
+            {limit_offset_clause}
+        """
+
+        # 2. Execução
+        cursor.execute(sql_select, params)
+        itens_db = cursor.fetchall()
+
+        # 3. Cálculo da Paginação
+        total_itens = 0
+        if itens_db:
+            total_itens = itens_db[0]['total_geral']
+        total_paginas = math.ceil(total_itens / ITENS_POR_PAGINA)
+
+        # 4. Formatação da Resposta (o template HTML lê 'dict' direto, não precisa formatar como JSON)
+        itens = [dict(item) for item in itens_db]
+
+    except (Exception, psycopg2.DatabaseError) as error:
+         if cursor: cursor.close()
+         logger.exception(f"Erro ao buscar itens com saldo para UI Categoria ID {id_categoria}: {error}")
+         # Em vez de levantar um 500, podemos só mostrar a página vazia com um erro
+         query_params["erro"] = "Erro ao consultar o banco de dados."
+    finally:
+        if cursor: cursor.close()
+    # --- FIM DA LÓGICA COLADA ---
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
-        "categoria": categoria, "itens": itens,
-        "pagina_atual": pagina_atual, "total_paginas": total_paginas,
-        "query_params": query_params, "sort_by": sort_by, "order": order,
+        "request": request, "current_user": current_user,
+        "categoria": categoria, 
+        "itens": itens, # Agora 'itens' contém os dados reais
+        "pagina_atual": page, 
+        "total_paginas": total_paginas,
+        "query_params": query_params, 
+        "sort_by": sort_by, 
+        "order": order,
         "get_flashed_messages": lambda **kwargs: []
     }
     return templates.TemplateResponse("contratos_por_categoria.html", context)
@@ -525,7 +611,7 @@ async def novo_pedido_pagina(request: Request, id_categoria: int, current_user=D
     dotacao_repo = DotacaoRepository(db_conn)
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "categoria": categoria,
         "unidades": [u.nome for u in unidade_repo.get_all()],
         "locais": [l.descricao for l in local_repo.get_all()],
@@ -615,7 +701,7 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
 
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "request": request, "current_user": current_user,
         "aocs": aocs_view, "itens": itens_view, "anexos": anexos, "cis_pagamento": cis_filtradas,
         "unidades": unidades, "locais": locais, "responsaveis": responsaveis,
         "dotacoes": dotacoes, "tipos_documento": tipos_documento,
@@ -628,7 +714,7 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
 @router.get("/pedido/{numero_aocs}/nova-ci", response_class=HTMLResponse, name="nova_ci_ui", dependencies=[Depends(require_access_level(2))])
 async def nova_ci_ui(request: Request, numero_aocs: str, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
     # Buscar dados da AOCS e listas de domínio
-    context = {"request": request, "url_for": request.app.url_path_for, "current_user": current_user, "numero_aocs": numero_aocs,
+    context = {"request": request, "current_user": current_user, "numero_aocs": numero_aocs,
                "aocs": {}, "dotacoes": [], "solicitantes": [], "secretarias": [], "ci": {}, # ci vazio para o template _ci_form_fields
                "get_flashed_messages": lambda **kwargs: []}
     return templates.TemplateResponse("nova_ci.html", context)
@@ -644,7 +730,7 @@ async def nova_ci_post(request: Request, numero_aocs: str, db_conn: connection =
 @router.get("/ci/{id_ci}/editar", response_class=HTMLResponse, name="editar_ci_ui", dependencies=[Depends(require_access_level(2))])
 async def editar_ci_ui(request: Request, id_ci: int, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
     # Buscar dados da CI, AOCS associada e listas de domínio
-    context = {"request": request, "url_for": request.app.url_path_for, "current_user": current_user, "id_ci": id_ci,
+    context = {"request": request, "current_user": current_user, "id_ci": id_ci,
                "ci": {}, "aocs": {}, "dotacoes": [], "solicitantes": [], "secretarias": [],
                "get_flashed_messages": lambda **kwargs: []}
     return templates.TemplateResponse("editar_ci.html", context)

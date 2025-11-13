@@ -9,6 +9,14 @@ from app.models.categoria_model import Categoria
 from app.schemas.categoria_schema import CategoriaRequest, CategoriaResponse
 from app.repositories.categoria_repository import CategoriaRepository
 
+from typing import List, Dict, Any
+from app.schemas.item_schema import ItemResponse 
+from fastapi import Query 
+
+import math
+from decimal import Decimal
+from psycopg2.extras import DictCursor
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
@@ -69,6 +77,9 @@ def get_categoria_by_id(
                 detail="Categoria não encontrada."
             )
         return categoria
+
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar categoria ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
@@ -161,3 +172,94 @@ def delete_categoria(
     except Exception as e:
         logger.exception(f"Erro inesperado ao deletar categoria ID {id} por '{current_user.username}': {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
+    
+@router.get("/{id_categoria}/itens", response_model=Dict[str, Any])
+def get_itens_por_categoria(
+    id_categoria: int,
+    page: int = Query(1),
+    busca: str = Query(""),
+    sort_by: str = Query("descricao"),
+    order: str = Query("asc"),
+    db_conn: connection = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ITENS_POR_PAGINA = 10
+    cursor = None
+
+    try:
+        cursor = db_conn.cursor(cursor_factory=DictCursor)
+
+        cursor.execute('SELECT * FROM Categorias WHERE id = %s AND ativo = TRUE', (id_categoria,))
+        categoria = cursor.fetchone()
+        if not categoria:
+            logger.warning(f"Tentativa de buscar itens para categoria ID {id_categoria} (não encontrada ou inativa) por '{current_user.username}'.")
+            raise HTTPException(status_code=404, detail="Categoria não encontrada ou inativa.")
+
+        params = [id_categoria]
+        where_clause = "WHERE c.id_categoria = %s AND c.ativo = TRUE AND ic.ativo = TRUE"
+
+        if busca:
+            where_clause += " AND ic.descricao ILIKE %s"
+            params.append(f"%{busca}%")
+
+        colunas_ordenaveis = {
+            'descricao': 'ic.descricao', 
+            'contrato': 'c.numero_contrato',
+            'saldo': 'saldo', 
+            'valor_unitario': 'ic.valor_unitario', 
+            'numero_item': 'ic.numero_item'
+        }
+        coluna_ordenacao = colunas_ordenaveis.get(sort_by, 'ic.descricao')
+        direcao_ordenacao = 'DESC' if order == 'desc' else 'ASC'
+        order_by_clause = f"ORDER BY {coluna_ordenacao} {direcao_ordenacao}"
+
+        offset = (page - 1) * ITENS_POR_PAGINA
+        limit_offset_clause = "LIMIT %s OFFSET %s"
+        params.extend([ITENS_POR_PAGINA, offset])
+
+        sql_select = f"""
+            SELECT
+                ic.*, 
+                c.id AS id_contrato, 
+                c.numero_contrato, 
+                c.fornecedor,
+                COALESCE(pedidos_sum.total_pedido, 0) AS total_pedido,
+                (ic.quantidade - COALESCE(pedidos_sum.total_pedido, 0)) AS saldo,
+                COUNT(*) OVER() as total_geral
+            FROM itenscontrato ic
+            JOIN contratos c ON ic.id_contrato = c.id
+            LEFT JOIN (
+                SELECT id_item_contrato, SUM(quantidade_pedida) as total_pedido
+                FROM pedidos GROUP BY id_item_contrato
+            ) AS pedidos_sum ON ic.id = pedidos_sum.id_item_contrato
+            {where_clause} 
+            {order_by_clause} 
+            {limit_offset_clause}
+        """
+
+        cursor.execute(sql_select, params)
+        itens_com_saldo = cursor.fetchall()
+
+        total_itens = 0
+        if itens_com_saldo:
+            total_itens = itens_com_saldo[0]['total_geral']
+        total_paginas = math.ceil(total_itens / ITENS_POR_PAGINA)
+
+        itens_formatados = []
+        for item_row in itens_com_saldo:
+            item_dict = dict(item_row)
+            item_dict['descricao'] = {"descricao": item_row['descricao']}
+            itens_formatados.append(item_dict)
+
+        return {
+            "itens": itens_formatados,
+            "total_paginas": total_paginas,
+            "pagina_atual": page
+        }
+
+    except (Exception, psycopg2.DatabaseError) as error:
+         if cursor: cursor.close() 
+         logger.exception(f"Erro ao buscar itens com saldo para Categoria ID {id_categoria}: {error}")
+         raise HTTPException(status_code=500, detail="Erro interno do servidor ao consultar itens.")
+    finally:
+        if cursor: cursor.close()

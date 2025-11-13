@@ -206,3 +206,535 @@
 2025-10-26 13:56:46 - INFO - app.main - Aplicação Gestão Pública API iniciada.
 2025-10-26 13:57:15 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
 2025-10-26 13:57:59 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-10-26 15:13:47 - INFO - root - Sistema de Logging Configurado.
+2025-10-26 15:13:56 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-10-26 15:14:21 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-10-26 15:15:57 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 11:52:48 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 11:53:23 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 11:54:43 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-04 11:55:21 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-04 11:58:50 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-04 11:58:54 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=false, dvf=60d
+2025-11-04 14:10:27 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:14:36 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:14:44 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:15:05 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-04 14:15:22 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:28:39 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:28:45 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:36:04 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:36:07 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:36:14 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:36:14 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:36:18 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:36:25 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:40:05 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:40:12 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:40:26 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:41:07 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:41:10 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:41:17 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:41:36 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:41:41 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:41:49 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:41:49 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:41:53 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:42:00 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:42:11 - INFO - app.routers.categoria_router - Rota STUB /categorias/4/itens chamada. Retornando dados vazios.
+2025-11-04 14:46:06 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:46:09 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:46:16 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:46:20 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:46:23 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:46:31 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:48:04 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:48:08 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:48:15 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:48:15 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 14:48:17 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 14:48:24 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 14:56:48 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-04 14:56:52 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-04 14:56:52 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-04 15:09:43 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 15:56:26 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 15:56:32 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 16:30:11 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 16:30:14 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 16:30:22 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 16:30:22 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 16:30:25 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 16:30:33 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 16:33:02 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 16:33:05 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 16:33:13 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 16:33:14 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 16:33:16 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 16:33:23 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 16:49:52 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 16:49:55 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 16:50:03 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 16:50:03 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-04 16:50:06 - INFO - root - Sistema de Logging Configurado.
+2025-11-04 16:50:13 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-04 17:00:53 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:40:45 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 15:40:53 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:40:53 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:40:53 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 1'
+2025-11-13 15:40:53 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 1').
+2025-11-13 15:40:53 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:40:53 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:40:53 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:40:54 - INFO - app.repositories.categoria_repository - Categoria criada com ID 2: 'Categoria de Teste 2'
+2025-11-13 15:40:54 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 2 ('Categoria de Teste 2').
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/2 "HTTP/1.1 200 OK"
+2025-11-13 15:40:54 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:40:54 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:40:54 - INFO - app.repositories.categoria_repository - Categoria criada com ID 3: 'Categoria Original'
+2025-11-13 15:40:54 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 3 ('Categoria Original').
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:40:54 - INFO - app.repositories.categoria_repository - Categoria ID 3 atualizada de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-13 15:40:54 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' atualizou Categoria ID 3 de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: PUT http://testserver/api/categorias/3 "HTTP/1.1 200 OK"
+2025-11-13 15:40:54 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:40:54 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:40:54 - INFO - app.repositories.categoria_repository - Categoria criada com ID 4: 'Categoria Para Deletar'
+2025-11-13 15:40:54 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 4 ('Categoria Para Deletar').
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:40:54 - INFO - app.repositories.categoria_repository - Categoria ID 4 ('Categoria Para Deletar') deletada.
+2025-11-13 15:40:54 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 4 ('Categoria Para Deletar').
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/4 "HTTP/1.1 204 No Content"
+2025-11-13 15:40:54 - WARNING - app.routers.categoria_router - Categoria ID 4 não encontrada.
+2025-11-13 15:40:54 - ERROR - app.routers.categoria_router - Erro inesperado ao buscar categoria ID 4: 404: Categoria não encontrada.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\routers\categoria_router.py", line 75, in get_categoria_by_id
+    raise HTTPException(
+fastapi.exceptions.HTTPException: 404: Categoria não encontrada.
+2025-11-13 15:40:54 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/4 "HTTP/1.1 500 Internal Server Error"
+2025-11-13 15:40:56 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:42:33 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 15:42:38 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:42:38 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:42:38 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 1'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+
+2025-11-13 15:42:38 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 1' por 'test_admin_user'.
+2025-11-13 15:42:38 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:42:39 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:42:39 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:42:40 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 2'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+
+2025-11-13 15:42:40 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 2' por 'test_admin_user'.
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:42:40 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:42:40 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:42:40 - INFO - app.repositories.categoria_repository - Categoria criada com ID 7: 'Categoria Original'
+2025-11-13 15:42:40 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 7 ('Categoria Original').
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:42:40 - ERROR - app.repositories.categoria_repository - Erro inesperado ao atualizar categoria ID 7 (Req: nome='Categoria Atualizada'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Atualizada) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 93, in update
+    cursor.execute(sql, (categoria_req.nome, id))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Atualizada) já existe.
+
+2025-11-13 15:42:40 - WARNING - app.routers.categoria_router - Tentativa de atualizar categoria ID 7 para nome duplicado 'Categoria Atualizada' por 'test_admin_user'.
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: PUT http://testserver/api/categorias/7 "HTTP/1.1 409 Conflict"
+2025-11-13 15:42:40 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:42:40 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:42:40 - INFO - app.repositories.categoria_repository - Categoria criada com ID 8: 'Categoria Para Deletar'
+2025-11-13 15:42:40 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 8 ('Categoria Para Deletar').
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:42:40 - INFO - app.repositories.categoria_repository - Categoria ID 8 ('Categoria Para Deletar') deletada.
+2025-11-13 15:42:40 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 8 ('Categoria Para Deletar').
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/8 "HTTP/1.1 204 No Content"
+2025-11-13 15:42:40 - WARNING - app.routers.categoria_router - Categoria ID 8 não encontrada.
+2025-11-13 15:42:40 - ERROR - app.routers.categoria_router - Erro inesperado ao buscar categoria ID 8: 404: Categoria não encontrada.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\routers\categoria_router.py", line 75, in get_categoria_by_id
+    raise HTTPException(
+fastapi.exceptions.HTTPException: 404: Categoria não encontrada.
+2025-11-13 15:42:40 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/8 "HTTP/1.1 500 Internal Server Error"
+2025-11-13 15:42:40 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:22 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 15:54:28 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:28 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:28 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 1'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+
+2025-11-13 15:54:28 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 1' por 'test_admin_user'.
+2025-11-13 15:54:28 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:54:30 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:31 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:31 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:31 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 2'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+
+2025-11-13 15:54:31 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 2' por 'test_admin_user'.
+2025-11-13 15:54:31 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:54:31 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:31 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:32 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:32 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria Original'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+
+2025-11-13 15:54:32 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria Original' por 'test_admin_user'.
+2025-11-13 15:54:32 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:54:32 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:32 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:32 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:32 - INFO - app.repositories.categoria_repository - Categoria criada com ID 12: 'Categoria Para Deletar'
+2025-11-13 15:54:32 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 12 ('Categoria Para Deletar').
+2025-11-13 15:54:32 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:54:32 - INFO - app.repositories.categoria_repository - Categoria ID 12 ('Categoria Para Deletar') deletada.
+2025-11-13 15:54:32 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 12 ('Categoria Para Deletar').
+2025-11-13 15:54:32 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/12 "HTTP/1.1 204 No Content"
+2025-11-13 15:54:32 - WARNING - app.routers.categoria_router - Categoria ID 12 não encontrada.
+2025-11-13 15:54:32 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/12 "HTTP/1.1 404 Not Found"
+2025-11-13 15:54:32 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:44 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 15:54:50 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:50 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:50 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 1'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+
+2025-11-13 15:54:50 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 1' por 'test_admin_user'.
+2025-11-13 15:54:50 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:54:51 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:52 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:52 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:52 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 2'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+
+2025-11-13 15:54:52 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 2' por 'test_admin_user'.
+2025-11-13 15:54:52 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:54:52 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:52 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:52 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:52 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria Original'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+
+2025-11-13 15:54:52 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria Original' por 'test_admin_user'.
+2025-11-13 15:54:52 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 15:54:53 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 15:54:53 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 15:54:53 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 15:54:53 - INFO - app.repositories.categoria_repository - Categoria criada com ID 16: 'Categoria Para Deletar'
+2025-11-13 15:54:53 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 16 ('Categoria Para Deletar').
+2025-11-13 15:54:53 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 15:54:53 - INFO - app.repositories.categoria_repository - Categoria ID 16 ('Categoria Para Deletar') deletada.
+2025-11-13 15:54:53 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 16 ('Categoria Para Deletar').
+2025-11-13 15:54:53 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/16 "HTTP/1.1 204 No Content"
+2025-11-13 15:54:53 - WARNING - app.routers.categoria_router - Categoria ID 16 não encontrada.
+2025-11-13 15:54:53 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/16 "HTTP/1.1 404 Not Found"
+2025-11-13 15:54:53 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:11 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 16:00:17 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:17 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 16:00:17 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 1'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+
+2025-11-13 16:00:17 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 1' por 'test_admin_user'.
+2025-11-13 16:00:17 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:00:18 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:19 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:19 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 16:00:19 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 2'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+
+2025-11-13 16:00:19 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 2' por 'test_admin_user'.
+2025-11-13 16:00:19 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:00:19 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:20 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:20 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 16:00:20 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria Original'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+
+2025-11-13 16:00:20 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria Original' por 'test_admin_user'.
+2025-11-13 16:00:20 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:00:20 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:20 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:20 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias "HTTP/1.1 307 Temporary Redirect"
+2025-11-13 16:00:20 - INFO - app.repositories.categoria_repository - Categoria criada com ID 20: 'Categoria Para Deletar'
+2025-11-13 16:00:20 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 20 ('Categoria Para Deletar').
+2025-11-13 16:00:20 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:00:20 - INFO - app.repositories.categoria_repository - Categoria ID 20 ('Categoria Para Deletar') deletada.
+2025-11-13 16:00:20 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 20 ('Categoria Para Deletar').
+2025-11-13 16:00:20 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/20 "HTTP/1.1 204 No Content"
+2025-11-13 16:00:20 - WARNING - app.routers.categoria_router - Categoria ID 20 não encontrada.
+2025-11-13 16:00:20 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/20 "HTTP/1.1 404 Not Found"
+2025-11-13 16:00:20 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:35 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 16:00:41 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:41 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 1'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+
+2025-11-13 16:00:41 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 1' por 'test_admin_user'.
+2025-11-13 16:00:41 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:00:43 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:44 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:44 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 2'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+
+2025-11-13 16:00:44 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 2' por 'test_admin_user'.
+2025-11-13 16:00:44 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:00:44 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:44 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:45 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria Original'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+
+2025-11-13 16:00:45 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria Original' por 'test_admin_user'.
+2025-11-13 16:00:45 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:00:45 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:45 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:00:45 - INFO - app.repositories.categoria_repository - Categoria criada com ID 24: 'Categoria Para Deletar'
+2025-11-13 16:00:45 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 24 ('Categoria Para Deletar').
+2025-11-13 16:00:45 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:00:45 - INFO - app.repositories.categoria_repository - Categoria ID 24 ('Categoria Para Deletar') deletada.
+2025-11-13 16:00:45 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 24 ('Categoria Para Deletar').
+2025-11-13 16:00:45 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/24 "HTTP/1.1 204 No Content"
+2025-11-13 16:00:45 - WARNING - app.routers.categoria_router - Categoria ID 24 não encontrada.
+2025-11-13 16:00:45 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/24 "HTTP/1.1 404 Not Found"
+2025-11-13 16:00:45 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:00:59 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 16:01:04 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:01:05 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 1'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 1) já existe.
+
+2025-11-13 16:01:05 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 1' por 'test_admin_user'.
+2025-11-13 16:01:05 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:01:06 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:01:06 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:01:07 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria de Teste 2'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria de Teste 2) já existe.
+
+2025-11-13 16:01:07 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria de Teste 2' por 'test_admin_user'.
+2025-11-13 16:01:07 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:01:07 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:01:07 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:01:07 - ERROR - app.repositories.categoria_repository - Erro inesperado ao criar categoria (Req: nome='Categoria Original'): ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+Traceback (most recent call last):
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\app\repositories\categoria_repository.py", line 28, in create
+    cursor.execute(sql, (categoria_req.nome,))
+  File "G:\Meu Drive\Projetos VSCODE\Refatoracao\.venv\Lib\site-packages\psycopg2\extras.py", line 146, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: ERRO:  duplicar valor da chave viola a restrição de unicidade "categorias_nome_key"
+DETAIL:  Chave (nome)=(Categoria Original) já existe.
+
+2025-11-13 16:01:07 - WARNING - app.routers.categoria_router - Tentativa de criar categoria duplicada: 'Categoria Original' por 'test_admin_user'.
+2025-11-13 16:01:07 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 409 Conflict"
+2025-11-13 16:01:07 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:01:08 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:01:08 - INFO - app.repositories.categoria_repository - Categoria criada com ID 28: 'Categoria Para Deletar'
+2025-11-13 16:01:08 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 28 ('Categoria Para Deletar').
+2025-11-13 16:01:08 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:01:08 - INFO - app.repositories.categoria_repository - Categoria ID 28 ('Categoria Para Deletar') deletada.
+2025-11-13 16:01:08 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 28 ('Categoria Para Deletar').
+2025-11-13 16:01:08 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/28 "HTTP/1.1 204 No Content"
+2025-11-13 16:01:08 - WARNING - app.routers.categoria_router - Categoria ID 28 não encontrada.
+2025-11-13 16:01:08 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/28 "HTTP/1.1 404 Not Found"
+2025-11-13 16:01:08 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:15:52 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 16:15:58 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:15:59 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 1'
+2025-11-13 16:15:59 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 1').
+2025-11-13 16:15:59 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:15:59 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:15:59 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:15:59 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 2'
+2025-11-13 16:15:59 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 2').
+2025-11-13 16:15:59 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:15:59 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-13 16:15:59 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:16:00 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:16:00 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Original'
+2025-11-13 16:16:00 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Original').
+2025-11-13 16:16:00 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:16:00 - INFO - app.repositories.categoria_repository - Categoria ID 1 atualizada de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-13 16:16:00 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' atualizou Categoria ID 1 de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-13 16:16:00 - INFO - httpx - HTTP Request: PUT http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-13 16:16:00 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:16:00 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:16:00 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Para Deletar'
+2025-11-13 16:16:00 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-13 16:16:00 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:16:01 - INFO - app.repositories.categoria_repository - Categoria ID 1 ('Categoria Para Deletar') deletada.
+2025-11-13 16:16:01 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-13 16:16:01 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/1 "HTTP/1.1 204 No Content"
+2025-11-13 16:16:01 - WARNING - app.routers.categoria_router - Categoria ID 1 não encontrada.
+2025-11-13 16:16:01 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 404 Not Found"
+2025-11-13 16:16:01 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:16:55 - INFO - root - Sistema de Logging Configurado.
+2025-11-13 16:17:02 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:17:02 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 1'
+2025-11-13 16:17:02 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 1').
+2025-11-13 16:17:02 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:17:02 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:17:02 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:17:03 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 2'
+2025-11-13 16:17:03 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 2').
+2025-11-13 16:17:03 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:17:03 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-13 16:17:03 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:17:03 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:17:03 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Original'
+2025-11-13 16:17:03 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Original').
+2025-11-13 16:17:03 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:17:03 - INFO - app.repositories.categoria_repository - Categoria ID 1 atualizada de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-13 16:17:03 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' atualizou Categoria ID 1 de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-13 16:17:03 - INFO - httpx - HTTP Request: PUT http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-13 16:17:03 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-13 16:17:04 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-13 16:17:04 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Para Deletar'
+2025-11-13 16:17:04 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-13 16:17:04 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-13 16:17:04 - INFO - app.repositories.categoria_repository - Categoria ID 1 ('Categoria Para Deletar') deletada.
+2025-11-13 16:17:04 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-13 16:17:04 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/1 "HTTP/1.1 204 No Content"
+2025-11-13 16:17:04 - WARNING - app.routers.categoria_router - Categoria ID 1 não encontrada.
+2025-11-13 16:17:04 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 404 Not Found"
+2025-11-13 16:17:04 - INFO - app.main - Aplicação Gestão Pública API encerrada.

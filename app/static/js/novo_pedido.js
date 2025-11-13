@@ -110,13 +110,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td class="text-center" style="font-weight: 600;">${saldoFormatado}</td>
                 <td class="text-center">${valorUnitFormatado}</td>
                 <td class="text-center">
-                    <input type="number" class="form-control small-input" min="0" max="${item.saldo}" step="0.01"  {# step para decimais #}
+                    <input type="text" inputmode="decimal" class="form-control small-input" max="${item.saldo}"
                            data-item-id="${item.id}" data-item-full='${JSON.stringify(item)}'
                            value="${quantidadeNoCarrinho}" placeholder="0,00"
                            style="width: 100px; min-width: 80px;">
                 </td>
             `;
-            const inputQtd = linha.querySelector('input[type="number"]');
+            const inputQtd = linha.querySelector('.small-input');
             inputQtd.addEventListener('change', (e) => handleQuantidadeChange(e.target));
             corpoTabelaItens.appendChild(linha);
         });
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (quantidade > saldoDisponivel) {
                 showNotification(`Saldo insuficiente! O máximo para "${itemDoCatalogo.descricao.descricao}" é ${saldoDisponivel.toLocaleString('pt-BR')}.`, 'warning');
                 quantidade = saldoDisponivel;
-                input.value = quantidade.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Formata de volta para vírgula
+                input.value = quantidade.toFixed(2); // Formata de volta para vírgula
             }
 
             const valorUnitarioNumerico = parseFloat(itemDoCatalogo.valor_unitario);
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
              // Formata o valor no input com vírgula após a validação
-             input.value = quantidade.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+             input.value = quantidade.toFixed(2);
         }
 
         renderizarCarrinho();
