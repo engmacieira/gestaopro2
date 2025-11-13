@@ -26,6 +26,7 @@ __pycache__/
 
 # Arquivos de texto genéricos (para evitar senhas acidentais)
 *.txt
+!requirements.txt
 
 # Arquivos zipados (backup da versões manuais)
 *.zip
