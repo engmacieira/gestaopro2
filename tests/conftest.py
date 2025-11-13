@@ -8,25 +8,23 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path='.env.test')
 
 from app.main import app 
-from app.core.database import get_db
+from app.core.database import get_db, _get_db_connection
 
 @pytest.fixture(scope="session")
 def db_conn_test():
-    db_url = os.environ.get("DATABASE_URL")
-    if not db_url:
-        raise ValueError("DATABASE_URL não definida no .env.test")
-        
     conn = None
     try:
-        conn = psycopg2.connect(db_url, cursor_factory=DictCursor)
+        conn = _get_db_connection()
         print("\n[Pytest] Conectado ao banco de dados de TESTE.")
         yield conn
+    except Exception as e:
+        print(f"\n[Pytest] FALHA AO CONECTAR NO BANCO DE TESTE: {e}")
+        print("Verifique seu .env.test e se o banco 'gestaopro_test' existe e tem as tabelas.")
+        raise
     finally:
         if conn:
             conn.close()
             print("\n[Pytest] Desconectado do banco de dados de TESTE.")
-
-# tests/conftest.py
 
 @pytest.fixture(scope="function")
 def db_session(db_conn_test):    

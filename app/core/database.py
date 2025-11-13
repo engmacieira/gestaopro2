@@ -7,7 +7,10 @@ def _get_db_connection():
     database_url = os.environ.get('DATABASE_URL')
     
     if database_url:
-        return psycopg2.connect(database_url, sslmode='require', cursor_factory=DictCursor)
+        if os.environ.get('RENDER'):
+            return psycopg2.connect(database_url, sslmode='require', cursor_factory=DictCursor)
+        else:
+            return psycopg2.connect(database_url, cursor_factory=DictCursor)
     
     #LOCAL
     db_host = os.environ.get("DB_HOST")

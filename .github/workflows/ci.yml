@@ -34,16 +34,19 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: 3. Instalar Dependências
+    - name: 3. Criar arquivo .env.test para a CI
+      run: |
+        echo "DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/gestaopro_test_ci" > .env.test
+        echo "SECRET_KEY=dummy_secret_key_for_ci_pipeline" >> .env.test
+        echo "ALGORITHM=HS256" >> .env.test
+        echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env.test
+        echo "RENDER=false" >> .env.test # Garante que o sslmode='require' não seja ativado
+
+    - name: 4. Instalar Dependências
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: 4. Rodar os Testes
+    - name: 5. Rodar os Testes
       run: |
         python -m pytest --cov=app
-      env:
-        DATABASE_URL: postgresql://postgres:34251311@localhost:5432/gestaopro_test_ci
-        SECRET_KEY: "J!lans@DflkaEs.Lo548,24a.sD5!As48as!!d42sa,.54dF847-24ASf4857aSdf4566GFg4"
-        ALGORITHM: "HS256"
-        ACCESS_TOKEN_EXPIRE_MINUTES: "30"
