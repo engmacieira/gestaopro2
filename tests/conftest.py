@@ -119,3 +119,30 @@ def admin_auth_headers(db_session):
     token = create_access_token(admin_user)
     
     return {"Authorization": f"Bearer {token}"}
+
+@pytest.fixture(scope="function")
+def user_auth_headers(db_session): 
+    """
+    Fixture global de autenticação para utilizador-padrão.
+    """
+    repo = UserRepository(db_session)
+    user_data = UserCreateRequest(
+        username="test_user_user",
+        password="password123",
+        nivel_acesso=3
+    )
+    # Tenta criar o utilizador
+    try:
+        user = repo.create(user_data)
+    except psycopg2.IntegrityError:
+        db_session.rollback()
+        user = repo.get_by_username("test_user_user")
+    
+    # Garantia de que o utilizador existe
+    assert user is not None, "Falha ao criar ou obter o 'test_user_user' na fixture"
+
+    # --- A CORREÇÃO ---
+    # Chamada igual à da fixture do admin
+    access_token = create_access_token(user) 
+    
+    return {"Authorization": f"Bearer {access_token}"}

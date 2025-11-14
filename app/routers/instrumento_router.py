@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from psycopg2.extensions import connection
 import psycopg2
 import logging
+from typing import List
 from app.core.database import get_db
 from app.core.security import get_current_user, require_access_level
 from app.models.user_model import User
@@ -41,6 +42,26 @@ def create_instrumento(
         logger.exception(f"Erro inesperado ao criar instrumento por '{current_user.username}': {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
+@router.get("/", response_model=List[InstrumentoResponse])
+def get_all_instrumentos( 
+    db_conn: connection = Depends(get_db)
+):
+    """
+    Lista todos os Instrumentos Contratuais.
+    """
+    try:
+        repo = InstrumentoRepository(db_conn)
+        
+        # --- AQUI ESTÁ A CORREÇÃO ---
+        # Chamada simples, sem argumentos
+        instrumentos = repo.get_all() 
+        
+        return instrumentos
+    
+    except Exception as e:
+        logger.exception(f"Erro inesperado ao buscar todos os instrumentos: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
+
 @router.get("/{id}", response_model=InstrumentoResponse)
 def get_instrumento_by_id( 
     id: int,
@@ -64,25 +85,6 @@ def get_instrumento_by_id(
         logger.exception(f"Erro inesperado ao buscar instrumento ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
     
-@router.get("/{id}", response_model=InstrumentoResponse)
-def get_instrumento_by_id( 
-    id: int,
-    db_conn: connection = Depends(get_db)
-):
-    try:
-        repo = InstrumentoRepository(db_conn)
-        instrumento = repo.get_by_id(id) 
-        if not instrumento:
-            logger.warning(f"Instrumento ID {id} não encontrado.")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Instrumento Contratual não encontrado."
-            )
-        return instrumento
-    except Exception as e:
-        logger.exception(f"Erro inesperado ao buscar instrumento ID {id}: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
-
 @router.put("/{id}",
             response_model=InstrumentoResponse,
             dependencies=[Depends(require_access_level(2))])

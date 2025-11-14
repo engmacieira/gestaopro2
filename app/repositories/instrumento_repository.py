@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
+from typing import List
 import logging
 from app.models.instrumento_model import Instrumento
 from app.schemas.instrumento_schema import InstrumentoRequest
@@ -44,22 +45,26 @@ class InstrumentoRepository:
         finally:
             if cursor: cursor.close()
 
-    def get_all(self) -> list[Instrumento]:
+    def get_all(self) -> List[Instrumento]:
+        """
+        Retorna todos os instrumentos contratuais.
+        """
         cursor = None
-        instrumentos = []
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            sql = "SELECT * FROM instrumentocontratual ORDER BY nome"
+            sql = "SELECT * FROM instrumentocontratual ORDER BY nome" # Simples, sem filtro 'ativo'
             cursor.execute(sql)
-            all_data = cursor.fetchall()
-            instrumentos = [self._map_row_to_model(row) for row in all_data if row]
-            instrumentos = [inst for inst in instrumentos if inst is not None]
-            return instrumentos
+            rows = cursor.fetchall()
+            
+            # Reutiliza o map que você já tem
+            return [self._map_row_to_model(row) for row in rows if row]
+        
         except (Exception, psycopg2.DatabaseError) as error:
-             logger.exception(f"Erro inesperado ao listar instrumentos: {error}")
-             return []
+            logger.exception(f"Erro ao buscar todos os Instrumentos: {error}")
+            raise
         finally:
-            if cursor: cursor.close()
+            if cursor:
+                cursor.close()
 
     def get_by_id(self, id: int) -> Instrumento | None:
         cursor = None

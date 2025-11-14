@@ -650,116 +650,6 @@ async def novo_pedido_pagina(request: Request, id_categoria: int, current_user=D
     }
     return templates.TemplateResponse("novo_pedido.html", context)
 
-
-@router.get("/pedido/{numero_aocs:path}", response_class=HTMLResponse, name="detalhe_pedido", dependencies=[Depends(require_access_level(3))])
-async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
-    # Repositórios
-    aocs_repo = AocsRepository(db_conn)
-    pedido_repo = PedidoRepository(db_conn)
-    item_repo = ItemRepository(db_conn)
-    contrato_repo = ContratoRepository(db_conn)
-    ci_repo = CiPagamentoRepository(db_conn)
-    anexo_repo = AnexoRepository(db_conn)
-    # Repos de domínio (para os modais e contexto)
-    unidade_repo = UnidadeRepository(db_conn)
-    local_repo = LocalRepository(db_conn)
-    agente_repo = AgenteRepository(db_conn)
-    dotacao_repo = DotacaoRepository(db_conn)
-    tipo_doc_repo = TipoDocumentoRepository(db_conn)
-
-    # 1. Obter a AOCS
-    aocs = aocs_repo.get_by_numero_aocs(numero_aocs)
-    if not aocs: 
-        raise HTTPException(status_code=404, detail="AOCS não encontrada")
-
-    # 2. Obter Pedidos e Itens
-    pedidos = pedido_repo.get_by_aocs_id(aocs.id)
-    itens_view = []
-    total_pedido_valor = Decimal('0.0')
-    total_entregue_qtd = Decimal('0.0')
-    total_pedido_qtd = Decimal('0.0')
-    
-    # Variáveis para guardar dados do primeiro item (fornecedor, etc.)
-    primeiro_fornecedor = 'N/D'
-    primeiro_cnpj = 'N/D'
-
-    for p in pedidos:
-        item = item_repo.get_by_id(p.id_item_contrato)
-        contrato = contrato_repo.get_by_id(item.id_contrato) if item else None
-        
-        if item and contrato:
-            subtotal = p.quantidade_pedida * item.valor_unitario
-            total_pedido_valor += subtotal
-            total_entregue_qtd += p.quantidade_entregue
-            total_pedido_qtd += p.quantidade_pedida
-
-            # --- CORREÇÃO AQUI ---
-            # Guardamos o fornecedor do primeiro item
-            if not itens_view: # Se for o primeiro item
-                primeiro_fornecedor = contrato.fornecedor.nome if contrato.fornecedor else 'N/D'
-                primeiro_cnpj = contrato.fornecedor.cpf_cnpj if contrato.fornecedor else 'N/D'
-            
-            itens_view.append({
-                "id_pedido": p.id,
-                "quantidade_pedida": p.quantidade_pedida,
-                "quantidade_entregue": p.quantidade_entregue,
-                "descricao": item.descricao.descricao,
-                "valor_unitario": item.valor_unitario,
-                "numero_item_contrato": item.numero_item,
-                "numero_contrato": contrato.numero_contrato,
-                "unidade_medida": item.unidade_medida,
-                # Não precisamos de fornecedor/cnpj *aqui dentro*
-            })
-            # --- FIM DA CORREÇÃO ---
-
-    # 3. Calcular Status Geral
-    if total_pedido_qtd == 0: status_geral = 'Vazio'
-    elif total_entregue_qtd >= total_pedido_qtd: status_geral = 'Entregue'
-    elif total_entregue_qtd > 0: status_geral = 'Entrega Parcial'
-    else: status_geral = 'Pendente'
-
-    # 4. Busca CIs e Anexos
-    cis = ci_repo.get_all() # Otimizar: ci_repo.get_by_aocs_id(aocs.id)
-    cis_filtradas = [ci for ci in cis if ci.id_aocs == aocs.id]
-    anexos = anexo_repo.get_by_entidade(id_entidade=aocs.id, tipo_entidade='aocs')
-
-    # 5. Busca dados de domínio para modais
-    unidades = [u.nome for u in unidade_repo.get_all()]
-    locais = [l.descricao for l in local_repo.get_all()]
-    responsaveis = [a.nome for a in agente_repo.get_all()]
-    dotacoes = [d.info_orcamentaria for d in dotacao_repo.get_all()]
-    tipos_documento = [td.nome for td in tipo_doc_repo.get_all()]
-
-    # 6. Montar View da AOCS (agora com os dados corretos)
-    aocs_view = {
-        "id": aocs.id,
-        "numero_aocs": aocs.numero_aocs,
-        "data_criacao": aocs.data_criacao,
-        "numero_pedido": aocs.numero_pedido,
-        "empenho": aocs.empenho,
-        "status_entrega": status_geral,
-        "valor_total": total_pedido_valor,
-        
-        # --- CORREÇÃO AQUI ---
-        "fornecedor": primeiro_fornecedor,
-        "cpf_cnpj": primeiro_cnpj,
-        # (Opcional, mas boa prática) Buscar os nomes das FKs da AOCS
-        "unidade_requisitante": unidade_repo.get_by_id(aocs.id_unidade_requisitante).nome if aocs.id_unidade_requisitante else 'N/D',
-        "local_entrega": local_repo.get_by_id(aocs.id_local_entrega).descricao if aocs.id_local_entrega else 'N/D',
-        "agente_responsavel": agente_repo.get_by_id(aocs.id_agente_responsavel).nome if aocs.id_agente_responsavel else 'N/D',
-        "info_orcamentaria": dotacao_repo.get_by_id(aocs.id_dotacao).info_orcamentaria if aocs.id_dotacao else 'N/D',
-    }
-
-    context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
-        "aocs": aocs_view, "itens": itens_view, "anexos": anexos, "cis_pagamento": cis_filtradas,
-        "unidades": unidades, "locais": locais, "responsaveis": responsaveis,
-        "dotacoes": dotacoes, "tipos_documento": tipos_documento,
-        "get_flashed_messages": lambda **kwargs: []
-    }
-    return templates.TemplateResponse("detalhe_pedido.html", context)
-
-
 # --- Rotas para CIs (Adicionar lógica de GET/POST para nova_ci_ui e editar_ci_ui) ---
 @router.get("/pedido/{numero_aocs:path}/nova-ci", response_class=HTMLResponse, name="nova_ci_ui", dependencies=[Depends(require_access_level(2))])
 async def nova_ci_ui(
@@ -870,6 +760,114 @@ async def imprimir_ci(request: Request, id_ci: int, db_conn: connection = Depend
     # Lógica para gerar PDF da CI
     # Use weasyprint e render_template('ci_pagamento_template.html', ...)
     return Response(content="PDF CI aqui", media_type='application/pdf')
+
+@router.get("/pedido/{numero_aocs:path}", response_class=HTMLResponse, name="detalhe_pedido", dependencies=[Depends(require_access_level(3))])
+async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
+    # Repositórios
+    aocs_repo = AocsRepository(db_conn)
+    pedido_repo = PedidoRepository(db_conn)
+    item_repo = ItemRepository(db_conn)
+    contrato_repo = ContratoRepository(db_conn)
+    ci_repo = CiPagamentoRepository(db_conn)
+    anexo_repo = AnexoRepository(db_conn)
+    # Repos de domínio (para os modais e contexto)
+    unidade_repo = UnidadeRepository(db_conn)
+    local_repo = LocalRepository(db_conn)
+    agente_repo = AgenteRepository(db_conn)
+    dotacao_repo = DotacaoRepository(db_conn)
+    tipo_doc_repo = TipoDocumentoRepository(db_conn)
+
+    # 1. Obter a AOCS
+    aocs = aocs_repo.get_by_numero_aocs(numero_aocs)
+    if not aocs: 
+        raise HTTPException(status_code=404, detail="AOCS não encontrada")
+
+    # 2. Obter Pedidos e Itens
+    pedidos = pedido_repo.get_by_aocs_id(aocs.id)
+    itens_view = []
+    total_pedido_valor = Decimal('0.0')
+    total_entregue_qtd = Decimal('0.0')
+    total_pedido_qtd = Decimal('0.0')
+    
+    # Variáveis para guardar dados do primeiro item (fornecedor, etc.)
+    primeiro_fornecedor = 'N/D'
+    primeiro_cnpj = 'N/D'
+
+    for p in pedidos:
+        item = item_repo.get_by_id(p.id_item_contrato)
+        contrato = contrato_repo.get_by_id(item.id_contrato) if item else None
+        
+        if item and contrato:
+            subtotal = p.quantidade_pedida * item.valor_unitario
+            total_pedido_valor += subtotal
+            total_entregue_qtd += p.quantidade_entregue
+            total_pedido_qtd += p.quantidade_pedida
+
+            # --- CORREÇÃO AQUI ---
+            # Guardamos o fornecedor do primeiro item
+            if not itens_view: # Se for o primeiro item
+                primeiro_fornecedor = contrato.fornecedor.nome if contrato.fornecedor else 'N/D'
+                primeiro_cnpj = contrato.fornecedor.cpf_cnpj if contrato.fornecedor else 'N/D'
+            
+            itens_view.append({
+                "id_pedido": p.id,
+                "quantidade_pedida": p.quantidade_pedida,
+                "quantidade_entregue": p.quantidade_entregue,
+                "descricao": item.descricao.descricao,
+                "valor_unitario": item.valor_unitario,
+                "numero_item_contrato": item.numero_item,
+                "numero_contrato": contrato.numero_contrato,
+                "unidade_medida": item.unidade_medida,
+                # Não precisamos de fornecedor/cnpj *aqui dentro*
+            })
+            # --- FIM DA CORREÇÃO ---
+
+    # 3. Calcular Status Geral
+    if total_pedido_qtd == 0: status_geral = 'Vazio'
+    elif total_entregue_qtd >= total_pedido_qtd: status_geral = 'Entregue'
+    elif total_entregue_qtd > 0: status_geral = 'Entrega Parcial'
+    else: status_geral = 'Pendente'
+
+    # 4. Busca CIs e Anexos
+    cis = ci_repo.get_all() # Otimizar: ci_repo.get_by_aocs_id(aocs.id)
+    cis_filtradas = [ci for ci in cis if ci.id_aocs == aocs.id]
+    anexos = anexo_repo.get_by_entidade(id_entidade=aocs.id, tipo_entidade='aocs')
+
+    # 5. Busca dados de domínio para modais
+    unidades = [u.nome for u in unidade_repo.get_all()]
+    locais = [l.descricao for l in local_repo.get_all()]
+    responsaveis = [a.nome for a in agente_repo.get_all()]
+    dotacoes = [d.info_orcamentaria for d in dotacao_repo.get_all()]
+    tipos_documento = [td.nome for td in tipo_doc_repo.get_all()]
+
+    # 6. Montar View da AOCS (agora com os dados corretos)
+    aocs_view = {
+        "id": aocs.id,
+        "numero_aocs": aocs.numero_aocs,
+        "data_criacao": aocs.data_criacao,
+        "numero_pedido": aocs.numero_pedido,
+        "empenho": aocs.empenho,
+        "status_entrega": status_geral,
+        "valor_total": total_pedido_valor,
+        
+        # --- CORREÇÃO AQUI ---
+        "fornecedor": primeiro_fornecedor,
+        "cpf_cnpj": primeiro_cnpj,
+        # (Opcional, mas boa prática) Buscar os nomes das FKs da AOCS
+        "unidade_requisitante": unidade_repo.get_by_id(aocs.id_unidade_requisitante).nome if aocs.id_unidade_requisitante else 'N/D',
+        "local_entrega": local_repo.get_by_id(aocs.id_local_entrega).descricao if aocs.id_local_entrega else 'N/D',
+        "agente_responsavel": agente_repo.get_by_id(aocs.id_agente_responsavel).nome if aocs.id_agente_responsavel else 'N/D',
+        "info_orcamentaria": dotacao_repo.get_by_id(aocs.id_dotacao).info_orcamentaria if aocs.id_dotacao else 'N/D',
+    }
+
+    context = {
+        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "aocs": aocs_view, "itens": itens_view, "anexos": anexos, "cis_pagamento": cis_filtradas,
+        "unidades": unidades, "locais": locais, "responsaveis": responsaveis,
+        "dotacoes": dotacoes, "tipos_documento": tipos_documento,
+        "get_flashed_messages": lambda **kwargs: []
+    }
+    return templates.TemplateResponse("detalhe_pedido.html", context)
 
 # Rota para servir arquivos de upload (Exemplo, pode precisar de ajustes)
 # A rota API /anexos/download/{id} é mais segura e recomendada
