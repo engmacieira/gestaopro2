@@ -65,4 +65,4 @@ jobs:
         pip install -r requirements.txt
 
     - name: 7. Rodar os Testes
-      run: pytest --cov=app
+      run: python -m pytest --cov=app
