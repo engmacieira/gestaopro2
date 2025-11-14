@@ -68,10 +68,14 @@ def get_modalidade_by_id(
                 detail="Modalidade não encontrada."
             )
         return modalidade
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar modalidade ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
-
+    
 @router.put("/{id}",
             response_model=ModalidadeResponse,
             dependencies=[Depends(require_access_level(2))])

@@ -105,15 +105,15 @@
                     <td><strong>{{ item.descricao.descricao }}</strong></td> {# Acesso à descrição aninhada #}
                     <td>{{ item.marca or 'N/D' }}</td>
                     {# Formatação de quantidade e valor #}
-                    <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %} {{ item.unidade_medida }}(s)</td>
-                    <td class="text-right">{{ "%.2f"|format(item.valor_unitario)|replace('.', ',') }}</td>
+                    <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ (item.quantidade | round(2) | string) | replace('.', ',') }}{% endif %} {{ item.unidade_medida }}(s)</td>
+                    <td class="text-right">{{ (item.valor_unitario | round(2) | string) | replace('.', ',') }}</td>
                     {# Saldo precisa ser calculado ou passado pela rota/API #}
                     {% set saldo_item = item.quantidade - (item.total_pedido if item.total_pedido is defined else 0) %} {# Exemplo de cálculo, idealmente viria da API #}
                     <td class="text-right {{ 'text-red' if saldo_item <= 0 else 'text-green' }}" style="font-weight: 700;">
                         {% if saldo_item == saldo_item|int %}
                             {{ saldo_item|int }}
                         {% else %}
-                            {{ "%.2f"|format(saldo_item)|replace('.', ',') }}
+                            {{ (saldo_item | round(2) | string) | replace('.', ',') }}
                         {% endif %}
                     </td>
                     <td>{% if item.ativo %}<span class="status-badge green">Ativo</span>{% else %}<span class="status-badge gray">Inativo</span>{% endif %}</td>

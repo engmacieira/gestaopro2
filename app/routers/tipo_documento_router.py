@@ -68,6 +68,10 @@ def get_tipo_documento_by_id(
                 detail="Tipo de Documento não encontrado."
             )
         return tipo_documento
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar tipo de documento ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

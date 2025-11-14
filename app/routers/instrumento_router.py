@@ -41,18 +41,29 @@ def create_instrumento(
         logger.exception(f"Erro inesperado ao criar instrumento por '{current_user.username}': {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
-@router.get("/", response_model=list[InstrumentoResponse])
-def get_all_instrumentos( 
+@router.get("/{id}", response_model=InstrumentoResponse)
+def get_instrumento_by_id( 
+    id: int,
     db_conn: connection = Depends(get_db)
 ):
     try:
         repo = InstrumentoRepository(db_conn)
-        instrumentos = repo.get_all() 
-        return instrumentos
+        instrumento = repo.get_by_id(id) 
+        if not instrumento:
+            logger.warning(f"Instrumento ID {id} não encontrado.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Instrumento Contratual não encontrado."
+            )
+        return instrumento
+    
+    except HTTPException as http_exc:
+        raise http_exc
+    
     except Exception as e:
-        logger.exception(f"Erro inesperado ao listar instrumentos: {e}")
+        logger.exception(f"Erro inesperado ao buscar instrumento ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
-
+    
 @router.get("/{id}", response_model=InstrumentoResponse)
 def get_instrumento_by_id( 
     id: int,

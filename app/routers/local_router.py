@@ -68,6 +68,10 @@ def get_local_by_id( # <-- Nome singular
                 detail="Local de Entrega não encontrado."
             )
         return local
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar local ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

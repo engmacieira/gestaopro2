@@ -20,6 +20,6 @@
     </div>
     <div class="detail-item">
         <span>Valor Total</span>
-        <strong style="color: var(--action-success);">R$ {{ aocs.valor_total | format("%.2f") }}</strong>
+        <strong style="color: var(--action-success);">R$ {{ (aocs.valor_total | round(2) | string) | replace('.', ',') }}</strong>
     </div>
 </div>

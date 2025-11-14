@@ -20,7 +20,7 @@
                     <td><strong>{{ ci.numero_ci }}</strong></td>
                     <td>{{ ci.data_ci.strftime('%d/%m/%y') if ci.data_ci else 'N/D' }}</td> {# Adicionado if para segurança #}
                     {# Formatação para moeda (duas casas decimais e vírgula) #}
-                    <td class="text-right">{{ "%.2f"|format(ci.valor_nota_fiscal)|replace('.', ',') if ci.valor_nota_fiscal else '0,00' }}</td> {# Adicionado if para segurança #}
+                    <td class="text-right">{{ ((ci.valor_nota_fiscal | round(2) | string) | replace('.', ',')) if ci.valor_nota_fiscal else '0,00' }}</td>
                     <td class="actions-cell" style="text-align: right;">
                         {# Ícones com links diretos - url_for alterado #}
                         <a href="{{ request.app.url_path_for('imprimir_ci', id_ci=ci.id) }}" class="btn-link-action" title="Imprimir CI" target="_blank"><i class="fa-solid fa-print"></i></a>

@@ -72,6 +72,10 @@ def get_contrato_by_id(
                 detail="Contrato não encontrado."
             )
         return contrato
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar Contrato ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

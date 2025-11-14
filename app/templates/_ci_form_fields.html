@@ -47,7 +47,7 @@
             <div class="form-group">
                 <label for="valor_nota_fiscal">Valor NF</label>
                 {# Formata o valor com vírgula para exibição no Brasil #}
-                <input type="text" id="valor_nota_fiscal" name="valor_nota_fiscal" class="form-control" placeholder="1234,56" value="{{ '%.2f'|format(ci.valor_nota_fiscal)|replace('.', ',') if ci.valor_nota_fiscal else '' }}" required>
+                <input type="text" id="valor_nota_fiscal" name="valor_nota_fiscal" class="form-control" placeholder="1234,56" value="{{ ((ci.valor_nota_fiscal | round(2) | string) | replace('.', ',')) if ci.valor_nota_fiscal else '' }}" required>
             </div>
         </div>
     </div>

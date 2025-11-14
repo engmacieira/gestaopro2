@@ -68,6 +68,10 @@ def get_unidade_by_id(
                 detail="Unidade Requisitante não encontrada."
             )
         return unidade
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar unidade ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

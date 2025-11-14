@@ -71,6 +71,10 @@ def get_ci_pagamento_by_id(
                 detail="CI de Pagamento não encontrada."
             )
         return ci
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar CI Pagamento ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

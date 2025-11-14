@@ -55,7 +55,7 @@ class CiPagamentoRepository:
             uni = self.unidade_repo.get_by_nome(ci_req.secretaria_nome)
             if not uni: raise ValueError(f"Unidade '{ci_req.secretaria_nome}' não encontrada.")
 
-            dot = self.dotacao_repo.get_by_nome(ci_req.dotacao_info_orcamentaria) 
+            dot = self.dotacao_repo.get_by_info_orcamentaria(ci_req.dotacao_info_orcamentaria) 
             if not dot: raise ValueError(f"Dotação '{ci_req.dotacao_info_orcamentaria}' não encontrada.")
 
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -157,7 +157,7 @@ class CiPagamentoRepository:
                 params.append(uni.id)
             
             if ci_req.dotacao_info_orcamentaria is not None:
-                dot = self.dotacao_repo.get_by_nome(ci_req.dotacao_info_orcamentaria)
+                dot = self.dotacao_repo.get_by_info_orcamentaria(ci_req.dotacao_info_orcamentaria)
                 if not dot: raise ValueError(f"Dotação '{ci_req.dotacao_info_orcamentaria}' não encontrada.")
                 resolved_fks['id_dotacao_pagamento'] = dot.id
                 fields_to_update.append("id_dotacao_pagamento = %s")

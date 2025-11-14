@@ -5,6 +5,7 @@ if os.environ.get("TESTING") != "true":
     load_dotenv()
 
 import logging
+from contextlib import asynccontextmanager # <--- IMPORTAR ISTO
 from app.core.logging_config import setup_logging
 setup_logging()
 
@@ -12,45 +13,47 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles 
  
-from app.routers import agente_router 
-from app.routers import anexo_router 
-from app.routers import aocs_router
-from app.routers import categoria_router
-from app.routers import ci_pagamento_router
-from app.routers import contrato_router 
-from app.routers import dotacao_router
-from app.routers import instrumento_router 
-from app.routers import item_router 
-from app.routers import local_router 
-from app.routers import modalidade_router
-from app.routers import numero_modalidade_router 
-from app.routers import pedido_router 
-from app.routers import processo_licitatorio_router 
-from app.routers import tipo_documento_router 
-from app.routers import unidade_router 
-from app.routers import auth_router 
-from app.routers import user_router 
-from app.routers import ui_router
+from app.routers import (
+    agente_router, anexo_router, aocs_router, categoria_router, 
+    ci_pagamento_router, contrato_router, dotacao_router, 
+    instrumento_router, item_router, local_router, modalidade_router, 
+    numero_modalidade_router, pedido_router, processo_licitatorio_router, 
+    tipo_documento_router, unidade_router, auth_router, user_router, ui_router
+)
 
 logger = logging.getLogger(__name__) 
 
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
+# --- A NOVA LÓGICA DE LIFESPAN ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Código que roda ANTES do app iniciar
+    logger.info("Aplicação Gestão Pública API iniciada.")
+    yield
+    # Código que roda DEPOIS do app desligar
+    logger.info("Aplicação Gestão Pública API encerrada.")
+# --- FIM DA NOVA LÓGICA ---
+
+# Define o diretório base do PROJETO (a pasta 'Refatoracao')
+APP_DIR = os.path.dirname(os.path.abspath(__file__)) # -> /app
+BASE_DIR = os.path.dirname(APP_DIR) # -> / (raiz do projeto)
 
 app = FastAPI(
     title="Gestão Pública API",
     description="API para o sistema de gestão pública (Refatorado com FastAPI)", 
-    version="3.0.0" 
+    version="3.0.0",
+    lifespan=lifespan  # <--- DIZ AO FASTAPI PARA USAR O NOVO LIFESPAN
 )
 
+# Aponta para a pasta 'static' dentro da 'app'
 app.mount("/static", StaticFiles(directory=os.path.join(APP_DIR, "static")), name="static")
 
 @app.get("/")
 def read_root():
     return RedirectResponse(url="/login", status_code=302)
 
-app.include_router(auth_router.router)
-app.include_router(user_router.router) 
-
+# Inclui os routers (como antes, com o prefixo /api)
+app.include_router(auth_router.router, prefix="/api")
+app.include_router(user_router.router, prefix="/api") 
 app.include_router(agente_router.router, prefix="/api")
 app.include_router(anexo_router.router, prefix="/api") 
 app.include_router(aocs_router.router, prefix="/api")
@@ -68,15 +71,7 @@ app.include_router(processo_licitatorio_router.router, prefix="/api")
 app.include_router(tipo_documento_router.router, prefix="/api")
 app.include_router(unidade_router.router, prefix="/api")
 
-app.include_router(ui_router.router)
+app.include_router(ui_router.router) # UI router (sem prefixo /api)
 
-
-@app.on_event("startup")
-async def startup_event():
-    """Loga uma mensagem quando a aplicação inicia."""
-    logger.info("Aplicação Gestão Pública API iniciada.")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Loga uma mensagem quando a aplicação encerra."""
-    logger.info("Aplicação Gestão Pública API encerrada.")
+# --- REMOVEMOS OS @app.on_event ANTIGOS ---
+# (Eles agora estão dentro da função 'lifespan')

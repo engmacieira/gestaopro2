@@ -3,7 +3,6 @@ import psycopg2
 from psycopg2.extras import DictCursor
 
 def _get_db_connection():
-    #RENDER
     database_url = os.environ.get('DATABASE_URL')
     
     if database_url:

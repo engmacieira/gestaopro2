@@ -491,6 +491,35 @@ async def detalhe_contrato(request: Request, id_contrato: int, current_user=Depe
 
     return templates.TemplateResponse("detalhe_contrato.html", context)
 
+@router.get("/contrato/{id_contrato}/importar-itens", response_class=HTMLResponse, name="importar_itens_ui", dependencies=[Depends(require_access_level(2))])
+async def importar_itens_ui(
+    request: Request, 
+    id_contrato: int, 
+    current_user=Depends(get_current_user), 
+    db_conn: connection = Depends(get_db)
+):
+    """
+    Renderiza a página dedicada para importar itens para um contrato específico.
+    """
+    contrato_repo = ContratoRepository(db_conn)
+    contrato = contrato_repo.get_by_id(id_contrato)
+    if not contrato:
+        raise HTTPException(status_code=404, detail="Contrato não encontrado")
+
+    # Mapeia o modelo para uma view simples (dicionário) para o template
+    contrato_view = {
+        "id": contrato.id,
+        "numero_contrato": contrato.numero_contrato,
+    }
+
+    context = {
+        "request": request, 
+        "url_for": request.app.url_path_for, 
+        "current_user": current_user,
+        "contrato": contrato_view,
+        "get_flashed_messages": lambda **kwargs: []
+    }
+    return templates.TemplateResponse("importar_itens.html", context)
 
 @router.get("/categoria/{id_categoria}/contratos", response_class=HTMLResponse, name="contratos_por_categoria", dependencies=[Depends(require_access_level(3))])
 async def contratos_por_categoria(
@@ -622,38 +651,54 @@ async def novo_pedido_pagina(request: Request, id_categoria: int, current_user=D
     return templates.TemplateResponse("novo_pedido.html", context)
 
 
-@router.get("/pedido/{numero_aocs}", response_class=HTMLResponse, name="detalhe_pedido", dependencies=[Depends(require_access_level(3))])
+@router.get("/pedido/{numero_aocs:path}", response_class=HTMLResponse, name="detalhe_pedido", dependencies=[Depends(require_access_level(3))])
 async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
+    # Repositórios
     aocs_repo = AocsRepository(db_conn)
     pedido_repo = PedidoRepository(db_conn)
     item_repo = ItemRepository(db_conn)
     contrato_repo = ContratoRepository(db_conn)
     ci_repo = CiPagamentoRepository(db_conn)
     anexo_repo = AnexoRepository(db_conn)
-    # Repos de domínio
+    # Repos de domínio (para os modais e contexto)
     unidade_repo = UnidadeRepository(db_conn)
     local_repo = LocalRepository(db_conn)
     agente_repo = AgenteRepository(db_conn)
     dotacao_repo = DotacaoRepository(db_conn)
     tipo_doc_repo = TipoDocumentoRepository(db_conn)
 
+    # 1. Obter a AOCS
     aocs = aocs_repo.get_by_numero_aocs(numero_aocs)
-    if not aocs: raise HTTPException(status_code=404, detail="AOCS não encontrada")
+    if not aocs: 
+        raise HTTPException(status_code=404, detail="AOCS não encontrada")
 
+    # 2. Obter Pedidos e Itens
     pedidos = pedido_repo.get_by_aocs_id(aocs.id)
     itens_view = []
     total_pedido_valor = Decimal('0.0')
     total_entregue_qtd = Decimal('0.0')
     total_pedido_qtd = Decimal('0.0')
+    
+    # Variáveis para guardar dados do primeiro item (fornecedor, etc.)
+    primeiro_fornecedor = 'N/D'
+    primeiro_cnpj = 'N/D'
 
     for p in pedidos:
         item = item_repo.get_by_id(p.id_item_contrato)
         contrato = contrato_repo.get_by_id(item.id_contrato) if item else None
+        
         if item and contrato:
             subtotal = p.quantidade_pedida * item.valor_unitario
             total_pedido_valor += subtotal
             total_entregue_qtd += p.quantidade_entregue
             total_pedido_qtd += p.quantidade_pedida
+
+            # --- CORREÇÃO AQUI ---
+            # Guardamos o fornecedor do primeiro item
+            if not itens_view: # Se for o primeiro item
+                primeiro_fornecedor = contrato.fornecedor.nome if contrato.fornecedor else 'N/D'
+                primeiro_cnpj = contrato.fornecedor.cpf_cnpj if contrato.fornecedor else 'N/D'
+            
             itens_view.append({
                 "id_pedido": p.id,
                 "quantidade_pedida": p.quantidade_pedida,
@@ -663,28 +708,29 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
                 "numero_item_contrato": item.numero_item,
                 "numero_contrato": contrato.numero_contrato,
                 "unidade_medida": item.unidade_medida,
-                # Adicionar mais campos se o template precisar
+                # Não precisamos de fornecedor/cnpj *aqui dentro*
             })
+            # --- FIM DA CORREÇÃO ---
 
-    # Status Geral
+    # 3. Calcular Status Geral
     if total_pedido_qtd == 0: status_geral = 'Vazio'
     elif total_entregue_qtd >= total_pedido_qtd: status_geral = 'Entregue'
     elif total_entregue_qtd > 0: status_geral = 'Entrega Parcial'
     else: status_geral = 'Pendente'
 
-    # Busca CIs e Anexos
-    cis = ci_repo.get_all() # Filtrar por aocs.id seria melhor
+    # 4. Busca CIs e Anexos
+    cis = ci_repo.get_all() # Otimizar: ci_repo.get_by_aocs_id(aocs.id)
     cis_filtradas = [ci for ci in cis if ci.id_aocs == aocs.id]
     anexos = anexo_repo.get_by_entidade(id_entidade=aocs.id, tipo_entidade='aocs')
 
-    # Busca dados de domínio para modais
+    # 5. Busca dados de domínio para modais
     unidades = [u.nome for u in unidade_repo.get_all()]
     locais = [l.descricao for l in local_repo.get_all()]
     responsaveis = [a.nome for a in agente_repo.get_all()]
     dotacoes = [d.info_orcamentaria for d in dotacao_repo.get_all()]
     tipos_documento = [td.nome for td in tipo_doc_repo.get_all()]
 
-    # Dados da AOCS para o template
+    # 6. Montar View da AOCS (agora com os dados corretos)
     aocs_view = {
         "id": aocs.id,
         "numero_aocs": aocs.numero_aocs,
@@ -693,15 +739,19 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
         "empenho": aocs.empenho,
         "status_entrega": status_geral,
         "valor_total": total_pedido_valor,
-        # Buscar nomes das FKs
-        "fornecedor": itens_view[0]['fornecedor'] if itens_view else 'N/D', # Assumindo mesmo fornecedor
-        "cpf_cnpj": itens_view[0]['cpf_cnpj'] if itens_view else 'N/D',
-        # ... buscar nomes de unidade, local, agente, dotacao ...
+        
+        # --- CORREÇÃO AQUI ---
+        "fornecedor": primeiro_fornecedor,
+        "cpf_cnpj": primeiro_cnpj,
+        # (Opcional, mas boa prática) Buscar os nomes das FKs da AOCS
+        "unidade_requisitante": unidade_repo.get_by_id(aocs.id_unidade_requisitante).nome if aocs.id_unidade_requisitante else 'N/D',
+        "local_entrega": local_repo.get_by_id(aocs.id_local_entrega).descricao if aocs.id_local_entrega else 'N/D',
+        "agente_responsavel": agente_repo.get_by_id(aocs.id_agente_responsavel).nome if aocs.id_agente_responsavel else 'N/D',
+        "info_orcamentaria": dotacao_repo.get_by_id(aocs.id_dotacao).info_orcamentaria if aocs.id_dotacao else 'N/D',
     }
 
-
     context = {
-        "request": request, "current_user": current_user,
+        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
         "aocs": aocs_view, "itens": itens_view, "anexos": anexos, "cis_pagamento": cis_filtradas,
         "unidades": unidades, "locais": locais, "responsaveis": responsaveis,
         "dotacoes": dotacoes, "tipos_documento": tipos_documento,
@@ -711,15 +761,73 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
 
 
 # --- Rotas para CIs (Adicionar lógica de GET/POST para nova_ci_ui e editar_ci_ui) ---
-@router.get("/pedido/{numero_aocs}/nova-ci", response_class=HTMLResponse, name="nova_ci_ui", dependencies=[Depends(require_access_level(2))])
-async def nova_ci_ui(request: Request, numero_aocs: str, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
-    # Buscar dados da AOCS e listas de domínio
-    context = {"request": request, "current_user": current_user, "numero_aocs": numero_aocs,
-               "aocs": {}, "dotacoes": [], "solicitantes": [], "secretarias": [], "ci": {}, # ci vazio para o template _ci_form_fields
-               "get_flashed_messages": lambda **kwargs: []}
+@router.get("/pedido/{numero_aocs:path}/nova-ci", response_class=HTMLResponse, name="nova_ci_ui", dependencies=[Depends(require_access_level(2))])
+async def nova_ci_ui(
+    request: Request, 
+    numero_aocs: str, 
+    current_user=Depends(get_current_user), 
+    db_conn: connection = Depends(get_db)
+):
+    """
+    Renderiza o formulário para uma nova CI, pré-preenchendo
+    os dados da AOCS e os dropdowns de domínio.
+    """
+    aocs_repo = AocsRepository(db_conn)
+    dotacao_repo = DotacaoRepository(db_conn)
+    agente_repo = AgenteRepository(db_conn)
+    unidade_repo = UnidadeRepository(db_conn)
+    
+    # 1. Buscar a AOCS e dados relacionados (Contrato/Fornecedor)
+    # Precisamos de uma query mais completa (como na versão antiga) ou de várias chamadas
+    aocs = aocs_repo.get_by_numero_aocs(numero_aocs)
+    if not aocs:
+        raise HTTPException(status_code=404, detail="AOCS não encontrada.")
+
+    # Busca dados do fornecedor (esta lógica estava em falta)
+    # O ui_router.py já faz isto na rota detalhe_pedido, vamos replicar
+    primeiro_fornecedor = 'N/D'
+    primeiro_cnpj = 'N/D'
+    pedido_repo = PedidoRepository(db_conn)
+    item_repo = ItemRepository(db_conn)
+    contrato_repo = ContratoRepository(db_conn)
+    
+    pedidos = pedido_repo.get_by_aocs_id(aocs.id)
+    if pedidos:
+        item = item_repo.get_by_id(pedidos[0].id_item_contrato)
+        contrato = contrato_repo.get_by_id(item.id_contrato) if item else None
+        if contrato and contrato.fornecedor:
+            primeiro_fornecedor = contrato.fornecedor.nome
+            primeiro_cnpj = contrato.fornecedor.cpf_cnpj
+            
+    # 2. Montar a view da AOCS para o template
+    aocs_view = {
+        "id": aocs.id,
+        "justificativa": aocs.justificativa,
+        "fornecedor": primeiro_fornecedor,
+        "cpf_cnpj": primeiro_cnpj,
+        "id_unidade_requisitante": aocs.id_unidade_requisitante,
+        "id_agente_responsavel": aocs.id_agente_responsavel,
+        "id_dotacao": aocs.id_dotacao
+    }
+
+    # 3. Buscar listas de domínio para os dropdowns
+    dotacoes = dotacao_repo.get_all()
+    solicitantes = agente_repo.get_all()
+    secretarias = unidade_repo.get_all()
+
+    context = {
+        "request": request, "url_for": request.app.url_path_for, "current_user": current_user, 
+        "numero_aocs": numero_aocs,
+        "aocs": aocs_view, # Passa os dados da AOCS (incluindo fornecedor)
+        "dotacoes": dotacoes, # Passa a lista completa
+        "solicitantes": solicitantes, # Passa a lista completa
+        "secretarias": secretarias, # Passa a lista completa
+        "ci": {}, # ci vazio para o template _ci_form_fields
+        "get_flashed_messages": lambda **kwargs: []
+    }
     return templates.TemplateResponse("nova_ci.html", context)
 
-@router.post("/pedido/{numero_aocs}/nova-ci", name="nova_ci_post", dependencies=[Depends(require_access_level(2))])
+@router.post("/pedido/{numero_aocs:path}/nova-ci", name="nova_ci_post", dependencies=[Depends(require_access_level(2))])
 async def nova_ci_post(request: Request, numero_aocs: str, db_conn: connection = Depends(get_db)):
     # Processar form, criar CI, redirecionar
     form_data = await request.form()
@@ -745,13 +853,13 @@ async def editar_ci_post(request: Request, id_ci: int, db_conn: connection = Dep
     return RedirectResponse(url=request.app.url_path_for('detalhe_pedido', numero_aocs=numero_aocs), status_code=status.HTTP_302_FOUND)
 
 # --- Rotas para Impressão (Adaptar lógica de _gerar_pdf_ci e outras) ---
-@router.get("/pedido/{numero_aocs}/imprimir", name="imprimir_aocs", dependencies=[Depends(require_access_level(2))])
+@router.get("/pedido/{numero_aocs:path}/imprimir", name="imprimir_aocs", dependencies=[Depends(require_access_level(2))])
 async def imprimir_aocs(request: Request, numero_aocs: str, db_conn: connection = Depends(get_db)):
     # Lógica para gerar PDF da AOCS
     # Use weasyprint e render_template('aocs_template.html', ...)
     return Response(content="PDF AOCS aqui", media_type='application/pdf')
 
-@router.get("/pedido/{numero_aocs}/imprimir-pendentes", name="imprimir_pendentes_aocs", dependencies=[Depends(require_access_level(2))])
+@router.get("/pedido/{numero_aocs:path}/imprimir-pendentes", name="imprimir_pendentes_aocs", dependencies=[Depends(require_access_level(2))])
 async def imprimir_pendentes_aocs(request: Request, numero_aocs: str, db_conn: connection = Depends(get_db)):
     # Lógica para gerar PDF dos itens pendentes
     # Use weasyprint e render_template('aocs_pendentes_template.html', ...)

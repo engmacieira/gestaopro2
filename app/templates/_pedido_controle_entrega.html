@@ -29,7 +29,7 @@
                             {% if item.quantidade_pedida == item.quantidade_pedida|int %}
                                 {{ item.quantidade_pedida|int }}
                             {% else %}
-                                {{ "%.2f"|format(item.quantidade_pedida)|replace('.', ',') }}
+                                {{ (item.quantidade_pedida | round(2) | string) | replace('.', ',') }}
                             {% endif %}
                         </td>
                         
@@ -38,7 +38,7 @@
                             {% if item.quantidade_entregue == item.quantidade_entregue|int %}
                                 {{ item.quantidade_entregue|int }}
                             {% else %}
-                                {{ "%.2f"|format(item.quantidade_entregue)|replace('.', ',') }}
+                                {{ (item.quantidade_entregue | round(2) | string) | replace('.', ',') }}
                             {% endif %}
                         </td>
                         
@@ -48,7 +48,7 @@
                             {% if saldo_restante == saldo_restante|int %}
                                 {{ saldo_restante|int }}
                             {% else %}
-                                {{ "%.2f"|format(saldo_restante)|replace('.', ',') }}
+                                {{ (saldo_restante | round(2) | string) | replace('.', ',') }}
                             {% endif %}
                         </td>
                         

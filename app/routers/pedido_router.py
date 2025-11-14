@@ -86,6 +86,10 @@ def get_pedido_by_id(
                 detail="Pedido não encontrado."
             )
         return pedido
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar Pedido ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

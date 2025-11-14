@@ -74,6 +74,10 @@ def get_aocs_by_id(
                 detail="AOCS não encontrada."
             )
         return aocs
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar AOCS ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

@@ -74,18 +74,18 @@
                         <td><a href="{{ request.app.url_path_for('detalhe_contrato', id_contrato=item.id_contrato) }}">{{ item.numero_contrato }}</a></td>
 
                         {# Qtd. Contratada - Alinhado à Direita, Formatação com vírgula #}
-                        <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ "%.2f"|format(item.quantidade)|replace('.', ',') }}{% endif %}</td>
+                        <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ (item.quantidade | round(2) | string) | replace('.', ',') }}{% endif %}</td>
 
                         {# Qtd. Pedida - Alinhado à Direita, Formatação com vírgula #}
-                        <td class="text-right">{% if item.total_pedido == item.total_pedido|int %}{{ item.total_pedido|int }}{% else %}{{ "%.2f"|format(item.total_pedido)|replace('.', ',') }}{% endif %}</td>
+                        <td class="text-right">{% if item.total_pedido == item.total_pedido|int %}{{ item.total_pedido|int }}{% else %}{{ (item.total_pedido | round(2) | string) | replace('.', ',') }}{% endif %}</td>
 
                         {# Saldo Disponível - Alinhado à Direita, Formatação com vírgula, Cor #}
                         <td class="text-right {{ 'text-red' if item.saldo == 0 else 'text-green' }}" style="font-weight: 700;">
-                            {% if item.saldo == item.saldo|int %}{{ item.saldo|int }}{% else %}{{ "%.2f"|format(item.saldo)|replace('.', ',') }}{% endif %}
+                            {% if item.saldo == item.saldo|int %}{{ item.saldo|int }}{% else %}{{ (item.saldo | round(2) | string) | replace('.', ',') }}{% endif %}
                         </td>
 
                         {# Valor Unitário - Alinhado à Direita, Formatação com vírgula #}
-                        <td class="text-right">{{ "%.2f"|format(item.valor_unitario)|replace('.', ',') }}</td>
+                        <td class="text-right">{{ (item.valor_unitario | round(2) | string) | replace('.', ',') }}</td>
                     </tr>
                     {% else %} {# Adicionado 'else' para o caso de não haver itens #}
                     <tr><td colspan="6"><div class="empty-state mini"><p>Nenhum item encontrado para esta categoria ou filtro.</p></div></td></tr>

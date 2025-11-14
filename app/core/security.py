@@ -35,8 +35,8 @@ def create_access_token(user: User) -> str:
 
 #PORTEIRO
 def get_current_user(
-    token_header: str | None = Depends(oauth2_scheme), # Agora pode ser None
-    access_token_cookie: str | None = Cookie(None, alias="access_token"), # Também é bom ser explícito que pode ser None
+    token_header: str | None = Depends(oauth2_scheme), 
+    access_token_cookie: str | None = Cookie(None, alias="access_token"), 
     db_conn: connection = Depends(get_db)) -> User:
     
     credentials_exception = HTTPException(
@@ -45,20 +45,18 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    # Lógica de extração: Prioriza o Header (token_header), senão usa o Cookie.
     token = token_header if token_header else access_token_cookie
 
     if not token:
         raise credentials_exception
     
-    # Remove o prefixo "bearer " se estiver presente (está no cookie e no header)
     if token.lower().startswith("bearer "):
         token = token.split(" ")[1]
     
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        user_id: int = payload.get("id") # Boa prática pegar o ID também
+        user_id: int = payload.get("id") 
         if username is None or user_id is None:
             raise credentials_exception
     except JWTError:

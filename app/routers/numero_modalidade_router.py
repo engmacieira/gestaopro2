@@ -68,6 +68,10 @@ def get_numero_modalidade_by_id(
                 detail="Número/Ano de Modalidade não encontrado."
             )
         return num_mod
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar numero_modalidade ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
