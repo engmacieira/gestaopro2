@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env.test')
 
+from app.core.security import create_access_token 
+from app.models.user_model import User
 from app.main import app 
 from app.core.database import get_db, _get_db_connection
 
@@ -72,3 +74,26 @@ def test_client(db_session):
         yield client
     
     app.dependency_overrides.clear()
+    
+@pytest.fixture
+def admin_auth_headers(db_session): 
+    
+    from app.repositories.user_repository import UserRepository
+    from app.schemas.user_schema import UserCreateRequest
+
+    repo = UserRepository(db_session)
+    user_data = UserCreateRequest(
+        username="test_admin_user",
+        password="password123",
+        nivel_acesso=1, 
+        ativo=True
+    )
+    try:
+        admin_user = repo.create(user_data)
+    except Exception as e:
+        db_session.rollback()
+        admin_user = repo.get_by_username("test_admin_user")
+    
+    token = create_access_token(admin_user)
+    
+    return {"Authorization": f"Bearer {token}"}

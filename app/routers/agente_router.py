@@ -68,7 +68,9 @@ def get_agente_by_id(
                 detail="Agente Responsável não encontrado."
             )
         return agente
-    except Exception as e:
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e: 
         logger.exception(f"Erro inesperado ao buscar agente ID {id}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
