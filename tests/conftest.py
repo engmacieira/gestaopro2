@@ -1,5 +1,6 @@
 import pytest
 import os
+os.environ["TESTING"] = "true"
 import psycopg2
 from psycopg2.extras import DictCursor
 from fastapi.testclient import TestClient

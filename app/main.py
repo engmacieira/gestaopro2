@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.environ.get("TESTING") != "true":
+    load_dotenv()
 
 import logging
 from app.core.logging_config import setup_logging
