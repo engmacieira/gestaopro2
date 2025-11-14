@@ -768,3 +768,33 @@ DETAIL:  Chave (nome)=(Categoria Original) já existe.
 2025-11-13 16:55:34 - WARNING - app.routers.categoria_router - Categoria ID 1 não encontrada.
 2025-11-13 16:55:34 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 404 Not Found"
 2025-11-13 16:55:34 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-14 09:49:22 - INFO - root - Sistema de Logging Configurado.
+2025-11-14 09:49:31 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-14 09:49:32 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 1'
+2025-11-14 09:49:32 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 1').
+2025-11-14 09:49:32 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-14 09:49:32 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-14 09:49:32 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-14 09:49:32 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 2'
+2025-11-14 09:49:32 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 2').
+2025-11-14 09:49:32 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-14 09:49:32 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-14 09:49:32 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-14 09:49:32 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-14 09:49:33 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Original'
+2025-11-14 09:49:33 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Original').
+2025-11-14 09:49:33 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-14 09:49:33 - INFO - app.repositories.categoria_repository - Categoria ID 1 atualizada de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-14 09:49:33 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' atualizou Categoria ID 1 de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-14 09:49:33 - INFO - httpx - HTTP Request: PUT http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-14 09:49:33 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-14 09:49:33 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-14 09:49:33 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Para Deletar'
+2025-11-14 09:49:33 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-14 09:49:33 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-14 09:49:33 - INFO - app.repositories.categoria_repository - Categoria ID 1 ('Categoria Para Deletar') deletada.
+2025-11-14 09:49:33 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-14 09:49:33 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/1 "HTTP/1.1 204 No Content"
+2025-11-14 09:49:33 - WARNING - app.routers.categoria_router - Categoria ID 1 não encontrada.
+2025-11-14 09:49:33 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 404 Not Found"
+2025-11-14 09:49:33 - INFO - app.main - Aplicação Gestão Pública API encerrada.

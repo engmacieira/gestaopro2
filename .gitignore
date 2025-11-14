@@ -5,6 +5,7 @@
 # Ambiente Virtual
 venv/
 .venv/
+.pytest_cache/
 
 # Arquivos de cache do Python
 __pycache__/
