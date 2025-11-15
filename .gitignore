@@ -19,8 +19,7 @@ __pycache__/
 
 # Arquivos e pastas de usuário
 .uploads/
-.babackup_app/
-.DocumentosSistema/
+uploads/ 
 
 # Arquivos de backup do banco
 *.dump

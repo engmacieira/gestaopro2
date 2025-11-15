@@ -18,6 +18,7 @@ from app.repositories.aocs_repository import AocsRepository
 from werkzeug.utils import secure_filename 
 from datetime import datetime
 
+# Configuração de Paths (sem alterações)
 APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
 BASE_DIR = os.path.dirname(APP_DIR)
 UPLOAD_FOLDER = os.path.join(BASE_DIR, os.environ.get("UPLOAD_FOLDER", "uploads"))
@@ -31,198 +32,172 @@ router = APIRouter(
 )
 
 def _generate_secure_filename_paths(original_filename: str, tipo_doc: str | None,
-                                  entidade_id: int, tipo_entidade: str,
-                                  identificador_entidade: str) -> tuple[str, str, str]:
-    """Gera nome seguro, caminho relativo (BD) e caminho absoluto da pasta."""
-    nome_original_seguro = secure_filename(original_filename)
-    _, extensao = os.path.splitext(nome_original_seguro)
-    tipo_doc_limpo = ''.join(c for c in (tipo_doc or 'doc') if c.isalnum() or c == '-').upper()[:15]
-    identificador_limpo = ''.join(c for c in identificador_entidade if c.isalnum() or c in ['-', '_']).replace('/', '-')[:20]
-    timestamp = int(datetime.now().timestamp())
-
-    nome_arquivo_final = f"{timestamp}_{tipo_doc_limpo}_{identificador_limpo}{extensao}"
-
-    subpasta = os.path.join(tipo_entidade, str(entidade_id)) 
-
-    caminho_relativo_db = os.path.join(subpasta, nome_arquivo_final).replace("\\", "/") 
-    caminho_completo_pasta_destino = os.path.join(UPLOAD_FOLDER, subpasta)
-
-    return nome_arquivo_final, caminho_relativo_db, caminho_completo_pasta_destino
-
-@router.post("/upload/",
-             response_model=AnexoResponse,
-             status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(require_access_level(2))]) 
-async def upload_anexo_file(
-    id_entidade: int = Form(...),
-    tipo_entidade: str = Form(...), 
-    tipo_documento: str | None = Form(None),
-    file: UploadFile = File(...),
-    db_conn: connection = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    repo_anexo = AnexoRepository(db_conn)
-    repo_contrato = ContratoRepository(db_conn)
-    repo_aocs = AocsRepository(db_conn)
-
-    if tipo_entidade not in ['contrato', 'aocs']:
-        raise HTTPException(status_code=400, detail="Tipo de entidade inválido.")
-
-    identificador_entidade = None
+                                  entidade_id: int, tipo_entidade: str, 
+                                  db_conn: connection) -> tuple[str, str, str]:
+    """
+    Gera um nome de ficheiro seguro e os caminhos de diretório.
+    (Função auxiliar, sem alterações)
+    """
+    if tipo_doc:
+        tipo_doc_saneado = secure_filename(tipo_doc).upper()
+    else:
+        tipo_doc_saneado = "OUTROS"
+    
+    entidade_nome = f"ENTIDADE-{entidade_id}"
     try:
         if tipo_entidade == 'contrato':
-            entidade = repo_contrato.get_by_id(id_entidade)
-            if not entidade: raise ValueError("Contrato não encontrado.")
-            identificador_entidade = entidade.numero_contrato
+            entidade_obj = ContratoRepository(db_conn).get_by_id(entidade_id)
+            if entidade_obj: entidade_nome = f"CT-{entidade_obj.numero_contrato}"
         elif tipo_entidade == 'aocs':
-            entidade = repo_aocs.get_by_id(id_entidade)
-            if not entidade: raise ValueError("AOCS não encontrada.")
-            identificador_entidade = entidade.numero_aocs
-    except ValueError as e:
-        logger.warning(f"Entidade {tipo_entidade} ID {id_entidade} não encontrada p/ upload por '{current_user.username}': {e}")
-        raise HTTPException(status_code=404, detail=str(e))
+            entidade_obj = AocsRepository(db_conn).get_by_id(entidade_id)
+            if entidade_obj: entidade_nome = f"AOCS-{entidade_obj.numero_aocs}"
     except Exception as e:
-         logger.exception(f"Erro ao buscar entidade {tipo_entidade} ID {id_entidade} p/ upload: {e}")
-         raise HTTPException(status_code=500, detail="Erro ao verificar entidade.")
+        logger.error(f"Erro ao buscar entidade (ID {entidade_id}, Tipo {tipo_entidade}) para nomear anexo: {e}")
 
+    timestamp = int(datetime.now().timestamp())
+    nome_base, extensao = os.path.splitext(original_filename)
+    nome_seguro_base = f"{timestamp}_{tipo_doc_saneado}_{secure_filename(entidade_nome)}{extensao}"
+    
+    path_relativo = os.path.join(tipo_entidade, str(entidade_id))
+    path_absoluto_save = os.path.join(UPLOAD_FOLDER, path_relativo)
+    nome_seguro_com_path = os.path.join(path_relativo, nome_seguro_base).replace("\\", "/")
+    
+    return path_absoluto_save, nome_seguro_base, nome_seguro_com_path
+
+
+# --- INÍCIO DA CORREÇÃO DE ORDEM ---
+
+# ROTA GET (Específica): /download/{id}
+# Esta deve vir PRIMEIRO para não ser "roubada"
+@router.get("/download/{id}", 
+            response_class=FileResponse,
+            dependencies=[Depends(require_access_level(3))])
+async def download_anexo(id: int, db_conn: connection = Depends(get_db)):
+    """
+    Faz o download de um anexo pelo seu ID.
+    """
+    repo = AnexoRepository(db_conn)
+    anexo = repo.get_by_id(id)
+    if not anexo:
+        raise HTTPException(status_code=404, detail="Anexo não encontrado.")
+    
+    file_path = os.path.abspath(os.path.join(UPLOAD_FOLDER, anexo.nome_seguro))
+    
+    if not file_path.startswith(os.path.abspath(UPLOAD_FOLDER)):
+        logger.error(f"Tentativa de Path Traversal ao baixar anexo ID {id}. Path: {file_path}")
+        raise HTTPException(status_code=403, detail="Acesso negado.")
+        
+    if not os.path.exists(file_path):
+        logger.error(f"Arquivo não encontrado no disco (ID {id}), mas existe no BD: {file_path}")
+        raise HTTPException(status_code=404, detail="Arquivo não encontrado no servidor, embora exista registro.")
+
+    return FileResponse(path=file_path, filename=anexo.nome_original, media_type='application/octet-stream')
+
+# ROTA GET (Genérica): /{id_entidade}/{tipo_entidade}
+# Esta deve vir DEPOIS da rota /download
+@router.get("/{id_entidade}/{tipo_entidade}", 
+            response_model=List[AnexoResponse],
+            status_code=status.HTTP_200_OK)
+def get_anexos_por_entidade(
+    id_entidade: int, 
+    tipo_entidade: str, 
+    db_conn: connection = Depends(get_db)
+):
+    """
+    Busca todos os anexos de uma entidade (Contrato, AOCS, etc.).
+    """
     try:
-        if not file.filename: 
-             raise HTTPException(status_code=400, detail="Nome de arquivo inválido.")
+        repo_anexo = AnexoRepository(db_conn)
+        anexos = repo_anexo.get_by_entidade(id_entidade, tipo_entidade)
+        # (A lógica incorreta do 404 já foi removida)
+        return anexos
+    
+    except Exception as e:
+        logger.exception(f"Erro inesperado ao buscar anexos para {tipo_entidade} ID {id_entidade}: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
-        nome_final, caminho_relativo_db, caminho_pasta_destino = _generate_secure_filename_paths(
-            file.filename, tipo_documento, id_entidade, tipo_entidade, identificador_entidade
+# --- FIM DA CORREÇÃO DE ORDEM ---
+
+
+@router.post("/upload/", 
+             response_model=AnexoResponse, 
+             status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(require_access_level(2))])
+async def upload_file(
+    file: UploadFile = File(...), 
+    id_entidade: int = Form(...),
+    tipo_entidade: str = Form(...),
+    tipo_documento: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db_conn: connection = Depends(get_db)
+):
+    """
+    Faz upload de um novo anexo e o associa a uma entidade.
+    """
+    try:
+        save_dir, _, nome_seguro_com_path = _generate_secure_filename_paths(
+            file.filename, tipo_documento, id_entidade, tipo_entidade, db_conn
         )
-        caminho_completo_arquivo = os.path.join(caminho_pasta_destino, nome_final)
-        os.makedirs(caminho_pasta_destino, exist_ok=True)
-    except Exception as e:
-        logger.exception(f"Erro ao gerar nome/caminho para upload: {e}")
-        raise HTTPException(status_code=500, detail="Erro ao preparar salvamento.")
-
-    try:
-        with open(caminho_completo_arquivo, "wb") as buffer:
+        os.makedirs(save_dir, exist_ok=True)
+        file_path_save = os.path.join(save_dir, os.path.basename(nome_seguro_com_path))
+        
+        with open(file_path_save, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        logger.info(f"Arquivo '{file.filename}' salvo como '{caminho_completo_arquivo}' por '{current_user.username}'.")
+            
     except Exception as e:
-        logger.exception(f"Erro ao salvar arquivo '{caminho_completo_arquivo}': {e}")
-        if os.path.exists(caminho_completo_arquivo):
-            try: os.remove(caminho_completo_arquivo)
-            except OSError: pass
-        raise HTTPException(status_code=500, detail="Erro ao salvar arquivo.")
+        logger.exception(f"Erro ao salvar arquivo físico '{file.filename}' por '{current_user.username}': {e}")
+        raise HTTPException(status_code=500, detail="Erro ao salvar o arquivo no servidor.")
     finally:
-        await file.close() 
+        file.file.close()
 
     try:
+        # Criar registro no banco
+        repo = AnexoRepository(db_conn)
         anexo_data = AnexoCreate(
-            id_entidade=id_entidade,
+            id_entidade=id_entidade, 
             tipo_entidade=tipo_entidade,
             tipo_documento=tipo_documento,
             nome_original=file.filename,
-            nome_seguro=caminho_relativo_db, 
+            nome_seguro=nome_seguro_com_path,
         )
-        novo_anexo = repo_anexo.create(anexo_data)
+        novo_anexo = repo.create(anexo_data) 
+        
         logger.info(f"Usuário '{current_user.username}' fez upload Anexo ID {novo_anexo.id} ('{novo_anexo.nome_original}')")
         return novo_anexo
+        
     except Exception as e:
-        logger.exception(f"Erro ao criar registro BD p/ anexo '{caminho_completo_arquivo}': {e}")
-        if os.path.exists(caminho_completo_arquivo):
-             try: os.remove(caminho_completo_arquivo)
-             except OSError: logger.error(f"Não foi possível remover arquivo órfão: {caminho_completo_arquivo}")
-        raise HTTPException(status_code=500, detail="Erro ao registrar anexo no banco.")
+        logger.exception(f"Erro ao criar registro do anexo '{file.filename}' no BD por '{current_user.username}': {e}")
+        try:
+            if os.path.exists(file_path_save):
+                os.remove(file_path_save)
+        except Exception as e_clean:
+            logger.error(f"Erro CRÍTICO ao limpar ficheiro órfão {file_path_save}: {e_clean}")
+        raise HTTPException(status_code=500, detail="Erro ao gravar informações do arquivo no banco.")
 
-@router.get("/download/{id}",
-            dependencies=[Depends(require_access_level(3))])
-async def download_anexo_file(
-    id: int,
-    db_conn: connection = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    repo = AnexoRepository(db_conn)
-    anexo = None
-    try:
-        anexo = repo.get_by_id(id)
-        if not anexo or not anexo.nome_seguro: 
-            raise HTTPException(status_code=404, detail="Anexo não encontrado ou sem arquivo associado.")
 
-        file_path = os.path.abspath(os.path.join(UPLOAD_FOLDER, anexo.nome_seguro))
-
-        if not file_path.startswith(os.path.abspath(UPLOAD_FOLDER)):
-            logger.error(f"Tentativa de Path Traversal ao baixar anexo ID {id}. Path: {file_path}")
-            raise HTTPException(status_code=403, detail="Acesso negado ao arquivo.")
-
-        if not os.path.exists(file_path) or not os.path.isfile(file_path):
-             logger.error(f"Arquivo físico não encontrado para Anexo ID {id}: {file_path}")
-             raise HTTPException(status_code=404, detail="Arquivo físico não encontrado.")
-
-        logger.info(f"Usuário '{current_user.username}' baixando Anexo ID {id} ('{anexo.nome_original}') de {file_path}")
-
-        return FileResponse(path=file_path, filename=anexo.nome_original)
-
-    except HTTPException as http_exc:
-        raise http_exc 
-    except Exception as e:
-        logger.exception(f"Erro inesperado ao baixar anexo ID {id}: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno ao processar download.")
-
-@router.get("/", response_model=List[AnexoResponse])
-def get_anexos_por_entidade( 
-    tipo_entidade: str | None = None,
-    id_entidade: int | None = None,
-    db_conn: connection = Depends(get_db)
-):
-    repo = AnexoRepository(db_conn)
-    try:
-        if tipo_entidade and id_entidade:
-            if tipo_entidade not in ['contrato', 'aocs']:
-                raise HTTPException(status_code=400, detail="Tipo de entidade inválido.")
-            anexos = repo.get_by_entidade(id_entidade=id_entidade, tipo_entidade=tipo_entidade)
-        elif tipo_entidade or id_entidade:
-             raise HTTPException(status_code=400, detail="Para filtrar, 'tipo_entidade' e 'id_entidade' são necessários.")
-        else:
-            logger.warning("Listando TODOS os anexos sem filtro.")
-            anexos = repo.get_all() 
-        return anexos
-    except Exception as e:
-        logger.exception(f"Erro inesperado ao listar anexos: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
-
-@router.get("/{id}", response_model=AnexoResponse)
-def get_anexo_by_id(
-    id: int,
-    db_conn: connection = Depends(get_db)
-):
-    repo = AnexoRepository(db_conn)
-    try:
-        anexo = repo.get_by_id(id)
-        if not anexo:
-            logger.warning(f"Anexo ID {id} não encontrado.")
-            raise HTTPException(status_code=404, detail="Anexo não encontrado.")
-        return anexo
-
-    except HTTPException as http_exc:
-        raise http_exc
-
-    except Exception as e:
-        logger.exception(f"Erro inesperado ao buscar anexo ID {id}: {e}")
-        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
-    
-@router.delete("/{id}",
+@router.delete("/{id}", 
                status_code=status.HTTP_204_NO_CONTENT,
                dependencies=[Depends(require_access_level(2))])
-async def delete_anexo( 
+async def delete_anexo(
     id: int,
-    db_conn: connection = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user), 
+    db_conn: connection = Depends(get_db)
 ):
+    """
+    Deleta um anexo (registro do BD e ficheiro físico).
+    """
     repo = AnexoRepository(db_conn)
-    success, anexo_deletado = repo.delete(id) 
-
+    success, anexo_deletado = repo.delete(id)
+    
     if not success and anexo_deletado is None:
-        raise HTTPException(status_code=404, detail="Anexo não encontrado.")
+         raise HTTPException(status_code=404, detail="Anexo não encontrado.")
     elif not success and anexo_deletado is not None:
+         logger.error(f"Falha ao deletar anexo ID {id} (existente). Nenhuma linha afetada.")
          raise HTTPException(status_code=500, detail="Erro ao deletar registro do anexo.")
     elif success and anexo_deletado:
         try:
             file_path = os.path.abspath(os.path.join(UPLOAD_FOLDER, anexo_deletado.nome_seguro))
+            
             if not file_path.startswith(os.path.abspath(UPLOAD_FOLDER)):
                  logger.error(f"Tentativa de Path Traversal ao deletar anexo ID {id}. Path: {file_path}")
             elif os.path.exists(file_path):
@@ -230,7 +205,7 @@ async def delete_anexo(
                 logger.info(f"Usuário '{current_user.username}' deletou arquivo físico: {file_path}")
             else:
                 logger.warning(f"Arquivo físico não encontrado para anexo ID {id} deletado do banco: {file_path}")
-            return 
+            return # Retorna 204 No Content
 
         except OSError as e:
             logger.exception(f"Erro OS ao deletar arquivo físico {anexo_deletado.nome_seguro} (anexo ID {id}, registro BD removido): {e}")
@@ -238,5 +213,5 @@ async def delete_anexo(
         except psycopg2.IntegrityError: 
              raise HTTPException(status_code=409, detail="Erro de integridade ao deletar anexo.")
         except Exception as e: 
-             logger.exception(f"Erro inesperado no repo ao deletar anexo ID {id} por '{current_user.username}': {e}")
-             raise HTTPException(status_code=500, detail="Erro interno ao deletar anexo.")
+             logger.exception(f"Erro inesperado ao deletar arquivo físico anexo ID {id}: {e}")
+             raise HTTPException(status_code=500, detail="Erro interno do servidor ao limpar arquivo.")

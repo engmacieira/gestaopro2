@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel, Field 
+from pydantic import BaseModel, Field, ConfigDict 
 
 class AocsBase(BaseModel):
     numero_aocs: str 
@@ -32,5 +32,4 @@ class AocsResponse(AocsBase):
     id_agente_responsavel: int
     id_dotacao: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

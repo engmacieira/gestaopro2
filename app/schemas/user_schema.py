@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field 
+from pydantic import BaseModel, Field, ConfigDict 
 from datetime import date
 
 class UserBase(BaseModel):
@@ -18,8 +18,7 @@ class UserResponse(UserBase):
     id: int
     data_criacao: date 
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserAdminResponse(UserResponse):
      data_criacao: date | None = None

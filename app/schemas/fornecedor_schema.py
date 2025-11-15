@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class FornecedorBase(BaseModel):
     nome: str
@@ -11,5 +11,4 @@ class FornecedorRequest(FornecedorBase):
 
 class FornecedorResponse(FornecedorBase):
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

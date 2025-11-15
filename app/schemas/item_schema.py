@@ -1,5 +1,5 @@
 from decimal import Decimal
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from .descricao_item_schema import DescricaoItemRequest, DescricaoItemResponse 
 
 class ItemBase(BaseModel): 
@@ -19,5 +19,4 @@ class ItemResponse(ItemBase):
     id_contrato: int
     descricao: DescricaoItemResponse 
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

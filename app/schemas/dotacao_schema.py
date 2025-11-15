@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class DotacaoBase(BaseModel):
     info_orcamentaria: str
@@ -9,5 +9,4 @@ class DotacaoRequest(DotacaoBase):
 class DotacaoResponse(DotacaoBase):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

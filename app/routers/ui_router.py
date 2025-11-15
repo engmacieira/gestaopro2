@@ -93,12 +93,11 @@ RELATORIOS_DISPONIVEIS = { # Simplificado - Adicionar SQLs depois
 async def login_ui(request: Request, msg: str = None, category: str = None):
     """Renderiza a página de login."""
     context = {
-        "request": request,
         "messages": [(category, msg)] if msg and category else None,
         # Adicionar get_flashed_messages simulado se necessário por algum template
         "get_flashed_messages": lambda **kwargs: [(category, msg)] if msg and category else []
     }
-    return templates.TemplateResponse("login.html", context)
+    return templates.TemplateResponse(request, "login.html", context)
 
 @router.post("/login", name="login_post")
 async def login_post(
@@ -180,7 +179,6 @@ async def home_ui(request: Request, current_user=Depends(get_current_user), db_c
          # Manter dados simulados em caso de erro
 
     context = {
-        "request": request,
         "current_user": current_user,
         "indicadores": indicadores,
         "pedidos_pendentes": pedidos_pendentes,
@@ -189,7 +187,7 @@ async def home_ui(request: Request, current_user=Depends(get_current_user), db_c
         # Adicionar get_flashed_messages simulado
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("index.html", context)
+    return templates.TemplateResponse(request, "index.html", context)
 
 @router.get("/categorias-ui", response_class=HTMLResponse, name="categorias_ui", dependencies=[Depends(require_access_level(3))])
 async def categorias_ui(
@@ -222,7 +220,6 @@ async def categorias_ui(
     query_params = dict(request.query_params)
 
     context = {
-        "request": request,
         "current_user": current_user,
         "categorias": categorias_paginadas, # Usar dados paginados
         "pagina_atual": page,
@@ -233,7 +230,7 @@ async def categorias_ui(
         "order": order,
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("categorias.html", context)
+    return templates.TemplateResponse(request, "categorias.html", context)
 
 # Garanta que Query está importado: from fastapi import Query
 
@@ -334,7 +331,6 @@ async def contratos_ui(
     query_params = dict(request.query_params)
 
     context = {
-        "request": request,
         "current_user": current_user,
         "contratos": contratos_view,
         "pagina_atual": page,
@@ -345,7 +341,7 @@ async def contratos_ui(
         "hoje": hoje,
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("contratos.html", context)
+    return templates.TemplateResponse(request, "contratos.html", context)
     
 # --- Rotas UI Adicionais (Estrutura Básica - PREENCHER LÓGICA) ---
 
@@ -364,53 +360,53 @@ async def pedidos_ui(request: Request, current_user=Depends(get_current_user), d
     # Exemplo: Chamar um método de repositório que retorna a visão agregada
 
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "pedidos_lista": pedidos_lista, "pagina_atual": pagina_atual, "total_paginas": total_paginas,
         "query_params": query_params, "sort_by": sort_by, "order": order, "termo_busca": termo_busca,
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("pedidos.html", context)
+    return templates.TemplateResponse(request, "pedidos.html", context)
 
 @router.get("/consultas", response_class=HTMLResponse, name="consultas_ui", dependencies=[Depends(require_access_level(3))])
 async def consultas_ui(request: Request, current_user=Depends(get_current_user)):
     # Lógica para buscar opções dos selects (processos, unidades, etc.)
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "entidades_pesquisaveis": ENTIDADES_PESQUISAVEIS, # Passar config
          # Adicionar listas de opções para os selects, se necessário pré-carregar
         "processos": [], "unidades": [], "locais": [], "dotacoes": [],
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("consultas.html", context)
+    return templates.TemplateResponse(request, "consultas.html", context)
 
 @router.get("/relatorios", response_class=HTMLResponse, name="relatorios_ui", dependencies=[Depends(require_access_level(3))])
 async def relatorios_ui(request: Request, current_user=Depends(get_current_user)):
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "relatorios": RELATORIOS_DISPONIVEIS, # Passar config
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("relatorios.html", context)
+    return templates.TemplateResponse(request, "relatorios.html", context)
 
 @router.get("/importar", response_class=HTMLResponse, name="importar_ui", dependencies=[Depends(require_access_level(2))])
 async def importar_ui(request: Request, current_user=Depends(get_current_user)):
-    context = {"request": request, "current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
-    return templates.TemplateResponse("importar.html", context)
+    context = {"current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
+    return templates.TemplateResponse(request, "importar.html", context)
 
 @router.get("/contratos/novo", response_class=HTMLResponse, name="novo_contrato_ui", dependencies=[Depends(require_access_level(2))])
 async def novo_contrato_ui(request: Request, current_user=Depends(get_current_user)):
     # TODO: Criar o template novo_contrato.html
-    context = {"request": request, "current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
-    return templates.TemplateResponse("importar.html", context)
+    context = {"current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
+    return templates.TemplateResponse(request, "importar.html", context)
 
 @router.get("/gerenciar-tabelas", response_class=HTMLResponse, name="gerenciar_tabelas_ui", dependencies=[Depends(require_access_level(2))])
 async def gerenciar_tabelas_ui(request: Request, current_user=Depends(get_current_user)):
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "tabelas": TABELAS_GERENCIAVEIS, # Passar config
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("gerenciar_tabelas.html", context)
+    return templates.TemplateResponse(request, "gerenciar_tabelas.html", context)
 
 @router.get("/admin/usuarios", response_class=HTMLResponse, name="gerenciar_usuarios_ui", dependencies=[Depends(require_access_level(1))])
 async def gerenciar_usuarios_ui(request: Request, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
@@ -423,11 +419,11 @@ async def gerenciar_usuarios_ui(request: Request, current_user=Depends(get_curre
         logger.error(f"Erro ao buscar usuários para UI admin: {e}")
 
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "usuarios": usuarios,
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("gerenciar_usuarios.html", context)
+    return templates.TemplateResponse(request, "gerenciar_usuarios.html", context)
 
 # --- Rotas de Detalhe e Ação (Estrutura Básica - PREENCHER LÓGICA) ---
 
@@ -479,7 +475,7 @@ async def detalhe_contrato(request: Request, id_contrato: int, current_user=Depe
 
 
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "contrato": contrato_view, "itens": itens, "anexos": anexos,
         "tipos_documento": tipos_documento,
         "pagina_atual": 1, "total_paginas": 1, # Adicionar paginação real
@@ -489,7 +485,7 @@ async def detalhe_contrato(request: Request, id_contrato: int, current_user=Depe
     # Adicionar lógica para servir arquivos estáticos via /uploads/<path:filename> se necessário
     # ou usar a rota API /anexos/download/{id}
 
-    return templates.TemplateResponse("detalhe_contrato.html", context)
+    return templates.TemplateResponse(request, "detalhe_contrato.html", context)
 
 @router.get("/contrato/{id_contrato}/importar-itens", response_class=HTMLResponse, name="importar_itens_ui", dependencies=[Depends(require_access_level(2))])
 async def importar_itens_ui(
@@ -513,13 +509,12 @@ async def importar_itens_ui(
     }
 
     context = {
-        "request": request, 
         "url_for": request.app.url_path_for, 
         "current_user": current_user,
         "contrato": contrato_view,
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("importar_itens.html", context)
+    return templates.TemplateResponse(request, "importar_itens.html", context)
 
 @router.get("/categoria/{id_categoria}/contratos", response_class=HTMLResponse, name="contratos_por_categoria", dependencies=[Depends(require_access_level(3))])
 async def contratos_por_categoria(
@@ -615,7 +610,7 @@ async def contratos_por_categoria(
     # --- FIM DA LÓGICA COLADA ---
 
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "categoria": categoria, 
         "itens": itens, # Agora 'itens' contém os dados reais
         "pagina_atual": page, 
@@ -625,7 +620,7 @@ async def contratos_por_categoria(
         "order": order,
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("contratos_por_categoria.html", context)
+    return templates.TemplateResponse(request, "contratos_por_categoria.html", context)
 
 
 @router.get("/categoria/{id_categoria}/novo-pedido", response_class=HTMLResponse, name="novo_pedido_pagina", dependencies=[Depends(require_access_level(2))])
@@ -640,7 +635,7 @@ async def novo_pedido_pagina(request: Request, id_categoria: int, current_user=D
     dotacao_repo = DotacaoRepository(db_conn)
 
     context = {
-        "request": request, "current_user": current_user,
+        "current_user": current_user,
         "categoria": categoria,
         "unidades": [u.nome for u in unidade_repo.get_all()],
         "locais": [l.descricao for l in local_repo.get_all()],
@@ -648,7 +643,7 @@ async def novo_pedido_pagina(request: Request, id_categoria: int, current_user=D
         "dotacoes": [d.info_orcamentaria for d in dotacao_repo.get_all()],
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("novo_pedido.html", context)
+    return templates.TemplateResponse(request, "novo_pedido.html", context)
 
 # --- Rotas para CIs (Adicionar lógica de GET/POST para nova_ci_ui e editar_ci_ui) ---
 @router.get("/pedido/{numero_aocs:path}/nova-ci", response_class=HTMLResponse, name="nova_ci_ui", dependencies=[Depends(require_access_level(2))])
@@ -706,7 +701,7 @@ async def nova_ci_ui(
     secretarias = unidade_repo.get_all()
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user, 
+        "url_for": request.app.url_path_for, "current_user": current_user, 
         "numero_aocs": numero_aocs,
         "aocs": aocs_view, # Passa os dados da AOCS (incluindo fornecedor)
         "dotacoes": dotacoes, # Passa a lista completa
@@ -715,7 +710,7 @@ async def nova_ci_ui(
         "ci": {}, # ci vazio para o template _ci_form_fields
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("nova_ci.html", context)
+    return templates.TemplateResponse(request, "nova_ci.html", context)
 
 @router.post("/pedido/{numero_aocs:path}/nova-ci", name="nova_ci_post", dependencies=[Depends(require_access_level(2))])
 async def nova_ci_post(request: Request, numero_aocs: str, db_conn: connection = Depends(get_db)):
@@ -728,10 +723,10 @@ async def nova_ci_post(request: Request, numero_aocs: str, db_conn: connection =
 @router.get("/ci/{id_ci}/editar", response_class=HTMLResponse, name="editar_ci_ui", dependencies=[Depends(require_access_level(2))])
 async def editar_ci_ui(request: Request, id_ci: int, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
     # Buscar dados da CI, AOCS associada e listas de domínio
-    context = {"request": request, "current_user": current_user, "id_ci": id_ci,
+    context = {"current_user": current_user, "id_ci": id_ci,
                "ci": {}, "aocs": {}, "dotacoes": [], "solicitantes": [], "secretarias": [],
                "get_flashed_messages": lambda **kwargs: []}
-    return templates.TemplateResponse("editar_ci.html", context)
+    return templates.TemplateResponse(request, "editar_ci.html", context)
 
 @router.post("/ci/{id_ci}/editar", name="editar_ci_post", dependencies=[Depends(require_access_level(2))])
 async def editar_ci_post(request: Request, id_ci: int, db_conn: connection = Depends(get_db)):
@@ -861,13 +856,13 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
     }
 
     context = {
-        "request": request, "url_for": request.app.url_path_for, "current_user": current_user,
+        "url_for": request.app.url_path_for, "current_user": current_user,
         "aocs": aocs_view, "itens": itens_view, "anexos": anexos, "cis_pagamento": cis_filtradas,
         "unidades": unidades, "locais": locais, "responsaveis": responsaveis,
         "dotacoes": dotacoes, "tipos_documento": tipos_documento,
         "get_flashed_messages": lambda **kwargs: []
     }
-    return templates.TemplateResponse("detalhe_pedido.html", context)
+    return templates.TemplateResponse(request, "detalhe_pedido.html", context)
 
 # Rota para servir arquivos de upload (Exemplo, pode precisar de ajustes)
 # A rota API /anexos/download/{id} é mais segura e recomendada

@@ -1,5 +1,5 @@
 from datetime import date
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class AnexoBase(BaseModel):
     id_entidade: int 
@@ -9,13 +9,17 @@ class AnexoBase(BaseModel):
 class AnexoCreate(AnexoBase):    
     nome_original: str
     nome_seguro: str 
-    data_upload: date = Field(default_factory=date.today) 
+    data_upload: date = Field(default_factory=date.today)
 
-class AnexoResponse(AnexoBase):
+class AnexoResponse(BaseModel): 
     id: int
     nome_original: str
     nome_seguro: str 
     data_upload: date
+    tipo_documento: str | None
+    tipo_entidade: str
+    
+    id_contrato: int | None = None 
+    id_aocs: int | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

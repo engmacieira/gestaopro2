@@ -636,3 +636,52 @@ def test_admin_usuarios_ui_loads_data(
     # Os nomes dos nossos utilizadores de teste estão na tabela?
     assert "test_admin_user" in response.text
     assert "test_user_user" in response.text
+    
+    # (Imports 'pytest' e 'unquote' já devem lá estar)
+
+@pytest.mark.skip(reason="A lógica de criação de CI na rota 'nova_ci_post' (linha 832) ainda é um stub.")
+def test_nova_ci_post_happy_path(
+    test_client: TestClient, 
+    admin_auth_headers: dict, 
+    setup_nova_ci_deps: str # Reutilizamos a fixture
+):
+    """
+    Testa o 'caminho feliz' (happy path) do POST /pedido/{...}/nova-ci.
+    Verifica se o formulário é aceite e se redireciona corretamente.
+    """
+    # 1. Preparar:
+    numero_aocs_teste = setup_nova_ci_deps
+    
+    # Criar um payload de formulário.
+    # NOTA: Estes são dados de exemplo. Quando a lógica real
+    # for implementada na rota, teremos de os ajustar.
+    form_payload = {
+        "id_aocs": "1", # (Isto virá da AOCS)
+        "justificativa": "Justificativa enviada pelo formulário",
+        "id_dotacao": "1",
+        "id_solicitante": "1",
+        "id_secretaria": "1"
+    }
+
+    # 2. Agir:
+    # Desativar o 'follow_redirects' para apanhar o 302
+    original_follow_redirects = test_client.follow_redirects
+    test_client.follow_redirects = False
+    
+    # NOTA: Usamos 'data=payload', não 'json=payload'
+    response = test_client.post(
+        f"/pedido/{numero_aocs_teste}/nova-ci", 
+        data=form_payload,
+        headers=admin_auth_headers
+    )
+    
+    test_client.follow_redirects = original_follow_redirects
+
+    # 3. Verificar:
+    # A resposta DEVE ser um redirecionamento (302)
+    assert response.status_code == 302
+    
+    # A URL de redirecionamento deve ser a página de 'detalhe_pedido'
+    # para a AOCS que acabámos de usar.
+    decoded_location = unquote(response.headers["location"])
+    assert f"/pedido/{numero_aocs_teste}" in decoded_location
