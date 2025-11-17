@@ -260,10 +260,8 @@ body {
 /* ================================================================ */
 
 /* --- Estilos Gerais para PDF --- */
-/* (Aplicados quando renderizando templates que herdam de relatorios_base.html) */
-
-.pdf-body { /* Adicionaremos essa classe ao body no relatorios_base.html */
-    font-family: Arial, sans-serif; /* Fonte padrão segura */
+.pdf-body { 
+    font-family: Arial, sans-serif; 
     font-size: 10pt;
     color: #333;
     line-height: 1.4;
@@ -276,12 +274,12 @@ body {
     border-bottom: 1.5pt solid #000;
     padding-bottom: 10pt;
     margin-bottom: 1.5cm;
-    border-collapse: collapse; /* Garante que as bordas se comportem */
+    border-collapse: collapse; 
 }
 .pdf-body .header-table td {
     vertical-align: middle;
     text-align: center;
-    padding: 0 5pt; /* Adiciona um pequeno padding */
+    padding: 0 5pt; 
 }
 .pdf-body .header-table img {
     width: 70px;
@@ -414,12 +412,12 @@ body {
     font-size: 7.5pt;
     color: #666;
     width: 100%;
-    border-collapse: collapse; /* Para a tabela funcionar bem */
+    border-collapse: collapse; 
 }
 .pdf-body .document-tracking-footer td {
     padding: 0 5pt;
     white-space: nowrap;
-    text-align: center; /* Centraliza o texto nas colunas */
+    text-align: center; 
 }
     
 /* =================================================================== */
@@ -443,11 +441,11 @@ body {
 }
 
 /* --- Cores para Urgência no Dashboard --- */
-.overdue-critical { color: var(--action-danger); font-weight: 700; } /* Mais de 60 dias */
-.overdue-warning { color: #cc6600; font-weight: 700; } /* 31 a 60 dias (Laranja Escuro) */
-.overdue-mild { color: #ffae00; font-weight: 600; } /* 8 a 30 dias (Amarelo/Laranja Claro) */
+.overdue-critical { color: var(--action-danger); font-weight: 700; } 
+.overdue-warning { color: #cc6600; font-weight: 700; } 
+.overdue-mild { color: #ffae00; font-weight: 600; } 
 
-/* --- Novo bloco de Status (Adicione ao final de static/style.css) --- */
+/* --- Status --- */
 .status-overview {
     width: 100%;
     display: grid;
@@ -456,11 +454,10 @@ body {
     background-color: var(--color-background);
     padding: 20px;
     border-radius: 8px;
-    margin-top: 15px; /* Espaço após o header */
+    margin-top: 15px; 
     margin-bottom: 25px;
     border: 1px solid var(--color-border);
 }
 .status-overview .detail-item strong { font-size: 1.2em; }
 .status-overview .status-badge { font-size: 1em; padding: 6px 12px; }
 .status-overview .status-badge.blue { background-color: rgba(13, 110, 253, 0.1); color: var(--action-primary); }
-/* (As classes de status green e orange já estão definidas no CSS original) */

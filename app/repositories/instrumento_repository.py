@@ -46,17 +46,13 @@ class InstrumentoRepository:
             if cursor: cursor.close()
 
     def get_all(self) -> List[Instrumento]:
-        """
-        Retorna todos os instrumentos contratuais.
-        """
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            sql = "SELECT * FROM instrumentocontratual ORDER BY nome" # Simples, sem filtro 'ativo'
+            sql = "SELECT * FROM instrumentocontratual ORDER BY nome" 
             cursor.execute(sql)
             rows = cursor.fetchall()
             
-            # Reutiliza o map que você já tem
             return [self._map_row_to_model(row) for row in rows if row]
         
         except (Exception, psycopg2.DatabaseError) as error:

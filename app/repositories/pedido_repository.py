@@ -2,7 +2,7 @@ import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
 from datetime import date
-from decimal import Decimal # Adicionado para garantir precisão
+from decimal import Decimal 
 import logging
 from app.models.pedido_model import Pedido 
 from app.schemas.pedido_schema import PedidoCreateRequest, PedidoUpdateRequest 
@@ -35,14 +35,9 @@ class PedidoRepository:
             return None
 
     def get_total_requested_quantity(self, id_item_contrato: int, exclude_pedido_id: int | None = None) -> Decimal:
-        """Calcula a quantidade total já pedida (reservada) para um item de contrato, EXCLUINDO APENAS pedidos Cancelados.
-        Pedidos concluídos ('Completo') continuam reservando o saldo do contrato.
-        """
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            
-            # Pedidos com qualquer status, EXCETO 'Cancelado', reservam o saldo.
             sql = """
                 SELECT COALESCE(SUM(quantidade_pedida), 0) AS total_reservado
                 FROM pedidos
@@ -58,7 +53,6 @@ class PedidoRepository:
             cursor.execute(sql, params)
             total_reservado = cursor.fetchone()['total_reservado']
             
-            # Garante que o retorno é Decimal para cálculos precisos
             return total_reservado if isinstance(total_reservado, Decimal) else Decimal(str(total_reservado or '0.0'))
 
         except Exception as error:
@@ -82,7 +76,6 @@ class PedidoRepository:
             if not item.ativo:
                 raise ValueError(f"Item de Contrato ID {item.id} não está ativo e não pode receber novos pedidos.")
 
-            # --- VALIDAÇÃO DE SALDO (VSP) ---
             quantidade_pedida_decimal = pedido_create_req.quantidade_pedida 
             
             total_reservado = self.get_total_requested_quantity(item.id)
@@ -91,14 +84,12 @@ class PedidoRepository:
             
             if quantidade_total_solicitada > item.quantidade:
                 saldo_disponivel = item.quantidade - total_reservado
-                # Garantindo formatação de duas casas decimais para a mensagem de erro
+
                 error_msg = (f"A quantidade pedida ({quantidade_pedida_decimal:.2f}) excede o saldo disponível "
                              f"do item. Total do Contrato: {item.quantidade:.2f}, Já reservado: {total_reservado:.2f}, "
                              f"Saldo: {saldo_disponivel:.2f}")
                 logger.warning(error_msg)
                 raise ValueError(error_msg)
-            # --- FIM VALIDAÇÃO DE SALDO (VSP) ---
-
 
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             sql = """

@@ -21,7 +21,6 @@ class AocsRepository:
         self.dotacao_repo = DotacaoRepository(db_conn)
 
     def _map_row_to_model(self, row: DictCursor | None) -> Aocs | None:
-        """Mapeia uma linha do banco para o Model Aocs."""
         if not row:
             return None
         try:
@@ -88,7 +87,6 @@ class AocsRepository:
             if cursor: cursor.close()
 
     def get_by_id(self, id: int) -> Aocs | None:
-        """Busca uma AOCS pelo ID."""
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -103,7 +101,6 @@ class AocsRepository:
             if cursor: cursor.close()
 
     def get_by_numero_aocs(self, numero_aocs: str) -> Aocs | None: 
-        """Busca uma AOCS pelo numero_aocs."""
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -119,7 +116,6 @@ class AocsRepository:
 
 
     def get_all(self) -> list[Aocs]:
-        """Lista todas as AOCS."""
         cursor = None
         aocs_list = []
         try:
@@ -137,7 +133,6 @@ class AocsRepository:
             if cursor: cursor.close()
 
     def update(self, id: int, aocs_req: AocsUpdateRequest) -> Aocs | None:
-        """Atualiza uma AOCS existente."""
         cursor = None
         fields_to_update = []
         params = []

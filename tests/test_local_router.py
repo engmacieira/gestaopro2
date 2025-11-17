@@ -1,13 +1,11 @@
 import pytest
 from fastapi.testclient import TestClient
 
-# O 'admin_auth_headers' é pego automaticamente do conftest.py
-
 def test_create_local(test_client: TestClient, admin_auth_headers: dict):
     """Testa POST /api/locais/"""
     response = test_client.post(
         "/api/locais/", 
-        json={"descricao": "Local de Teste 1"}, # Schema do Local
+        json={"descricao": "Local de Teste 1"}, 
         headers=admin_auth_headers
     )
     assert response.status_code == 201
@@ -86,5 +84,5 @@ def test_delete_local(test_client: TestClient, admin_auth_headers: dict):
         f"/api/locais/{new_id}",
         headers=admin_auth_headers
     )
-    # Como você fez a Tarefa 1, este teste deve passar
+
     assert response_get.status_code == 404

@@ -1,6 +1,3 @@
-{# Componente: templates/_contrato_item_form.html #}
-{# Container e formulário para adição/edição de Item de Contrato #}
-
 <div id="form-container-item" class="collapsible-section" style="display: none;">
     <form id="form-item">
         <h3 id="form-item-titulo" style="margin-bottom: 20px;">Adicionar Novo Item</h3>
@@ -10,7 +7,6 @@
             <div class="form-group"><label for="marca">Marca</label><input type="text" id="marca" name="marca" class="form-control"></div>
             <div class="form-group"><label for="unidade_medida">Unid.</label><input type="text" id="unidade_medida" name="unidade_medida" class="form-control" required></div>
             
-            {# UX Improvement: Usando campo de texto com placeholder para forçar o separador de milhar/decimal correto na submissão via JS #}
             <div class="form-group"><label for="quantidade">Qtd.</label><input type="text" id="quantidade" name="quantidade" class="form-control" placeholder="100,00" required></div>
             <div class="form-group"><label for="valor_unitario">Valor Unit.</label><input type="text" id="valor_unitario" name="valor_unitario" class="form-control" placeholder="12,50" required></div>
             

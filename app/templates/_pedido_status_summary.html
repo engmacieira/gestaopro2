@@ -1,5 +1,3 @@
-{# Componente: templates/_pedido_status_summary.html #}
-
 {% set status_class = 'orange' if aocs.status_entrega == 'Pendente' else ('blue' if aocs.status_entrega == 'Entrega Parcial' else 'green') %}
 {% set status_icon = 'fa-hourglass-half' if aocs.status_entrega == 'Pendente' else ('fa-truck-moving' if aocs.status_entrega == 'Entrega Parcial' else 'fa-check-circle') %}
 

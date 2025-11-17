@@ -54,13 +54,13 @@ def get_all_locais(
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
 @router.get("/{id}", response_model=LocalResponse)
-def get_local_by_id( # <-- Nome singular
+def get_local_by_id( 
     id: int,
     db_conn: connection = Depends(get_db)
 ):
     try:
         repo = LocalRepository(db_conn)
-        local = repo.get_by_id(id) # <-- Nome singular
+        local = repo.get_by_id(id) 
         if not local:
             logger.warning(f"Local ID {id} não encontrado.")
             raise HTTPException(
@@ -79,14 +79,14 @@ def get_local_by_id( # <-- Nome singular
 @router.put("/{id}",
             response_model=LocalResponse,
             dependencies=[Depends(require_access_level(2))])
-def update_local( # <-- Nome singular
+def update_local( 
     id: int,
-    local_req: LocalRequest, # <-- Nome singular
+    local_req: LocalRequest, 
     db_conn: connection = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     repo = LocalRepository(db_conn)
-    local_db = repo.get_by_id(id) # <-- Nome singular
+    local_db = repo.get_by_id(id) 
     if not local_db:
          logger.warning(f"Tentativa de atualizar local ID {id} (não encontrado) por '{current_user.username}'.")
          raise HTTPException(
@@ -95,7 +95,7 @@ def update_local( # <-- Nome singular
         )
 
     try:
-        local_atualizado = repo.update(id, local_req) # <-- Nome singular
+        local_atualizado = repo.update(id, local_req) 
         if not local_atualizado:
              logger.error(f"Local ID {id} não encontrado DURANTE atualização por '{current_user.username}'.")
              raise HTTPException(status_code=404, detail="Local não encontrado durante a atualização.")
@@ -115,13 +115,13 @@ def update_local( # <-- Nome singular
 @router.delete("/{id}",
                status_code=status.HTTP_204_NO_CONTENT,
                dependencies=[Depends(require_access_level(2))])
-def delete_local( # <-- Nome singular
+def delete_local( 
     id: int,
     db_conn: connection = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     repo = LocalRepository(db_conn)
-    local_para_deletar = repo.get_by_id(id) # <-- Nome singular
+    local_para_deletar = repo.get_by_id(id) 
     if not local_para_deletar:
         logger.warning(f"Tentativa de deletar local ID {id} (não encontrado) por '{current_user.username}'.")
         raise HTTPException(
@@ -130,7 +130,7 @@ def delete_local( # <-- Nome singular
         )
 
     try:
-        repo.delete(id) # Repo levanta IntegrityError
+        repo.delete(id) 
         logger.info(f"Usuário '{current_user.username}' deletou Local ID {id} ('{local_para_deletar.descricao}').")
         return
 

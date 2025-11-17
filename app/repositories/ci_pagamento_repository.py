@@ -213,7 +213,6 @@ class CiPagamentoRepository:
             if cursor: cursor.close()
 
     def delete(self, id: int) -> bool:
-        """Deleta uma CI de Pagamento."""
         cursor = None
         ci_para_deletar = self.get_by_id(id)
         if not ci_para_deletar:

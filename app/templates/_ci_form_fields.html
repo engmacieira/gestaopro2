@@ -1,10 +1,6 @@
-{# Componente: templates/_ci_form_fields.html #}
-{# Usado por nova_ci.html e editar_ci.html #}
-
 <div class="form-context-section">
     <h4>Contexto (Automático da AOCS)</h4>
     <div class="context-grid">
-        {# Os dados de contexto (fornecedor/justificativa) são passados pelo backend #}
         <div class="context-item"><span>Fornecedor:</span> <strong>{{ aocs.fornecedor }}</strong></div>
         <div class="context-item"><span>CNPJ:</span> <strong>{{ aocs.cpf_cnpj }}</strong></div>
         <div class="context-item full-span"><span>Referência:</span> <strong>{{ aocs.justificativa }}</strong></div>
@@ -18,12 +14,10 @@
         <div class="form-grid-columns inner-grid">
             <div class="form-group">
                 <label for="numero_ci">Número da CI</label>
-                {# Usa 'ci' para edição ou 'form_data' para pre-populamento em nova_ci (se houver) #}
                 <input type="text" id="numero_ci" name="numero_ci" class="form-control" value="{{ ci.numero_ci or '' }}" placeholder="Ex: 497/2025" required>
             </div>
             <div class="form-group">
                 <label for="data_ci">Data da CI</label>
-                {# Deve converter o objeto date para string YYYY-MM-DD para o campo date #}
                 <input type="date" id="data_ci" name="data_ci" class="form-control" value="{{ ci.data_ci.strftime('%Y-%m-%d') if ci.data_ci else '' }}" required>
             </div>
         </div>
@@ -46,7 +40,6 @@
             </div>
             <div class="form-group">
                 <label for="valor_nota_fiscal">Valor NF</label>
-                {# Formata o valor com vírgula para exibição no Brasil #}
                 <input type="text" id="valor_nota_fiscal" name="valor_nota_fiscal" class="form-control" placeholder="1234,56" value="{{ ((ci.valor_nota_fiscal | round(2) | string) | replace('.', ',')) if ci.valor_nota_fiscal else '' }}" required>
             </div>
         </div>
@@ -81,4 +74,4 @@
          </div>
     </div>
 
-</div> {# Fim do form-grid-columns #}
+</div> 

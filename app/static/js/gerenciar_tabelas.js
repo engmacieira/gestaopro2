@@ -4,18 +4,16 @@ document.addEventListener('DOMContentLoaded', function() {
     let nomeExibicaoTabelaAtiva = null;
 
     const contentArea = document.getElementById('content-area');
-    const tableTemplate = document.getElementById('table-template'); // O <template> em si
+    const tableTemplate = document.getElementById('table-template'); 
     const modal = document.getElementById('modal-item');
     const modalTitulo = document.getElementById('modal-titulo');
     const formItem = document.getElementById('form-item');
     const inputNomeItem = document.getElementById('item-nome');
-    // Seleciona a área de notificação dentro do main-content
     const notificationArea = document.querySelector('.main-content #notification-area');
     let idItemEmEdicao = null;
 
     function showNotification(message, type = 'error') {
-        if (!notificationArea) return; // Segurança
-        // Remove notificação flash inicial se houver
+        if (!notificationArea) return;
         const initialFlash = notificationArea.querySelector('.notification.flash');
         if(initialFlash) initialFlash.remove();
 
@@ -25,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        notificationArea.prepend(notification); // Usa prepend
+        notificationArea.prepend(notification); 
         setTimeout(() => {
             if (notification) {
                 notification.style.opacity = '0';
@@ -35,20 +33,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const fecharModal = () => {
-        if (!modal) return; // Segurança
+        if (!modal) return; 
         modal.style.display = 'none';
         formItem.reset();
         idItemEmEdicao = null;
     };
 
-
-    // --- FUNÇÕES PRINCIPAIS DE UX ---
-
     async function carregarTabela(nomeTabela, nomeExibicao) {
         tabelaAtiva = nomeTabela;
         nomeExibicaoTabelaAtiva = nomeExibicao;
 
-        // Limpa a área de conteúdo e clona o template da tabela
         contentArea.innerHTML = '';
         if (!tableTemplate) {
             contentArea.innerHTML = '<div class="notification error">Erro: Template da tabela não encontrado.</div>';
@@ -57,7 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const clone = tableTemplate.content.cloneNode(true);
         contentArea.appendChild(clone);
 
-        // Acede aos elementos *dentro* do clone/contentArea
         const tableTitle = contentArea.querySelector('#table-title');
         const btnAddNewItem = contentArea.querySelector('#btn-add-new-item');
         const tableBody = contentArea.querySelector('#table-body');
@@ -68,15 +61,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         tableTitle.textContent = `Gerenciando: ${nomeExibicao}`;
-        btnAddNewItem.addEventListener('click', abrirModalParaNovo); // Adiciona listener ao botão clonado
+        btnAddNewItem.addEventListener('click', abrirModalParaNovo); 
         tableBody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
 
         try {
-            // Chama a API que lista os itens (GET /api/tabelas-sistema/{nome_tabela})
             const response = await fetch(`/api/tabelas-sistema/${nomeTabela}`);
             const itens = await response.json();
 
-            // Tratamento de resposta da API
             if (!response.ok) throw new Error(itens.detail || itens.erro || 'Erro desconhecido da API');
 
             tableBody.innerHTML = '';
@@ -85,10 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Renderização da Tabela
             itens.forEach(item => {
                 const tr = document.createElement('tr');
-                // Escapa o nome para evitar problemas com aspas no onclick
                 const nomeEscapado = item.nome.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 tr.innerHTML = `
                     <td>${item.id}</td>
@@ -106,34 +95,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function abrirModalParaNovo() {
-        if (!modal || !modalTitulo || !formItem) return; // Segurança
+        if (!modal || !modalTitulo || !formItem) return; 
         idItemEmEdicao = null;
         modalTitulo.textContent = `Adicionar Novo em ${nomeExibicaoTabelaAtiva}`;
         formItem.reset();
         modal.style.display = 'flex';
     }
 
-    // Tornada global para ser chamada pelo onclick
     window.abrirModalParaEditar = (id, nomeAtual) => {
-        if (!modal || !modalTitulo || !inputNomeItem) return; // Segurança
+        if (!modal || !modalTitulo || !inputNomeItem) return; 
         idItemEmEdicao = id;
         modalTitulo.textContent = `Editar Item em ${nomeExibicaoTabelaAtiva}`;
-        inputNomeItem.value = nomeAtual; // Preenche o input
+        inputNomeItem.value = nomeAtual; 
         modal.style.display = 'flex';
     }
 
-    // Listener de submit do formulário do modal
     if (formItem) {
         formItem.addEventListener('submit', async function(event) {
             event.preventDefault();
             const nome = inputNomeItem.value.trim();
 
             if (!nome) { showNotification('O campo Nome é obrigatório.'); return; }
-            if (!tabelaAtiva) { showNotification('Nenhuma tabela ativa selecionada.'); return; } // Segurança
+            if (!tabelaAtiva) { showNotification('Nenhuma tabela ativa selecionada.'); return; } 
 
             const url = idItemEmEdicao
-                ? `/api/tabelas-sistema/${tabelaAtiva}/${idItemEmEdicao}` // PUT
-                : `/api/tabelas-sistema/${tabelaAtiva}`; // POST
+                ? `/api/tabelas-sistema/${tabelaAtiva}/${idItemEmEdicao}` 
+                : `/api/tabelas-sistema/${tabelaAtiva}`; 
             const method = idItemEmEdicao ? 'PUT' : 'POST';
 
             const submitButton = this.querySelector('button[type="submit"]');
@@ -153,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification(resultado.mensagem || `Item ${idItemEmEdicao ? 'atualizado' : 'criado'} com sucesso!`, 'success');
 
                 fecharModal();
-                // Recarrega o conteúdo da tabela ativa
                 if(tabelaAtiva) carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva);
 
             } catch (error) {
@@ -167,29 +153,23 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Formulário do modal genérico não encontrado.");
     }
 
-    // Tornada global para ser chamada pelo onclick
     window.excluirItem = async (id) => {
         if (!confirm('Tem certeza que deseja excluir este item? A ação não pode ser desfeita e pode falhar se o item estiver em uso.')) return;
-        if (!tabelaAtiva) { showNotification('Nenhuma tabela ativa selecionada.'); return; } // Segurança
+        if (!tabelaAtiva) { showNotification('Nenhuma tabela ativa selecionada.'); return; } 
 
         try {
-            // API DELETE /api/tabelas-sistema/{nome_tabela}/{id}
             const response = await fetch(`/api/tabelas-sistema/${tabelaAtiva}/${id}`, {
                 method: 'DELETE'
             });
 
-            // O DELETE no FastAPI retorna 204 NO CONTENT em caso de sucesso
             if (response.status === 204) {
                  showNotification('Item excluído com sucesso!', 'success');
             } else {
-                 // Tenta ler a mensagem de erro (ex: conflito 409)
                  const resultado = await response.json();
                  if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao excluir`);
-                 // Caso raro: 200 OK com mensagem
                  showNotification(resultado.mensagem || 'Item excluído.', 'success');
             }
 
-            // Recarrega o conteúdo da tabela ativa
             if(tabelaAtiva) carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva);
 
         } catch (error) {
@@ -197,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Inicialização e Listeners de UI ---
     document.querySelectorAll('.management-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -209,13 +188,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Adiciona listeners aos botões do modal genérico
     const btnFecharModal = document.getElementById('btn-fechar-modal');
     const btnCancelarModal = document.getElementById('btn-cancelar-modal');
     if(btnFecharModal) btnFecharModal.addEventListener('click', fecharModal);
     if(btnCancelarModal) btnCancelarModal.addEventListener('click', fecharModal);
 
-    // Listener para fechar clicando fora do modal genérico
     window.addEventListener('click', (event) => {
         if (modal && event.target == modal) fecharModal();
     });

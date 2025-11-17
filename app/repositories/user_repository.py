@@ -35,7 +35,6 @@ class UserRepository:
                 cursor.close()
                 
     def get_by_id(self, user_id: int) -> User | None:
-        """Busca um usuário pelo seu ID."""
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -56,7 +55,6 @@ class UserRepository:
             if cursor: cursor.close()
 
     def get_all(self, skip: int = 0, limit: int = 100, mostrar_inativos: bool = False) -> list[User]:
-        """Lista usuários com paginação."""
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -81,7 +79,6 @@ class UserRepository:
             if cursor: cursor.close()
 
     def create(self, user_create: UserCreateRequest) -> User:
-        """Cria um novo usuário, fazendo o hash da senha."""
         cursor = None
        
         hashed_password = generate_password_hash(user_create.password)
@@ -113,7 +110,6 @@ class UserRepository:
             if cursor: cursor.close()
 
     def update(self, user_id: int, user_update: UserUpdateRequest) -> User | None:
-        """Atualiza dados de um usuário (sem mexer na senha)."""
         cursor = None
         
         fields_to_update = []
@@ -157,7 +153,6 @@ class UserRepository:
             if cursor: cursor.close()
 
     def delete(self, user_id: int) -> bool:
-        """Desativa um usuário (Soft Delete)."""
         cursor = None
         try:
             cursor = self.db_conn.cursor()
@@ -174,7 +169,6 @@ class UserRepository:
             if cursor: cursor.close()
 
     def reset_password(self, user_id: int, new_password_hash: str) -> bool:
-         """Atualiza o hash da senha de um usuário."""
          cursor = None
          try:
              cursor = self.db_conn.cursor()

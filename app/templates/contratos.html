@@ -4,7 +4,6 @@
 {% block title %}Contratos{% endblock %}
 
 {% block content %}
-{# 1. INCLUSÃO DO COMPONENTE HEADER/ACTIONS (Já refatorado) #}
 {% include '_contratos_header.html' %}
 
 <div class="card full-width" style="margin-top: 20px;">
@@ -14,7 +13,6 @@
             <thead>
                 <tr>
                     <th class="sortable-header" style="width: 20%;">
-                        {# Link de ordenação refatorado #}
                         {% set next_order_num = 'desc' if sort_by == 'numero_contrato' and order == 'asc' else 'asc' %}
                         {% set params_num = query_params.copy() %}
                         {% set _ = params_num.update({'sort_by': 'numero_contrato', 'order': next_order_num}) %}
@@ -26,7 +24,6 @@
                         </a>
                     </th>
                     <th class="sortable-header" style="width: 20%;">
-                        {# Link de ordenação refatorado #}
                         {% set next_order_proc = 'desc' if sort_by == 'processo_licitatorio' and order == 'asc' else 'asc' %}
                         {% set params_proc = query_params.copy() %}
                         {% set _ = params_proc.update({'sort_by': 'processo_licitatorio', 'order': next_order_proc}) %}
@@ -38,7 +35,6 @@
                         </a>
                     </th>
                     <th class="sortable-header" style="width: 25%;">
-                        {# Link de ordenação refatorado #}
                         {% set next_order_forn = 'desc' if sort_by == 'fornecedor' and order == 'asc' else 'asc' %}
                         {% set params_forn = query_params.copy() %}
                         {% set _ = params_forn.update({'sort_by': 'fornecedor', 'order': next_order_forn}) %}
@@ -50,7 +46,6 @@
                         </a>
                     </th>
                     <th class="sortable-header text-right">
-                        {# Link de ordenação refatorado #}
                         {% set next_order_fim = 'desc' if sort_by == 'data_vigencia_fim' and order == 'asc' else 'asc' %}
                         {% set params_fim = query_params.copy() %}
                         {% set _ = params_fim.update({'sort_by': 'data_vigencia_fim', 'order': next_order_fim}) %}
@@ -62,7 +57,6 @@
                         </a>
                     </th>
                     <th class="sortable-header text-center">
-                        {# Link de ordenação refatorado #}
                         {% set next_order_status = 'desc' if sort_by == 'status_ativo' and order == 'asc' else 'asc' %}
                         {% set params_status = query_params.copy() %}
                         {% set _ = params_status.update({'sort_by': 'status_ativo', 'order': next_order_status}) %}
@@ -79,18 +73,14 @@
                 {% for contrato in contratos %}
                     {% set is_ativo = contrato.status_ativo %}
                     {% set data_fim = contrato.data_vigencia_fim %}
-                    {# A variável 'hoje' deve ser passada pelo router #}
                     {% set is_expirado = data_fim and data_fim < hoje %}
 
                     <tr>
-                        {# Alterado url_for para request.app.url_path_for #}
                         <td><a href="{{ request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) }}"><strong>{{ contrato.numero_contrato }}</strong></a></td>
                         <td>{{ contrato.processo_licitatorio }}</td>
                         <td>{{ contrato.fornecedor }}</td>
                         <td class="text-right">
-                            {# Formata a data se ela existir #}
                             {{ data_fim.strftime('%d/%m/%Y') if data_fim else 'N/D' }}
-                            {# Aviso de expiração #}
                             {% if is_expirado and is_ativo %}
                                 <span class="status-badge orange" title="Contrato Ativo, mas Vigência Expirada">⚠️ Expirado</span>
                             {% elif is_expirado and not is_ativo %}
@@ -98,13 +88,12 @@
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            {# Lógica de status combinando ativo e expirado #}
                             {% if is_ativo and not is_expirado %}
                                 <span class="status-badge green">Ativo</span>
-                            {% elif not is_ativo and not is_expirado %} {# Explicitamente Inativo antes de expirar #}
+                            {% elif not is_ativo and not is_expirado %} 
                                 <span class="status-badge gray">Inativo</span>
-                            {% else %} {# Casos: expirado ativo (mostra Expirado acima), expirado inativo #}
-                                <span class="status-badge gray">Inativo</span> {# Assume Inativo se expirado #}
+                            {% else %} 
+                                <span class="status-badge gray">Inativo</span> 
                             {% endif %}
                         </td>
                     </tr>
@@ -114,7 +103,6 @@
     </div>
 
     <div class="card-footer">
-        {# Chamada da macro já refatorada #}
         {{ render_pagination(pagina_atual, total_paginas, 'contratos_ui', {}, query_params) }}
     </div>
 
@@ -122,7 +110,6 @@
     <div class="empty-state">
         <i class="fa-solid fa-file-contract"></i>
         <h2>Nenhum Contrato Encontrado</h2>
-        {# Alterado url_for para request.app.url_path_for - VERIFICAR NOME DA ROTA 'novo_contrato_ui' #}
         <p>Ajuste os filtros ou <a href="{{ request.app.url_path_for('novo_contrato_ui') }}">crie um novo contrato</a> para começar.</p>
     </div>
     {% endif %}

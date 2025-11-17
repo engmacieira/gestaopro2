@@ -7,7 +7,7 @@ from app.schemas.unidade_schema import UnidadeRequest
 
 logger = logging.getLogger(__name__)
 
-class UnidadeRepository: # <-- Singular
+class UnidadeRepository: 
     def __init__(self, db_conn: connection):
         self.db_conn = db_conn
 

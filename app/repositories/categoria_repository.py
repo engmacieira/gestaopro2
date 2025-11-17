@@ -65,7 +65,6 @@ class CategoriaRepository:
             if cursor: cursor.close()
 
     def get_by_id(self, id: int) -> Categoria | None:
-        """Busca uma Categoria pelo ID."""
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -80,7 +79,6 @@ class CategoriaRepository:
             if cursor: cursor.close()
 
     def update(self, id: int, categoria_req: CategoriaRequest) -> Categoria | None:
-        """Atualiza o nome de uma Categoria."""
         cursor = None
         categoria_antiga = self.get_by_id(id)
         if not categoria_antiga:
@@ -109,7 +107,6 @@ class CategoriaRepository:
             if cursor: cursor.close()
 
     def set_active_status(self, id: int, status: bool) -> Categoria | None:
-        """Ativa ou desativa uma Categoria."""
         cursor = None
         categoria_original = self.get_by_id(id)
         if not categoria_original:
@@ -139,7 +136,6 @@ class CategoriaRepository:
             if cursor: cursor.close()
 
     def delete(self, id: int) -> bool:
-        """Deleta uma Categoria."""
         cursor = None
         categoria_para_deletar = self.get_by_id(id)
         if not categoria_para_deletar:
@@ -186,7 +182,6 @@ class CategoriaRepository:
             if cursor: cursor.close()
 
     def get_or_create(self, nome: str) -> Categoria:
-        """Busca uma Categoria ativa pelo nome ou cria uma nova se não existir."""
         try:
             categoria = self.get_by_nome(nome, buscar_inativos=False)
             if categoria:

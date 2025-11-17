@@ -6,7 +6,6 @@
 <div id="notification-area"></div>
 
 <header class="main-header">
-    {# Alterado url_for para request.app.url_path_for #}
     <a href="{{ request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) }}" class="back-link">
         &larr; Voltar para os Detalhes do Contrato
     </a>
@@ -14,18 +13,15 @@
     <p class="subtitle">Contrato: <strong class="text-blue">{{ contrato.numero_contrato }}</strong></p>
 </header>
 
-{# INCLUSÃO DO COMPONENTE DE PASSOS (Já verificado) #}
 {% include '_importar_itens_steps.html' %}
 
 {% endblock %}
 
 {% block scripts %}
-{# Passa o id do contrato para o JavaScript externo #}
 <script>
     const idContratoGlobal = {{ contrato.id }};
-    // Passa a URL de redirecionamento para o JS
     const redirectUrlGlobal = "{{ request.app.url_path_for('detalhe_contrato', id_contrato=contrato.id) }}";
 </script>
-{# Inclui o ficheiro JS externo #}
+
 <script src="{{ request.app.url_path_for('static', path='js/importar_itens.js') }}" defer></script>
 {% endblock %}

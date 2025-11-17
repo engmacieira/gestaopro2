@@ -3,52 +3,39 @@
 {% block title %}Detalhes do Pedido - {{ aocs.numero_aocs }}{% endblock %}
 
 {% block content %}
-{# Área para notificações dinâmicas via JavaScript #}
 <div id="notification-area"></div>
 
-{# --- 1. CABEÇALHO DA PÁGINA (Componente - verificar refatoração interna) --- #}
 {% include '_pedido_header.html' %}
 
-{# --- 2. BARRA DE STATUS/RESUMO (Componente - Já verificado) --- #}
 {% include '_pedido_status_summary.html' %}
 
-{# --- 3. LAYOUT PRINCIPAL EM GRID --- #}
 <div class="dashboard-main-grid">
 
-    {# --- COLUNA PRINCIPAL (ESQUERDA) --- #}
     <div class="main-panel">
-        {# Card com Status e Dados Editáveis (Componente - Já verificado) #}
         {% include '_pedido_dados_status.html' %}
-        {# Card com Tabela de Controle de Entrega (Componente - Já verificado) #}
         {% include '_pedido_controle_entrega.html' %}
     </div>
 
-    {# --- COLUNA LATERAL (DIREITA) --- #}
     <div class="side-panel">
-        {# Card com Tabela de CIs e Botão Nova CI (Componente - verificar refatoração interna) #}
         {% include '_pedido_ci_section.html' %}
-        {# Card com Formulário de Upload e Lista de Anexos (Componente - verificar refatoração interna) #}
         {% include '_pedido_anexos_section.html' %}
     </div>
 </div>
 
-{# --- MODAIS (Estrutura Overlay) --- #}
-{# Componente Modal Edição AOCS (Já verificado) #}
 <div id="modal-edicao-aocs" class="modal-overlay">
     {% include '_modal_editar_aocs.html' %}
 </div>
-{# Componente Modal Registo Entrega (Já verificado) #}
+
 <div id="modal-registrar-entrega" class="modal-overlay">
     {% include '_modal_registrar_entrega.html' %}
 </div>
 {% endblock %}
 
 {% block scripts %}
-{# Passa o número da AOCS para o JavaScript externo #}
+
 <script>
     const numeroAOCSGlobal = "{{ aocs.numero_aocs }}";
-    // Poderia passar outras variáveis se o JS precisar
 </script>
-{# Inclui o ficheiro JS externo #}
+
 <script src="{{ request.app.url_path_for('static', path='js/detalhe_pedido.js') }}" defer></script>
 {% endblock %}

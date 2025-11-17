@@ -14,7 +14,6 @@ from app.repositories.user_repository import UserRepository
 from functools import wraps
 
 def require_admin(current_user: User = Depends(get_current_user)):
-    """Dependência que verifica se o usuário logado é admin (nível 1)."""
     if current_user.nivel_acesso != 1:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -32,7 +31,7 @@ def create_user(
     user_create: UserCreateRequest,
     db_conn: connection = Depends(get_db)
 ):
-    """Cria um novo usuário (Requer Admin)."""
+
     repo = UserRepository(db_conn)
     existing_user = repo.get_by_username(user_create.username)
     if existing_user:
@@ -59,7 +58,7 @@ def read_users(
     mostrar_inativos: bool = False,
     db_conn: connection = Depends(get_db)
 ):
-    """Lista usuários com paginação (Requer Admin)."""
+
     repo = UserRepository(db_conn)
     users = repo.get_all(skip=skip, limit=limit, mostrar_inativos=mostrar_inativos)
     return users
@@ -70,7 +69,7 @@ def read_user(
     user_id: int,
     db_conn: connection = Depends(get_db)
 ):
-    """Busca um usuário pelo ID (Requer Admin)."""
+
     repo = UserRepository(db_conn)
     user = repo.get_by_id(user_id)
     if not user:
@@ -84,7 +83,7 @@ def update_user(
     user_update: UserUpdateRequest,
     db_conn: connection = Depends(get_db)
 ):
-    """Atualiza dados de um usuário (sem alterar senha) (Requer Admin)."""
+
     repo = UserRepository(db_conn)
     user_db = repo.get_by_id(user_id)
     if not user_db:
@@ -109,7 +108,7 @@ def delete_user(
     user_id: int,
     db_conn: connection = Depends(get_db)
 ):
-    """Desativa um usuário (Soft Delete) (Requer Admin)."""
+
     repo = UserRepository(db_conn)
 
     success = repo.delete(user_id)
@@ -121,11 +120,7 @@ def reset_user_password(
     user_id: int,
     db_conn: connection = Depends(get_db)
 ):
-    """
-    Gera uma nova senha segura, atualiza no banco e a retorna
-    (APENAS PARA O ADMIN QUE FEZ A REQUISIÇÃO).
-    (Requer Admin).
-    """
+
     repo = UserRepository(db_conn)
     user_db = repo.get_by_id(user_id)
     if not user_db:

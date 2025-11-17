@@ -131,7 +131,6 @@ class DotacaoRepository:
             if cursor: cursor.close()
 
     def get_by_info_orcamentaria(self, info_orcamentaria: str) -> Dotacao | None:
-        """Busca uma Dotação pela info_orcamentaria exata."""
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -146,7 +145,6 @@ class DotacaoRepository:
             if cursor: cursor.close()
 
     def get_or_create(self, info_orcamentaria: str) -> Dotacao:
-        """Busca uma Dotação pela info_orcamentaria ou cria se não existir."""
         try:
             dotacao = self.get_by_info_orcamentaria(info_orcamentaria) 
             if dotacao:

@@ -1,12 +1,10 @@
-# app/repositories/anexo_repository.py (O NOVO CÓDIGO CORRIGIDO)
-
 import psycopg2
 from psycopg2.extensions import connection
 from psycopg2.extras import DictCursor
 from datetime import date
 import logging
 from app.models.anexo_model import Anexo
-from app.schemas.anexo_schema import AnexoCreate # Usamos o schema Create aqui
+from app.schemas.anexo_schema import AnexoCreate 
 from .tipo_documento_repository import TipoDocumentoRepository
 
 logger = logging.getLogger(__name__)
@@ -17,22 +15,16 @@ class AnexoRepository:
         self.tipodocumento_repo = TipoDocumentoRepository(db_conn)
 
     def _map_row_to_model(self, row: DictCursor | None) -> Anexo | None:
-        """
-        Mapeia uma linha do banco de dados (agora com id_contrato/id_aocs)
-        para o nosso objeto Anexo (que também espera id_contrato/id_aocs).
-        """
         if not row:
             return None
         try:
             return Anexo(
                 id=row['id'],
-                # 'id_entidade' não existe mais no banco ou modelo
                 nome_original=row.get('nome_original'), 
                 nome_seguro=row['nome_seguro'],
                 data_upload=row['data_upload'],
                 tipo_documento=row.get('tipo_documento'), 
                 tipo_entidade=row['tipo_entidade'],
-                # MUDANÇA: Lemos as novas colunas
                 id_contrato=row.get('id_contrato'),
                 id_aocs=row.get('id_aocs')
             )
@@ -41,16 +33,10 @@ class AnexoRepository:
             return None
 
     def create(self, anexo_create_data: AnexoCreate) -> Anexo:
-        """
-        Cria um novo registro de anexo.
-        Esta função agora constrói o SQL dinamicamente para inserir
-        na coluna 'id_contrato' ou 'id_aocs' com base no 'tipo_entidade'.
-        """
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
-            # 1. Colunas base (do schema AnexoCreate)
             cols = ["tipo_entidade", "nome_original", "nome_seguro", 
                     "data_upload", "tipo_documento"]
             
@@ -58,8 +44,6 @@ class AnexoRepository:
                       anexo_create_data.nome_seguro, anexo_create_data.data_upload, 
                       anexo_create_data.tipo_documento]
 
-            # 2. MUDANÇA: Lógica dinâmica da Foreign Key
-            # O 'anexo_create_data' ainda nos envia 'id_entidade' (do schema)
             if anexo_create_data.tipo_entidade == 'contrato':
                 cols.append("id_contrato")
                 params.append(anexo_create_data.id_entidade)
@@ -69,7 +53,6 @@ class AnexoRepository:
             else:
                 logger.warning(f"Tentativa de criar anexo com tipo_entidade desconhecido: {anexo_create_data.tipo_entidade}")
 
-            # 3. Construir e Executar o SQL
             sql_cols = ", ".join(cols)
             sql_placeholders = ", ".join(["%s"] * len(params))
             
@@ -97,13 +80,8 @@ class AnexoRepository:
                 cursor.close()
 
     def get_by_entidade(self, id_entidade: int, tipo_entidade: str) -> list[Anexo]:
-        """
-        Busca todos os anexos de uma entidade específica (Contrato, AOCS, etc.).
-        Agora consulta a coluna FK correta.
-        """
         cursor = None
         
-        # 1. MUDANÇA: Determinar a coluna correta
         fk_column = ""
         if tipo_entidade == 'contrato':
             fk_column = "id_contrato"
@@ -116,15 +94,12 @@ class AnexoRepository:
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
-            # 2. Construir SQL
             sql = f"SELECT * FROM anexos WHERE {fk_column} = %s AND tipo_entidade = %s ORDER BY data_upload DESC"
             
-            # 3. Definir parâmetros
             params = (id_entidade, tipo_entidade)
             
             logger.debug(f"Executando get_by_entidade: SQL='{sql}' com PARAMS={params}")
 
-            # 4. Executar
             cursor.execute(sql, params)
             rows = cursor.fetchall()
             
@@ -141,7 +116,6 @@ class AnexoRepository:
                 cursor.close()
 
     def get_by_id(self, id: int) -> Anexo | None:
-        """Busca um anexo pelo seu ID único."""
         cursor = None
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
@@ -157,7 +131,6 @@ class AnexoRepository:
                 cursor.close()
 
     def delete(self, id: int) -> tuple[bool, Anexo | None]:
-        """Deleta o registro de metadados de um anexo. Retorna sucesso e o objeto deletado."""
         cursor = None
         anexo_para_deletar = self.get_by_id(id)
         if not anexo_para_deletar:

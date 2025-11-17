@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Painel de Controle - GestãoPRO{% endblock %} {# Removido v2.0 do título #}
+{% block title %}Painel de Controle - GestãoPRO{% endblock %} 
 
 {% block content %}
-{# Área de notificação movida para base.html, mas mantemos o ID aqui se o JS o usar especificamente #}
 <div id="notification-area"></div>
 
 <div class="dashboard-header">
@@ -12,29 +11,24 @@
         <p class="subtitle">Bem-vindo! Aqui está um resumo da sua atividade.</p>
     </div>
     <div class="header-actions">
-        {# Alterado url_for para request.app.url_path_for #}
         <a href="{{ request.app.url_path_for('importar_ui') }}" class="btn btn-secondary"><i class="fa-solid fa-file-import"></i> Ferramentas de Importação</a>
         <button id="btn-iniciar-pedido-modal" class="btn btn-primary"><i class="fa-solid fa-cart-plus"></i> Iniciar Novo Pedido</button>
     </div>
 </div>
 
-{# 1. INCLUSÃO DO COMPONENTE INDICADORES (Já verificado) #}
 {% include '_dashboard_indicators.html' %}
 
 <div class="dashboard-main-grid">
 
-    {# 2. INCLUSÃO DO COMPONENTE TABELA PENDENTE (Já refatorado HTML, depende da macro) #}
     {% include '_dashboard_pending_table.html' %}
 
-    {# 3. INCLUSÃO DO COMPONENTE ATALHOS (Já refatorado) #}
     {% include '_dashboard_shortcuts.html' %}
 </div>
 
-{# 4. INCLUSÃO DO COMPONENTE MODAL (Já verificado) #}
 {% include '_modal_novo_pedido.html' %}
 {% endblock %}
 
 {% block scripts %}
-{# Bloco de scripts agora apenas inclui o ficheiro externo #}
+
 <script src="{{ request.app.url_path_for('static', path='js/index.js') }}" defer></script>
 {% endblock %}

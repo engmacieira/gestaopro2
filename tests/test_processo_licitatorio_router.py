@@ -1,13 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 
-# O 'admin_auth_headers' é pego automaticamente do conftest.py
-
 def test_create_processo(test_client: TestClient, admin_auth_headers: dict):
-    """Testa POST /api/processos-licitatorios/"""
     response = test_client.post(
         "/api/processos-licitatorios/", 
-        json={"numero": "PL 001/2025"}, # Schema do ProcessoLicitatorio
+        json={"numero": "PL 001/2025"}, 
         headers=admin_auth_headers
     )
     assert response.status_code == 201
@@ -16,7 +13,6 @@ def test_create_processo(test_client: TestClient, admin_auth_headers: dict):
     assert data["id"] is not None
 
 def test_get_processo_by_id(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/processos-licitatorios/{id}"""
     response_create = test_client.post(
         "/api/processos-licitatorios/",
         json={"numero": "PL 002/2025"},
@@ -35,7 +31,6 @@ def test_get_processo_by_id(test_client: TestClient, admin_auth_headers: dict):
     assert data["id"] == new_id
 
 def test_get_all_processos(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/processos-licitatorios/"""
     test_client.post("/api/processos-licitatorios/", json={"numero": "PL A"}, headers=admin_auth_headers)
     test_client.post("/api/processos-licitatorios/", json={"numero": "PL B"}, headers=admin_auth_headers)
 
@@ -48,7 +43,6 @@ def test_get_all_processos(test_client: TestClient, admin_auth_headers: dict):
     assert "PL A" in [item["numero"] for item in data]
 
 def test_update_processo(test_client: TestClient, admin_auth_headers: dict):
-    """Testa PUT /api/processos-licitatorios/{id}"""
     response_create = test_client.post(
         "/api/processos-licitatorios/",
         json={"numero": "PL Original"},
@@ -67,7 +61,6 @@ def test_update_processo(test_client: TestClient, admin_auth_headers: dict):
     assert data["numero"] == "PL Atualizado"
 
 def test_delete_processo(test_client: TestClient, admin_auth_headers: dict):
-    """Testa DELETE /api/processos-licitatorios/{id}"""
     response_create = test_client.post(
         "/api/processos-licitatorios/",
         json={"numero": "PL Para Deletar"},
@@ -86,5 +79,5 @@ def test_delete_processo(test_client: TestClient, admin_auth_headers: dict):
         f"/api/processos-licitatorios/{new_id}",
         headers=admin_auth_headers
     )
-    # Como você fez a Tarefa 1, este teste deve passar
+
     assert response_get.status_code == 404

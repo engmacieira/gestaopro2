@@ -1,43 +1,33 @@
-{# Componente: templates/_pedido_anexos_section.html #}
 <div class="card">
     <h4>Anexos do Pedido</h4>
 
-    {# FORMULÁRIO DE UPLOAD REVISADO PARA FASTAPI/JS INTERCEPTION #}
-    {# Nota: O action="/api/anexos/upload/" é o endpoint correto da API #}
     <form id="form-anexos"
           action="/api/anexos/upload/" {# <-- Corrigido action para API #}
           method="POST"
           enctype="multipart/form-data">
 
-        {# CAMPOS OBRIGATÓRIOS: Usamos hidden inputs para passar o contexto do pedido #}
-        {# Os names 'id_entidade' e 'tipo_entidade' correspondem à API #}
         <input type="hidden" name="id_entidade" value="{{ aocs.id }}">
         <input type="hidden" name="tipo_entidade" value="aocs">
 
         <div class="form-group">
             <label for="tipo_documento_select">Tipo do Documento</label>
-            {# O name 'tipo_documento' corresponde à API #}
             <select name="tipo_documento" id="tipo_documento_select" class="form-control" required>
                 <option value="" disabled selected>Selecione...</option>
                 {% for tipo in tipos_documento %}<option value="{{ tipo }}">{{ tipo }}</option>{% endfor %}
                 <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
             </select>
-            {# O campo de texto para o novo tipo também tem o nome esperado: 'tipo_documento_novo' #}
             <input type="text" name="tipo_documento_novo" id="tipo_documento_novo" class="form-control" placeholder="Digite o novo tipo" style="display: none; margin-top: 10px;">
         </div>
         <div class="form-group">
             <label for="file">Arquivo</label>
-            {# O name 'file' corresponde à API #}
             <input type="file" name="file" id="file" class="form-control" required>
         </div>
         <button type="submit" class="btn btn-primary btn-full-width"><i class="fa-solid fa-upload"></i> Enviar Anexo</button>
     </form>
 
     <div id="notification-area-anexos" style="margin-top: 15px;">
-         {# Área para mensagens flash/JS #}
     </div>
 
-    {# Lista de Anexos Existentes #}
     {% if anexos %}
     <div class="attachment-list-container">
         <ul class="attachment-list condensed-list">
@@ -45,13 +35,11 @@
             <li class="attachment-item">
                 <div class="attachment-file">
                     <i class="fa-solid fa-paperclip"></i>
-                    {# Link de download usa a rota API via request.app.url_path_for #}
                     <a href="{{ request.app.url_path_for('download_anexo_file', id=anexo.id) }}" title="{{ anexo.tipo_documento }} - {{ anexo.nome_original }}" target="_blank">
-                        {{ anexo.tipo_documento or 'Documento' }} ({{ anexo.data_upload.strftime('%d/%m/%Y') if anexo.data_upload else 'Data Indisp.' }}) {# <-- Data formatada #}
+                        {{ anexo.tipo_documento or 'Documento' }} ({{ anexo.data_upload.strftime('%d/%m/%Y') if anexo.data_upload else 'Data Indisp.' }}) 
                     </a>
                 </div>
                 <div class="attachment-meta">
-                    {# Botão de exclusão chama a função JS da página detalhe_pedido.html (sem alteração) #}
                     <button type="button" class="btn-link-action red" title="Excluir" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_original | e }}')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>

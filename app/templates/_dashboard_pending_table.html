@@ -1,4 +1,3 @@
-{# Componente para a tabela de pedidos pendentes #}
 {% from '_pagination.html' import render_pagination %}
 
 <div class="card full-width">
@@ -17,11 +16,9 @@
                 {% if pedidos_pendentes %}
                     {% for pedido in pedidos_pendentes %}
                     <tr>
-                        {# Alterado url_for para request.app.url_path_for #}
                         <td><strong><a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
                         <td>{{ pedido.numero_contrato }}</td>
-                        <td>{{ pedido.data_pedido | replace('-', '/') }}</td> {# Assume que data_pedido já vem formatado ou é objeto date #}
-                        {# Lógica de Cores UX Melhorada #}
+                        <td>{{ pedido.data_pedido | replace('-', '/') }}</td> 
                         {% set dias_passados = pedido.dias_passados %}
                         {% set dias_class = '' %}
                         {% if dias_passados > 60 %}
@@ -49,7 +46,6 @@
     </div>
 
     <div class="card-footer">
-        {# A chamada da macro está correta, mas a macro em _pagination.html precisa ser refatorada #}
         {{ render_pagination(pagina_atual, total_paginas, 'home_ui') }} {# Nota: O nome da rota é 'home_ui' no ui_router.py #}
     </div>
 </div>

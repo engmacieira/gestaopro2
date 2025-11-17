@@ -11,7 +11,6 @@ def _get_db_connection():
         else:
             return psycopg2.connect(database_url, cursor_factory=DictCursor)
     
-    #LOCAL
     db_host = os.environ.get("DB_HOST")
     db_name = os.environ.get("DB_NAME")
     db_user = os.environ.get("DB_USER")

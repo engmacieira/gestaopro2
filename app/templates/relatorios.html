@@ -12,11 +12,8 @@
     <h2>Relatórios Disponíveis</h2>
 
     <div class="report-selection-grid">
-        {# O loop 'relatorios' é fornecido pelo contexto FastAPI #}
-        {% if relatorios %} {# Adicionado if para segurança #}
+        {% if relatorios %} 
             {% for key, config in relatorios.items() %}
-                {# INCLUSÃO DO COMPONENTE DE ITEM DE RELATÓRIO (Já verificado) #}
-                {# Passa o contexto atual para o include #}
                 {% include '_relatorio_item.html' with context %}
             {% endfor %}
         {% else %}
@@ -28,6 +25,5 @@
 {% endblock %}
 
 {% block scripts %}
-{# Bloco de scripts agora apenas inclui o ficheiro externo #}
 <script src="{{ request.app.url_path_for('static', path='js/relatorios.js') }}" defer></script>
 {% endblock %}

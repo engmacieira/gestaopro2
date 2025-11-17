@@ -1,13 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 
-# O 'admin_auth_headers' é pego automaticamente do conftest.py
-
 def test_create_instrumento(test_client: TestClient, admin_auth_headers: dict):
-    """Testa POST /api/instrumentos/"""
     response = test_client.post(
         "/api/instrumentos/", 
-        json={"nome": "Contrato de Teste 1"}, # Schema do Instrumento
+        json={"nome": "Contrato de Teste 1"}, 
         headers=admin_auth_headers
     )
     assert response.status_code == 201
@@ -16,7 +13,6 @@ def test_create_instrumento(test_client: TestClient, admin_auth_headers: dict):
     assert data["id"] is not None
 
 def test_get_instrumento_by_id(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/instrumentos/{id}"""
     response_create = test_client.post(
         "/api/instrumentos/",
         json={"nome": "Contrato de Teste 2"},
@@ -35,7 +31,6 @@ def test_get_instrumento_by_id(test_client: TestClient, admin_auth_headers: dict
     assert data["id"] == new_id
 
 def test_get_all_instrumentos(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/instrumentos/"""
     test_client.post("/api/instrumentos/", json={"nome": "Contrato A"}, headers=admin_auth_headers)
     test_client.post("/api/instrumentos/", json={"nome": "Contrato B"}, headers=admin_auth_headers)
 
@@ -48,7 +43,6 @@ def test_get_all_instrumentos(test_client: TestClient, admin_auth_headers: dict)
     assert "Contrato A" in [item["nome"] for item in data]
 
 def test_update_instrumento(test_client: TestClient, admin_auth_headers: dict):
-    """Testa PUT /api/instrumentos/{id}"""
     response_create = test_client.post(
         "/api/instrumentos/",
         json={"nome": "Contrato Original"},
@@ -67,7 +61,6 @@ def test_update_instrumento(test_client: TestClient, admin_auth_headers: dict):
     assert data["nome"] == "Contrato Atualizado"
 
 def test_delete_instrumento(test_client: TestClient, admin_auth_headers: dict):
-    """Testa DELETE /api/instrumentos/{id}"""
     response_create = test_client.post(
         "/api/instrumentos/",
         json={"nome": "Contrato Para Deletar"},
@@ -86,5 +79,5 @@ def test_delete_instrumento(test_client: TestClient, admin_auth_headers: dict):
         f"/api/instrumentos/{new_id}",
         headers=admin_auth_headers
     )
-    # Como você fez a Tarefa 1, este teste deve passar
+    
     assert response_get.status_code == 404

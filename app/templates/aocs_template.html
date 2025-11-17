@@ -48,11 +48,8 @@
                     <td>{{ item.numero_item_contrato }}</td>
                     <td class="item-description">{{ item.descricao }}</td>
                     <td>{{ item.unidade_medida }}</td>
-                    {# FORMATO: Formata a quantidade para 3 casas decimais (padrão de precisão) e exibe à direita #}
                     <td class="text-right">{{ "%.3f"|format(item.quantidade_pedida)|replace('.', ',') }}</td>
-                    {# FORMATO: Valor unitário em 2 casas, alinhado à direita #}
                     <td class="text-right">{{ "%.2f"|format(item.valor_unitario)|replace('.', ',') }}</td>
-                    {# FORMATO: Valor total em 2 casas, alinhado à direita #}
                     <td class="text-right">{{ "%.2f"|format(item.subtotal)|replace('.', ',') }}</td>
                 </tr>
                 {% endfor %}
@@ -74,10 +71,8 @@
         <p>{{ aocs.local_entrega }}</p>
     </div>
 
-    {# Bloco de assinatura mais claro e formal #}
     <footer class="footer">
         <div class="signature-section" style="display: block; text-align: center;">
-            {# Data e local fora do bloco de assinatura, para alinhamento central #}
             <p style="margin-bottom: 2cm;"><strong>Local e data:</strong> {{ aocs.local_data }}</p> 
             
             <div class="signature-block" style="width: 60%; margin: 0 auto; text-align: center;">

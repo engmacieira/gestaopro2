@@ -6,7 +6,6 @@
 <div id="notification-area"></div>
 
 <header class="main-header">
-    {# Alterado url_for para request.app.url_path_for (verificar nome 'home_ui') #}
     <a href="{{ request.app.url_path_for('home_ui') }}" class="back-link">
         &larr; Voltar para o Painel de Controle
     </a>
@@ -25,23 +24,20 @@
     </div>
 
     <div id="tab-contratos" class="tab-content active">
-        {# INCLUINDO COMPONENTE DE CONTRATOS (Já verificado) #}
         {% include '_import_tab_contratos.html' %}
     </div>
 
     <div id="tab-itens" class="tab-content">
-        {# INCLUINDO COMPONENTE DE ITENS (Já verificado) #}
         {% include '_import_tab_itens_global.html' %}
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-{# Bloco de scripts agora apenas inclui o ficheiro externo #}
-{# Passa as URLs de redirecionamento para o JS #}
+
 <script>
     const redirectUrlContratos = "{{ request.app.url_path_for('contratos_ui') }}";
-    const redirectUrlItens = "{{ request.app.url_path_for('contratos_ui') }}"; // Ajustar se necessário
+    const redirectUrlItens = "{{ request.app.url_path_for('contratos_ui') }}";
 </script>
 <script src="{{ request.app.url_path_for('static', path='js/importar.js') }}" defer></script>
 {% endblock %}

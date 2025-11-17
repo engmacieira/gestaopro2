@@ -148,7 +148,6 @@ class LocalRepository:
             if cursor: cursor.close()
 
     def get_or_create(self, descricao: str) -> Local:
-        """Busca um Local pela descricao ou cria um novo se não existir."""
         try:
             local_obj = self.get_by_descricao(descricao)
             if local_obj:

@@ -1,20 +1,14 @@
-{# Componente: templates/_contrato_anexos_section.html #}
-{# Gerencia o upload de arquivos e a lista de anexos do contrato #}
-
 <div class="card full-width" style="margin-bottom: 30px;">
     <h2>Anexos do Contrato</h2>
     <p class="subtitle" style="margin-bottom: 20px;">Adicione ou visualize os documentos vinculados a este contrato.</p>
 
-    {# Action aponta para a API, nomes dos campos ajustados #}
-    <form action="/api/anexos/upload/" method="POST" enctype="multipart/form-data" class="upload-form" id="form-upload-anexo-contrato"> {# Adicionado ID para possível interceptação JS #}
+    <form action="/api/anexos/upload/" method="POST" enctype="multipart/form-data" class="upload-form" id="form-upload-anexo-contrato"> 
 
-        {# Campos ocultos para enviar contexto para a API #}
         <input type="hidden" name="id_entidade" value="{{ contrato.id }}">
         <input type="hidden" name="tipo_entidade" value="contrato">
 
         <div class="form-group" style="flex-grow: 2;">
             <label for="tipo_documento_select_anexo">Tipo do Documento</label>
-            {# Nome do campo principal é 'tipo_documento' #}
             <select name="tipo_documento" id="tipo_documento_select_anexo" class="form-control" required>
                 <option value="" disabled selected>Selecione um tipo...</option>
 
@@ -25,13 +19,11 @@
                 <option value="NOVO" style="font-weight: bold; color: var(--action-primary);">--- CRIAR NOVO TIPO ---</option>
             </select>
 
-            {# Nome do campo para novo tipo mantido #}
             <input type="text" name="tipo_documento_novo" id="tipo_documento_novo_anexo" class="form-control" placeholder="Digite o novo tipo de documento" style="display: none; margin-top: 10px;">
         </div>
 
         <div class="form-group" style="flex-grow: 3;">
             <label for="anexo_file">Arquivo</label>
-            {# Nome do campo de arquivo é 'file' #}
             <input type="file" name="file" id="anexo_file" class="form-control" required>
         </div>
 
@@ -39,7 +31,6 @@
     </form>
 
     <div id="notification-area-anexos">
-        {# Manter a área para as mensagens flash/JS da rota de upload #}
     </div>
 
     {% if anexos %}
@@ -50,15 +41,12 @@
             <li class="attachment-item">
                 <div class="attachment-file">
                     <i class="fa-solid fa-paperclip"></i>
-                    {# Link de download usa a rota API via request.app.url_path_for #}
                     <a href="{{ request.app.url_path_for('download_anexo_file', id=anexo.id) }}" title="{{ anexo.nome_original }}" target="_blank">
                         {{ anexo.tipo_documento or 'Documento' }} - {{ contrato.numero_contrato }}
                     </a>
                 </div>
                 <div class="attachment-meta">
-                    {# Formatando a data que vem do banco #}
                     Enviado em: {{ anexo.data_upload.strftime('%d/%m/%Y') if anexo.data_upload else 'Data Indisponível' }}
-                    {# Onclick mantido, pois a lógica JS deve chamar a API DELETE correta #}
                     <button class="btn-link-action red" title="Excluir" onclick="excluirAnexo({{ anexo.id }}, '{{ anexo.nome_seguro }}', '{{ anexo.nome_original | e }}')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>

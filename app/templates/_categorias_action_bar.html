@@ -1,6 +1,4 @@
-{# Componente: templates/_categorias_action_bar.html #}
 <div class="card-actions">
-    {# Alterado url_for para request.app.url_path_for #}
     <form id="filter-form" action="{{ request.app.url_path_for('categorias_ui') }}" method="GET" style="flex: 1;">
         <label class="checkbox-label">
             <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if mostrar_inativos %}checked{% endif %}>

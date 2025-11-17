@@ -131,7 +131,6 @@ class ItemRepository:
             if cursor: cursor.close()
 
     def get_all(self, mostrar_inativos: bool = False) -> list[Item]:
-        """Lista todos os Itens de Contrato (pode ser pesado), opcionalmente incluindo inativos."""
         cursor = None
         items_list = []
         try:
@@ -152,7 +151,6 @@ class ItemRepository:
             if cursor: cursor.close()
 
     def update(self, id: int, item_req: ItemRequest) -> Item | None:
-        """Atualiza um Item de Contrato existente."""
         cursor = None
         item_antigo = self.get_by_id(id) 
         if not item_antigo:
@@ -209,7 +207,6 @@ class ItemRepository:
             if cursor: cursor.close()
 
     def set_active_status(self, id: int, status: bool) -> Item | None:
-        """Ativa ou desativa um Item de Contrato."""
         cursor = None
         item_original = self.get_by_id(id)
         if not item_original:
@@ -237,7 +234,6 @@ class ItemRepository:
 
 
     def delete(self, id: int) -> bool:
-        """Deleta um Item de Contrato."""
         cursor = None
         item_para_deletar = self.get_by_id(id)
         if not item_para_deletar:

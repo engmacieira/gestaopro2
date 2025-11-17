@@ -1,17 +1,10 @@
-# tests/test_anexo_router.py (REFATORADO)
-
 import pytest
 from fastapi.testclient import TestClient
 from datetime import date
 import os
 
-# O 'admin_auth_headers' é pego automaticamente do conftest.py
-# O 'UPLOAD_FOLDER' é definido no anexo_router.py e lido a partir do .env
-
-# --- Fixture de Preparação 1: Contrato "Pai" ---
 @pytest.fixture
 def setup_contrato_para_anexo(test_client: TestClient, admin_auth_headers: dict) -> int:
-    """Cria um Contrato 'pai' e retorna o seu ID."""
     payload = {
         "numero_contrato": "CT-ANEXO-444/2025",
         "data_inicio": "2025-01-01", "data_fim": "2025-12-31",
@@ -26,11 +19,8 @@ def setup_contrato_para_anexo(test_client: TestClient, admin_auth_headers: dict)
     assert response.status_code == 201
     return response.json()["id"]
 
-# --- Fixture de Preparação 2: AOCS "Pai" ---
 @pytest.fixture
 def setup_aocs_para_anexo(test_client: TestClient, admin_auth_headers: dict) -> int:
-    """Cria uma AOCS 'pai' e retorna o seu ID."""
-    # (Dependências para a AOCS)
     test_client.post("/api/unidades/", json={"nome": "Unidade (Anexo)"}, headers=admin_auth_headers)
     test_client.post("/api/locais/", json={"descricao": "Local (Anexo)"}, headers=admin_auth_headers)
     test_client.post("/api/agentes/", json={"nome": "Agente (Anexo)"}, headers=admin_auth_headers)
@@ -49,11 +39,7 @@ def setup_aocs_para_anexo(test_client: TestClient, admin_auth_headers: dict) -> 
     assert response.status_code == 201
     return response.json()["id"]
 
-
-# --- Testes Principais ---
-
 def test_upload_anexo_contrato(test_client: TestClient, admin_auth_headers: dict, setup_contrato_para_anexo: int):
-    """Testa POST /api/anexos/upload/ para um Contrato."""
     id_contrato = setup_contrato_para_anexo
     file_name = "teste_contrato.txt"
     file_content = b"Conteudo do anexo do contrato"
@@ -71,13 +57,11 @@ def test_upload_anexo_contrato(test_client: TestClient, admin_auth_headers: dict
     assert response_create.status_code == 201
     response_json = response_create.json()
     
-    # MUDANÇA: Verificamos as novas chaves 'id_contrato' e 'id_aocs'
     assert response_json["nome_original"] == file_name
     assert response_json["id_contrato"] == id_contrato
     assert response_json["id_aocs"] is None # Deve ser nulo
 
 def test_upload_anexo_aocs(test_client: TestClient, admin_auth_headers: dict, setup_aocs_para_anexo: int):
-    """Testa POST /api/anexos/upload/ para uma AOCS."""
     id_aocs = setup_aocs_para_anexo
     file_name = "teste_aocs.pdf"
     file_content = b"Conteudo do anexo da aocs"
@@ -92,22 +76,18 @@ def test_upload_anexo_aocs(test_client: TestClient, admin_auth_headers: dict, se
         headers=admin_auth_headers
     )
     
-    # MUDANÇA: O status 500 desapareceu! Agora verificamos o 201.
     assert response.status_code == 201
     response_json = response.json()
 
-    # MUDANÇA: Verificamos as novas chaves 'id_aocs' e 'id_contrato'
     assert response_json["nome_original"] == file_name
     assert response_json["id_aocs"] == id_aocs
     assert response_json["id_contrato"] is None # Deve ser nulo
 
 def test_upload_anexo_contrato_e_get_all(test_client: TestClient, admin_auth_headers: dict, setup_contrato_para_anexo: int):
-    """Testa se o GET /api/anexos/{id_entidade}/{tipo} retorna o anexo recém-criado."""
     id_contrato = setup_contrato_para_anexo
     file_name = "anexo_para_get_all.txt"
     file_content = b"Conteudo para o teste de get_all"
     
-    # 1. Criar
     response_create = test_client.post(
         "/api/anexos/upload/",
         data={"id_entidade": id_contrato, "tipo_entidade": "contrato", "tipo_documento": "Teste"},
@@ -116,7 +96,6 @@ def test_upload_anexo_contrato_e_get_all(test_client: TestClient, admin_auth_hea
     )
     assert response_create.status_code == 201
 
-    # 2. Buscar
     response_get_all = test_client.get(
         f"/api/anexos/{id_contrato}/contrato",
         headers=admin_auth_headers
@@ -128,22 +107,16 @@ def test_upload_anexo_contrato_e_get_all(test_client: TestClient, admin_auth_hea
     
     response_data = response_get_all.json()[0]
     
-    # MUDANÇA: Verificamos as novas chaves na resposta do GET
     assert response_data["nome_original"] == file_name
     assert response_data["tipo_entidade"] == "contrato"
     assert response_data["id_contrato"] == id_contrato
     assert response_data["id_aocs"] is None
 
 def test_download_e_delete_anexo(test_client: TestClient, admin_auth_headers: dict, setup_contrato_para_anexo: int):
-    """
-    Testa o ciclo de vida completo: Download e Delete.
-    (Este teste não precisou de refatoração, pois não verificava 'id_entidade').
-    """
     id_contrato = setup_contrato_para_anexo
     file_name = "anexo_para_download_e_delete.txt"
     file_content = b"Download e Delete"
 
-    # 1. Criar
     response_create = test_client.post(
         "/api/anexos/upload/",
         data={"id_entidade": id_contrato, "tipo_entidade": "contrato", "tipo_documento": "Para Deletar"},
@@ -154,7 +127,6 @@ def test_download_e_delete_anexo(test_client: TestClient, admin_auth_headers: di
     new_id = response_create.json()["id"]
     nome_seguro = response_create.json()["nome_seguro"]
 
-    # 2. Testar o Download
     response_download = test_client.get(
         f"/api/anexos/download/{new_id}",
         headers=admin_auth_headers
@@ -162,24 +134,19 @@ def test_download_e_delete_anexo(test_client: TestClient, admin_auth_headers: di
     assert response_download.status_code == 200
     assert response_download.content == file_content
     
-    # 3. Testar o Delete
     response_delete = test_client.delete(
         f"/api/anexos/{new_id}",
         headers=admin_auth_headers
     )
     assert response_delete.status_code == 204
 
-    # 4. Verificar se o Download agora falha
     response_download_fail = test_client.get(
         f"/api/anexos/download/{new_id}",
         headers=admin_auth_headers
     )
     assert response_download_fail.status_code == 404
 
-    # 5. (Opcional) Verificar se o ficheiro físico foi apagado
-    # Esta verificação é importante para garantir que não deixamos lixo no disco
     UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", "uploads")
-    # Nota: O BASE_DIR pode precisar de ajuste dependendo de onde o pytest é corrido
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
     file_path = os.path.join(BASE_DIR, 'app', nome_seguro)
     

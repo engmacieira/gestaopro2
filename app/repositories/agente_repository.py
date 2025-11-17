@@ -18,7 +18,7 @@ class AgenteRepository:
             return Agente(id=row['id'], nome=row['nome'])
         except KeyError as e:
             logger.error(f"Erro de mapeamento Agente: Coluna '{e}' não encontrada.")
-            return None # Retorna None para indicar falha no mapeamento
+            return None 
 
     def create(self, agente_req: AgenteRequest) -> Agente:
         cursor = None
@@ -101,7 +101,7 @@ class AgenteRepository:
 
     def delete(self, id: int) -> bool:
         cursor = None
-        agente_para_deletar = self.get_by_id(id) # Busca antes para log
+        agente_para_deletar = self.get_by_id(id) 
         if not agente_para_deletar:
              logger.warning(f"Tentativa de deletar agente ID {id} falhou (não encontrado).")
              return False

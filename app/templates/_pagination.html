@@ -1,6 +1,5 @@
 {% macro render_pagination(pagina_atual, total_paginas, endpoint, route_params={}, query_params={}) %}
     {% if total_paginas > 1 %}
-        {# Generate the base path using path parameters only #}
         {% set base_path = request.app.url_path_for(endpoint, **route_params) %}
         {% set window = 2 %}
     {% endif %}
@@ -9,10 +8,8 @@
     <nav class="pagination-nav" aria-label="Navegação de página">
         <ul class="pagination">
 
-            {# --- First Link --- #}
             {% set temp_params_first = query_params.copy() %}
             {% set _ = temp_params_first.update({'page': 1}) %}
-            {# Build query string manually #}
             {% set query_parts_first = [] %}
             {% for key, value in temp_params_first.items() if value is not none and value != '' %}
                 {% set _ = query_parts_first.append(key ~ "=" ~ (value|string)) %}
@@ -22,7 +19,6 @@
                 <a class="page-link" href="{{ base_path }}{{ query_string_first }}" aria-label="Primeira"><i class="fa-solid fa-backward-fast"></i></a>
             </li>
 
-            {# --- Previous Link --- #}
             {% set temp_params_prev = query_params.copy() %}
             {% set _ = temp_params_prev.update({'page': pagina_atual - 1}) %}
             {% set query_parts_prev = [] %}
@@ -34,7 +30,6 @@
                 <a class="page-link" href="{{ base_path }}{{ query_string_prev }}" aria-label="Anterior"><i class="fa-solid fa-backward-step"></i></a>
             </li>
 
-            {# --- Page Number Links --- #}
             {% set ellipsis_shown = false %}
             {% for p in range(1, total_paginas + 1) %}
                 {% set show_page = (p == 1) or (p == total_paginas) or (p >= pagina_atual - window and p <= pagina_atual + window) %}
@@ -57,7 +52,6 @@
                 {% endif %}
             {% endfor %}
 
-            {# --- Next Link --- #}
             {% set temp_params_next = query_params.copy() %}
             {% set _ = temp_params_next.update({'page': pagina_atual + 1}) %}
             {% set query_parts_next = [] %}
@@ -69,7 +63,6 @@
                 <a class="page-link" href="{{ base_path }}{{ query_string_next }}" aria-label="Próxima"><i class="fa-solid fa-forward-step"></i></a>
             </li>
 
-            {# --- Last Link --- #}
             {% set temp_params_last = query_params.copy() %}
             {% set _ = temp_params_last.update({'page': total_paginas}) %}
             {% set query_parts_last = [] %}

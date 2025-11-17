@@ -1,6 +1,4 @@
-{# Componente: templates/_pedidos_filter_bar.html #}
 <div class="card-actions">
-    {# Alterado url_for para request.app.url_path_for #}
     <form method="GET" action="{{ request.app.url_path_for('pedidos_ui') }}" class="search-form" style="flex: 1 1 100%;">
         <i class="fa-solid fa-search search-icon"></i>
         <input type="search" name="busca" placeholder="Buscar por nº AOCS ou fornecedor..." value="{{ termo_busca or '' }}" class="form-control" style="flex: 1;">

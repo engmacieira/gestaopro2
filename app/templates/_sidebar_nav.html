@@ -1,11 +1,9 @@
-{# Componente: templates/_sidebar_nav.html #}
 <aside class="sidebar">
     <div class="sidebar-header">
         <img src="{{ request.app.url_path_for('static', path='images/logo.jpg') }}" alt="Sunny Tech Logo" class="sidebar-logo">
         <h3>GestãoPRO</h3>
     </div>
     <nav class="sidebar-nav">
-        {# CORREÇÃO: Comparar request.url.path com request.app.url_path_for(...).path #}
         <a href="{{ request.app.url_path_for('home_ui') }}" class="nav-link {% if request.app.url_path_for('home_ui').path == request.url.path %}active{% endif %}">
             <i class="fa-solid fa-house"></i><span>Painel</span>
         </a>

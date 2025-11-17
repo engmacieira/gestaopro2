@@ -10,7 +10,6 @@
 </header>
 
 <div class="card full-width">
-    {# 1. INCLUSÃO DO COMPONENTE DA BARRA DE AÇÕES/FILTRO (Já refatorado) #}
     {% include '_categorias_action_bar.html' %}
 
     <div class="table-wrapper">
@@ -18,11 +17,9 @@
             <thead>
                 <tr>
                     <th class="sortable-header" style="width: 10%;">
-                        {# Construção do link de ordenação refatorada #}
                         {% set next_order_id = 'desc' if sort_by == 'id' and order == 'asc' else 'asc' %}
                         {% set params_id = query_params.copy() %}
                         {% set _ = params_id.update({'sort_by': 'id', 'order': next_order_id}) %}
-                        {# Usando a macro refatorada internamente #}
                         <a href="{{ request.app.url_path_for('categorias_ui') }}{% set query_parts_id = [] %}{% for key, value in params_id.items() if value is not none and value != '' %}{% set _ = query_parts_id.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% if query_parts_id %}?{{ query_parts_id | join('&') }}{% endif %}">
                             ID
                             {% if sort_by == 'id' %}
@@ -32,11 +29,9 @@
                     </th>
 
                     <th class="sortable-header">
-                        {# Construção do link de ordenação refatorada #}
                         {% set next_order_nome = 'desc' if sort_by == 'nome' and order == 'asc' else 'asc' %}
                         {% set params_nome = query_params.copy() %}
                         {% set _ = params_nome.update({'sort_by': 'nome', 'order': next_order_nome}) %}
-                        {# Usando a macro refatorada internamente #}
                          <a href="{{ request.app.url_path_for('categorias_ui') }}{% set query_parts_nome = [] %}{% for key, value in params_nome.items() if value is not none and value != '' %}{% set _ = query_parts_nome.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% if query_parts_nome %}?{{ query_parts_nome | join('&') }}{% endif %}">
                             Nome
                             {% if sort_by == 'nome' %}
@@ -46,11 +41,9 @@
                     </th>
 
                     <th class="sortable-header" style="width: 15%;">
-                        {# Construção do link de ordenação refatorada #}
                         {% set next_order_status = 'desc' if sort_by == 'status' and order == 'asc' else 'asc' %}
                         {% set params_status = query_params.copy() %}
                         {% set _ = params_status.update({'sort_by': 'status', 'order': next_order_status}) %}
-                        {# Usando a macro refatorada internamente #}
                          <a href="{{ request.app.url_path_for('categorias_ui') }}{% set query_parts_status = [] %}{% for key, value in params_status.items() if value is not none and value != '' %}{% set _ = query_parts_status.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% if query_parts_status %}?{{ query_parts_status | join('&') }}{% endif %}">
                             Status
                              {% if sort_by == 'status' %}
@@ -67,14 +60,12 @@
                     {% for cat in categorias %}
                     <tr class="{{ 'inactive-row' if not cat.ativo }}">
                         <td>{{ cat.id }}</td>
-                        {# Alterado url_for para request.app.url_path_for #}
                         <td><a href="{{ request.app.url_path_for('contratos_por_categoria', id_categoria=cat.id) }}">{{ cat.nome }}</a></td>
                         <td>
                             {% if cat.ativo %}<span class="status-badge green">Ativo</span>
                             {% else %}<span class="status-badge gray">Inativo</span>{% endif %}
                         </td>
                         <td class="actions-cell">
-                            {# Onclick mantido, chama JS #}
                             <button class="btn-link-action" onclick="abrirModalParaEditar({{ cat.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
                             <button class="btn-link-action {{ 'red' if cat.ativo else 'green' }}" onclick="toggleStatusCategoria({{ cat.id }}, {{ 'true' if cat.ativo else 'false' }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if cat.ativo else 'Ativar' }}</button>
                             <button class="btn-link-action red" onclick="excluirCategoria({{ cat.id }})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
@@ -89,16 +80,13 @@
     </div>
 
     <div class="card-footer">
-        {# Chamada da macro refatorada (internamente usa request.app.url_path_for) #}
         {{ render_pagination(pagina_atual, total_paginas, 'categorias_ui', query_params=query_params) }}
     </div>
 </div>
 
-{# 2. INCLUSÃO DO COMPONENTE MODAL (Já verificado) #}
 {% include '_categorias_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
-{# Bloco de scripts agora apenas inclui o ficheiro externo #}
 <script src="{{ request.app.url_path_for('static', path='js/categorias.js') }}" defer></script>
 {% endblock %}

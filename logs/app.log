@@ -19228,3 +19228,961 @@ DETAIL:  Chave (id_entidade)=(1) não está presente na tabela "contratos".
 2025-11-15 00:48:42 - INFO - httpx - HTTP Request: POST http://testserver/api/users/ "HTTP/1.1 201 Created"
 2025-11-15 00:48:42 - INFO - httpx - HTTP Request: POST http://testserver/api/users/2/reset-password "HTTP/1.1 200 OK"
 2025-11-15 00:48:42 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:54:43 - INFO - root - Sistema de Logging Configurado.
+2025-11-17 10:54:58 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:54:59 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente de Teste 1'
+2025-11-17 10:54:59 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente de Teste 1').
+2025-11-17 10:54:59 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:54:59 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:54:59 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:00 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente de Teste 2'
+2025-11-17 10:55:00 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente de Teste 2').
+2025-11-17 10:55:00 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:00 - INFO - httpx - HTTP Request: GET http://testserver/api/agentes/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:00 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:00 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:00 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente A'
+2025-11-17 10:55:00 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente A').
+2025-11-17 10:55:00 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:00 - INFO - app.repositories.agente_repository - Agente criado com ID 2: 'Agente B'
+2025-11-17 10:55:00 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 2 ('Agente B').
+2025-11-17 10:55:00 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:00 - INFO - httpx - HTTP Request: GET http://testserver/api/agentes/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:00 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:01 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:01 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente Original'
+2025-11-17 10:55:01 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente Original').
+2025-11-17 10:55:01 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:01 - INFO - app.repositories.agente_repository - Agente ID 1 atualizado para nome 'Agente Atualizado'
+2025-11-17 10:55:01 - INFO - app.routers.agente_router - Usuário 'test_admin_user' atualizou Agente ID 1 de 'Agente Original' para 'Agente Atualizado'.
+2025-11-17 10:55:01 - INFO - httpx - HTTP Request: PUT http://testserver/api/agentes/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:01 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:01 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:02 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente Para Deletar'
+2025-11-17 10:55:02 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente Para Deletar').
+2025-11-17 10:55:02 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:02 - INFO - app.repositories.agente_repository - Agente ID 1 ('Agente Para Deletar') deletado.
+2025-11-17 10:55:02 - INFO - app.routers.agente_router - Usuário 'test_admin_user' deletou Agente ID 1 ('Agente Para Deletar').
+2025-11-17 10:55:02 - INFO - httpx - HTTP Request: DELETE http://testserver/api/agentes/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:02 - WARNING - app.routers.agente_router - Agente ID 1 não encontrado.
+2025-11-17 10:55:02 - INFO - httpx - HTTP Request: GET http://testserver/api/agentes/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:02 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:02 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:02 - INFO - app.repositories.categoria_repository - Categoria 'Categoria de Anexos' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:02 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento de Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:02 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade de Anexos' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:02 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:02 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:02 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-ANEXO-444/2025')
+2025-11-17 10:55:02 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-ANEXO-444/2025').
+2025-11-17 10:55:02 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:02 - INFO - app.repositories.anexo_repository - Anexo ID 1 ('teste_contrato.txt') criado e vinculado a contrato.
+2025-11-17 10:55:02 - INFO - app.routers.anexo_router - Usuário 'test_admin_user' fez upload Anexo ID 1 ('teste_contrato.txt')
+2025-11-17 10:55:02 - INFO - httpx - HTTP Request: POST http://testserver/api/anexos/upload/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:02 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:03 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:03 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade (Anexo)'
+2025-11-17 10:55:03 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade (Anexo)').
+2025-11-17 10:55:03 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:03 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local (Anexo)'
+2025-11-17 10:55:03 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local (Anexo)').
+2025-11-17 10:55:03 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:03 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente (Anexo)'
+2025-11-17 10:55:03 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente (Anexo)').
+2025-11-17 10:55:03 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:03 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotação (Anexo)'
+2025-11-17 10:55:03 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotação (Anexo)').
+2025-11-17 10:55:03 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:03 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-ANEXO-555/2025')
+2025-11-17 10:55:03 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-ANEXO-555/2025').
+2025-11-17 10:55:03 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:03 - INFO - app.repositories.anexo_repository - Anexo ID 1 ('teste_aocs.pdf') criado e vinculado a aocs.
+2025-11-17 10:55:03 - INFO - app.routers.anexo_router - Usuário 'test_admin_user' fez upload Anexo ID 1 ('teste_aocs.pdf')
+2025-11-17 10:55:03 - INFO - httpx - HTTP Request: POST http://testserver/api/anexos/upload/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:03 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:04 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:04 - INFO - app.repositories.categoria_repository - Categoria 'Categoria de Anexos' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:04 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento de Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:04 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade de Anexos' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:04 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:04 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:04 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-ANEXO-444/2025')
+2025-11-17 10:55:04 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-ANEXO-444/2025').
+2025-11-17 10:55:04 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:04 - INFO - app.repositories.anexo_repository - Anexo ID 1 ('anexo_para_get_all.txt') criado e vinculado a contrato.
+2025-11-17 10:55:04 - INFO - app.routers.anexo_router - Usuário 'test_admin_user' fez upload Anexo ID 1 ('anexo_para_get_all.txt')
+2025-11-17 10:55:04 - INFO - httpx - HTTP Request: POST http://testserver/api/anexos/upload/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:04 - INFO - httpx - HTTP Request: GET http://testserver/api/anexos/1/contrato "HTTP/1.1 200 OK"
+2025-11-17 10:55:04 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:04 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:05 - INFO - app.repositories.categoria_repository - Categoria 'Categoria de Anexos' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:05 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento de Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:05 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade de Anexos' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:05 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:05 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Anexos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:05 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-ANEXO-444/2025')
+2025-11-17 10:55:05 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-ANEXO-444/2025').
+2025-11-17 10:55:05 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:05 - INFO - app.repositories.anexo_repository - Anexo ID 1 ('anexo_para_download_e_delete.txt') criado e vinculado a contrato.
+2025-11-17 10:55:05 - INFO - app.routers.anexo_router - Usuário 'test_admin_user' fez upload Anexo ID 1 ('anexo_para_download_e_delete.txt')
+2025-11-17 10:55:05 - INFO - httpx - HTTP Request: POST http://testserver/api/anexos/upload/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:05 - INFO - httpx - HTTP Request: GET http://testserver/api/anexos/download/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:05 - INFO - app.repositories.anexo_repository - Registro de Anexo ID 1 ('anexo_para_download_e_delete.txt') deletado.
+2025-11-17 10:55:05 - INFO - app.routers.anexo_router - Usuário 'test_admin_user' deletou arquivo físico: G:\Meu Drive\Projetos VSCODE\Refatoracao\uploads\contrato\1\1763387705_PARA_DELETAR_CT-CT-ANEXO-444_2025.txt
+2025-11-17 10:55:05 - INFO - httpx - HTTP Request: DELETE http://testserver/api/anexos/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:05 - INFO - httpx - HTTP Request: GET http://testserver/api/anexos/download/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:05 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:05 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:06 - INFO - app.repositories.unidade_repository - Unidade 'Unidade de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.local_repository - Local 'Local de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.agente_repository - Agente 'Agente de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-001/2025-TESTE')
+2025-11-17 10:55:06 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-001/2025-TESTE').
+2025-11-17 10:55:06 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:06 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:06 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:06 - INFO - app.repositories.unidade_repository - Unidade 'Unidade de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.local_repository - Local 'Local de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.agente_repository - Agente 'Agente de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:06 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-001/2025-TESTE')
+2025-11-17 10:55:06 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-001/2025-TESTE').
+2025-11-17 10:55:06 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:06 - INFO - httpx - HTTP Request: GET http://testserver/api/aocs/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:06 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:07 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:07 - INFO - app.repositories.unidade_repository - Unidade 'Unidade de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:07 - INFO - app.repositories.local_repository - Local 'Local de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:07 - INFO - app.repositories.agente_repository - Agente 'Agente de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:07 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:07 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-001/2025-TESTE')
+2025-11-17 10:55:07 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-001/2025-TESTE').
+2025-11-17 10:55:07 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:07 - INFO - httpx - HTTP Request: GET http://testserver/api/aocs/numero/AOCS-001/2025-TESTE "HTTP/1.1 200 OK"
+2025-11-17 10:55:07 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:08 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:08 - INFO - app.repositories.unidade_repository - Unidade 'Unidade de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.local_repository - Local 'Local de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.agente_repository - Agente 'Agente de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-001/2025-TESTE')
+2025-11-17 10:55:08 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-001/2025-TESTE').
+2025-11-17 10:55:08 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:08 - INFO - app.repositories.aocs_repository - AOCS ID 1 ('AOCS-001/2025-TESTE') atualizada.
+2025-11-17 10:55:08 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' atualizou AOCS ID 1 ('AOCS-001/2025-TESTE').
+2025-11-17 10:55:08 - INFO - httpx - HTTP Request: PUT http://testserver/api/aocs/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:08 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:08 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:08 - INFO - app.repositories.unidade_repository - Unidade 'Unidade de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.local_repository - Local 'Local de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.agente_repository - Agente 'Agente de Teste (AOCS)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação de Teste (AOCS)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:08 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-001/2025-TESTE')
+2025-11-17 10:55:08 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-001/2025-TESTE').
+2025-11-17 10:55:08 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:08 - INFO - app.repositories.aocs_repository - AOCS ID 1 ('AOCS-001/2025-TESTE') deletada (Pedidos associados podem ter sido deletados via CASCADE).
+2025-11-17 10:55:08 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' deletou AOCS ID 1 ('AOCS-001/2025-TESTE').
+2025-11-17 10:55:08 - INFO - httpx - HTTP Request: DELETE http://testserver/api/aocs/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:09 - WARNING - app.routers.aocs_router - AOCS ID 1 não encontrada.
+2025-11-17 10:55:09 - INFO - httpx - HTTP Request: GET http://testserver/api/aocs/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:09 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:09 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:09 - INFO - httpx - HTTP Request: POST http://testserver/api/auth/login "HTTP/1.1 200 OK"
+2025-11-17 10:55:09 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:10 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:10 - INFO - httpx - HTTP Request: POST http://testserver/api/auth/login "HTTP/1.1 401 Unauthorized"
+2025-11-17 10:55:10 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:11 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:11 - INFO - httpx - HTTP Request: POST http://testserver/api/auth/login "HTTP/1.1 401 Unauthorized"
+2025-11-17 10:55:11 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:11 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:11 - INFO - httpx - HTTP Request: GET http://testserver/api/auth/users/me "HTTP/1.1 200 OK"
+2025-11-17 10:55:11 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:12 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:12 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 1'
+2025-11-17 10:55:12 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 1').
+2025-11-17 10:55:12 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:12 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:13 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:13 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria de Teste 2'
+2025-11-17 10:55:13 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria de Teste 2').
+2025-11-17 10:55:13 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:13 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:13 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:14 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:14 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Original'
+2025-11-17 10:55:14 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Original').
+2025-11-17 10:55:14 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:14 - INFO - app.repositories.categoria_repository - Categoria ID 1 atualizada de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-17 10:55:14 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' atualizou Categoria ID 1 de 'Categoria Original' para 'Categoria Atualizada'.
+2025-11-17 10:55:14 - INFO - httpx - HTTP Request: PUT http://testserver/api/categorias/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:14 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:14 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:14 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Para Deletar'
+2025-11-17 10:55:14 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-17 10:55:14 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:14 - INFO - app.repositories.categoria_repository - Categoria ID 1 ('Categoria Para Deletar') deletada.
+2025-11-17 10:55:14 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' deletou Categoria ID 1 ('Categoria Para Deletar').
+2025-11-17 10:55:14 - INFO - httpx - HTTP Request: DELETE http://testserver/api/categorias/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:14 - WARNING - app.routers.categoria_router - Categoria ID 1 não encontrada.
+2025-11-17 10:55:14 - INFO - httpx - HTTP Request: GET http://testserver/api/categorias/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:14 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:15 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:15 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Solicitante Teste CI'
+2025-11-17 10:55:15 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Solicitante Teste CI').
+2025-11-17 10:55:15 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:15 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Secretaria Teste CI'
+2025-11-17 10:55:15 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Secretaria Teste CI').
+2025-11-17 10:55:15 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:15 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotacao Teste CI'
+2025-11-17 10:55:15 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotacao Teste CI').
+2025-11-17 10:55:15 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:15 - INFO - app.repositories.local_repository - Local 'Local Teste CI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:15 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-CI-TESTE-333/2025')
+2025-11-17 10:55:15 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-CI-TESTE-333/2025').
+2025-11-17 10:55:15 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:15 - INFO - app.repositories.ci_pagamento_repository - CI Pagamento criada com ID 1 (Num: 'CI-999/2025') para AOCS ID 1
+2025-11-17 10:55:15 - INFO - app.routers.ci_pagamento_router - Usuário 'test_admin_user' criou CI Pagamento ID 1 ('CI-999/2025').
+2025-11-17 10:55:15 - INFO - httpx - HTTP Request: POST http://testserver/api/ci-pagamento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:15 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:16 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:16 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Solicitante Teste CI'
+2025-11-17 10:55:16 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Solicitante Teste CI').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:16 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Secretaria Teste CI'
+2025-11-17 10:55:16 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Secretaria Teste CI').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:16 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotacao Teste CI'
+2025-11-17 10:55:16 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotacao Teste CI').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:16 - INFO - app.repositories.local_repository - Local 'Local Teste CI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:16 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-CI-TESTE-333/2025')
+2025-11-17 10:55:16 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-CI-TESTE-333/2025').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:16 - INFO - app.repositories.ci_pagamento_repository - CI Pagamento criada com ID 1 (Num: 'CI-999/2025') para AOCS ID 1
+2025-11-17 10:55:16 - INFO - app.routers.ci_pagamento_router - Usuário 'test_admin_user' criou CI Pagamento ID 1 ('CI-999/2025').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/ci-pagamento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: GET http://testserver/api/ci-pagamento/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:16 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:16 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:16 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Solicitante Teste CI'
+2025-11-17 10:55:16 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Solicitante Teste CI').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:16 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Secretaria Teste CI'
+2025-11-17 10:55:16 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Secretaria Teste CI').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:16 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotacao Teste CI'
+2025-11-17 10:55:16 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotacao Teste CI').
+2025-11-17 10:55:16 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:17 - INFO - app.repositories.local_repository - Local 'Local Teste CI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:17 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-CI-TESTE-333/2025')
+2025-11-17 10:55:17 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-CI-TESTE-333/2025').
+2025-11-17 10:55:17 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:17 - INFO - app.repositories.ci_pagamento_repository - CI Pagamento criada com ID 1 (Num: 'CI-999/2025') para AOCS ID 1
+2025-11-17 10:55:17 - INFO - app.routers.ci_pagamento_router - Usuário 'test_admin_user' criou CI Pagamento ID 1 ('CI-999/2025').
+2025-11-17 10:55:17 - INFO - httpx - HTTP Request: POST http://testserver/api/ci-pagamento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:17 - INFO - app.repositories.ci_pagamento_repository - CI Pagamento ID 1 ('CI-999/2025') deletada.
+2025-11-17 10:55:17 - INFO - app.routers.ci_pagamento_router - Usuário 'test_admin_user' deletou CI Pagamento ID 1 ('CI-999/2025').
+2025-11-17 10:55:17 - INFO - httpx - HTTP Request: DELETE http://testserver/api/ci-pagamento/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:17 - WARNING - app.routers.ci_pagamento_router - CI Pagamento ID 1 não encontrada.
+2025-11-17 10:55:17 - INFO - httpx - HTTP Request: GET http://testserver/api/ci-pagamento/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:17 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:17 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:17 - INFO - app.repositories.categoria_repository - Categoria 'Obras e Serviços' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:17 - INFO - app.repositories.instrumento_repository - Instrumento 'Contrato de Teste' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:17 - INFO - app.repositories.modalidade_repository - Modalidade 'Pregão Eletrônico' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:17 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'PE 123/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:17 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL 456/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:17 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-001/2025-TESTE')
+2025-11-17 10:55:17 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-001/2025-TESTE').
+2025-11-17 10:55:17 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:17 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:18 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:18 - INFO - app.repositories.categoria_repository - Categoria 'Obras e Serviços' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.instrumento_repository - Instrumento 'Contrato de Teste' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.modalidade_repository - Modalidade 'Pregão Eletrônico' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'PE 123/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL 456/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-001/2025-TESTE')
+2025-11-17 10:55:18 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-001/2025-TESTE').
+2025-11-17 10:55:18 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:18 - INFO - httpx - HTTP Request: GET http://testserver/api/contratos/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:18 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:18 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:18 - INFO - app.repositories.categoria_repository - Categoria 'Obras e Serviços' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.instrumento_repository - Instrumento 'Contrato de Teste' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.modalidade_repository - Modalidade 'Pregão Eletrônico' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'PE 123/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:18 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL 456/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:19 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-001/2025-TESTE')
+2025-11-17 10:55:19 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-001/2025-TESTE').
+2025-11-17 10:55:19 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:19 - INFO - httpx - HTTP Request: GET http://testserver/api/contratos/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:19 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:19 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:19 - INFO - app.repositories.categoria_repository - Categoria 'Obras e Serviços' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:19 - INFO - app.repositories.instrumento_repository - Instrumento 'Contrato de Teste' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:19 - INFO - app.repositories.modalidade_repository - Modalidade 'Pregão Eletrônico' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:19 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'PE 123/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:19 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL 456/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:19 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-001/2025-TESTE')
+2025-11-17 10:55:19 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-001/2025-TESTE').
+2025-11-17 10:55:19 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:19 - INFO - app.repositories.contrato_repository - Contrato ID 1 ('CT-001/2025-TESTE') atualizado.
+2025-11-17 10:55:19 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' atualizou Contrato ID 1 ('CT-001/2025-TESTE').
+2025-11-17 10:55:19 - INFO - httpx - HTTP Request: PUT http://testserver/api/contratos/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:19 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:20 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:20 - INFO - app.repositories.categoria_repository - Categoria 'Obras e Serviços' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:20 - INFO - app.repositories.instrumento_repository - Instrumento 'Contrato de Teste' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:20 - INFO - app.repositories.modalidade_repository - Modalidade 'Pregão Eletrônico' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:20 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'PE 123/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:20 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL 456/2024' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:20 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-001/2025-TESTE')
+2025-11-17 10:55:20 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-001/2025-TESTE').
+2025-11-17 10:55:20 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:20 - INFO - app.repositories.contrato_repository - Contrato ID 1 ('CT-001/2025-TESTE') deletado.
+2025-11-17 10:55:20 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' deletou Contrato ID 1 ('CT-001/2025-TESTE').
+2025-11-17 10:55:20 - INFO - httpx - HTTP Request: DELETE http://testserver/api/contratos/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:20 - WARNING - app.routers.contrato_router - Contrato ID 1 não encontrado.
+2025-11-17 10:55:20 - INFO - httpx - HTTP Request: GET http://testserver/api/contratos/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:20 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:20 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:21 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: '01.01.01 - Teste'
+2025-11-17 10:55:21 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('01.01.01 - Teste').
+2025-11-17 10:55:21 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:21 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:21 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:21 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: '02.02.02 - Buscar'
+2025-11-17 10:55:21 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('02.02.02 - Buscar').
+2025-11-17 10:55:21 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:21 - INFO - httpx - HTTP Request: GET http://testserver/api/dotacoes/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:21 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:22 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:22 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotação A'
+2025-11-17 10:55:22 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotação A').
+2025-11-17 10:55:22 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:22 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 2: 'Dotação B'
+2025-11-17 10:55:22 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 2 ('Dotação B').
+2025-11-17 10:55:22 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:22 - INFO - httpx - HTTP Request: GET http://testserver/api/dotacoes/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:22 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:22 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:22 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotação Original'
+2025-11-17 10:55:22 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotação Original').
+2025-11-17 10:55:22 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:22 - INFO - app.repositories.dotacao_repository - Dotação ID 1 atualizada de 'Dotação Original' para 'Dotação Atualizada'.
+2025-11-17 10:55:22 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' atualizou Dotação ID 1 de 'Dotação Original' para 'Dotação Atualizada'.
+2025-11-17 10:55:22 - INFO - httpx - HTTP Request: PUT http://testserver/api/dotacoes/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:22 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:23 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:23 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotação Para Deletar'
+2025-11-17 10:55:23 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotação Para Deletar').
+2025-11-17 10:55:23 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:23 - INFO - app.repositories.dotacao_repository - Dotação ID 1 ('Dotação Para Deletar') deletada.
+2025-11-17 10:55:23 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' deletou Dotação ID 1 ('Dotação Para Deletar').
+2025-11-17 10:55:23 - INFO - httpx - HTTP Request: DELETE http://testserver/api/dotacoes/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:23 - WARNING - app.routers.dotacao_router - Dotação ID 1 não encontrada.
+2025-11-17 10:55:23 - INFO - httpx - HTTP Request: GET http://testserver/api/dotacoes/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:23 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:24 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:24 - INFO - app.repositories.instrumento_repository - Instrumento criado com ID 1: 'Contrato de Teste 1'
+2025-11-17 10:55:24 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' criou Instrumento ID 1 ('Contrato de Teste 1').
+2025-11-17 10:55:24 - INFO - httpx - HTTP Request: POST http://testserver/api/instrumentos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:24 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:24 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:24 - INFO - app.repositories.instrumento_repository - Instrumento criado com ID 1: 'Contrato de Teste 2'
+2025-11-17 10:55:24 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' criou Instrumento ID 1 ('Contrato de Teste 2').
+2025-11-17 10:55:24 - INFO - httpx - HTTP Request: POST http://testserver/api/instrumentos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:24 - INFO - httpx - HTTP Request: GET http://testserver/api/instrumentos/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:24 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:25 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:25 - INFO - app.repositories.instrumento_repository - Instrumento criado com ID 1: 'Contrato A'
+2025-11-17 10:55:25 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' criou Instrumento ID 1 ('Contrato A').
+2025-11-17 10:55:25 - INFO - httpx - HTTP Request: POST http://testserver/api/instrumentos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:25 - INFO - app.repositories.instrumento_repository - Instrumento criado com ID 2: 'Contrato B'
+2025-11-17 10:55:25 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' criou Instrumento ID 2 ('Contrato B').
+2025-11-17 10:55:25 - INFO - httpx - HTTP Request: POST http://testserver/api/instrumentos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:25 - INFO - httpx - HTTP Request: GET http://testserver/api/instrumentos/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:25 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:25 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:26 - INFO - app.repositories.instrumento_repository - Instrumento criado com ID 1: 'Contrato Original'
+2025-11-17 10:55:26 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' criou Instrumento ID 1 ('Contrato Original').
+2025-11-17 10:55:26 - INFO - httpx - HTTP Request: POST http://testserver/api/instrumentos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:26 - INFO - app.repositories.instrumento_repository - Instrumento ID 1 atualizado de 'Contrato Original' para 'Contrato Atualizado'.
+2025-11-17 10:55:26 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' atualizou Instrumento ID 1 de 'Contrato Original' para 'Contrato Atualizado'.
+2025-11-17 10:55:26 - INFO - httpx - HTTP Request: PUT http://testserver/api/instrumentos/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:26 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:26 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:26 - INFO - app.repositories.instrumento_repository - Instrumento criado com ID 1: 'Contrato Para Deletar'
+2025-11-17 10:55:26 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' criou Instrumento ID 1 ('Contrato Para Deletar').
+2025-11-17 10:55:26 - INFO - httpx - HTTP Request: POST http://testserver/api/instrumentos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:26 - INFO - app.repositories.instrumento_repository - Instrumento ID 1 ('Contrato Para Deletar') deletado.
+2025-11-17 10:55:26 - INFO - app.routers.instrumento_router - Usuário 'test_admin_user' deletou Instrumento ID 1 ('Contrato Para Deletar').
+2025-11-17 10:55:26 - INFO - httpx - HTTP Request: DELETE http://testserver/api/instrumentos/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:26 - WARNING - app.routers.instrumento_router - Instrumento ID 1 não encontrado.
+2025-11-17 10:55:26 - INFO - httpx - HTTP Request: GET http://testserver/api/instrumentos/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:26 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:27 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:27 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Padrão de Itens' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:27 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:27 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Padrão' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:27 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:27 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:27 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PAI-999/2025')
+2025-11-17 10:55:27 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PAI-999/2025').
+2025-11-17 10:55:27 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:27 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:27 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:27 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:27 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:28 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:28 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Padrão de Itens' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:28 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:28 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Padrão' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:28 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:28 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:28 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PAI-999/2025')
+2025-11-17 10:55:28 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PAI-999/2025').
+2025-11-17 10:55:28 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:28 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:28 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:28 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:28 - INFO - httpx - HTTP Request: GET http://testserver/api/itens/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:28 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:28 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:28 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Padrão de Itens' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:28 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:28 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Padrão' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PAI-999/2025')
+2025-11-17 10:55:29 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PAI-999/2025').
+2025-11-17 10:55:29 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:29 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:29 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:29 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:29 - INFO - httpx - HTTP Request: GET http://testserver/api/itens?contrato_id=1 "HTTP/1.1 307 Temporary Redirect"
+2025-11-17 10:55:29 - INFO - httpx - HTTP Request: GET http://testserver/api/itens/?contrato_id=1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:29 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:29 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:29 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Padrão de Itens' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Padrão' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:29 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PAI-999/2025')
+2025-11-17 10:55:29 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PAI-999/2025').
+2025-11-17 10:55:29 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:29 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:29 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:29 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:29 - INFO - app.repositories.item_repository - Item ID 1 (Contrato ID 1) atualizado.
+2025-11-17 10:55:29 - INFO - app.routers.item_router - Usuário 'test_admin_user' atualizou Item ID 1 (Contrato ID 1).
+2025-11-17 10:55:29 - INFO - httpx - HTTP Request: PUT http://testserver/api/itens/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:29 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:30 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:30 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Padrão de Itens' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:30 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:30 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Padrão' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:30 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:30 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Padrão' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:30 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PAI-999/2025')
+2025-11-17 10:55:30 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PAI-999/2025').
+2025-11-17 10:55:30 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:30 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:30 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:30 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:30 - INFO - app.repositories.item_repository - Item ID 1 (Num: 1, Contrato ID: 1) deletado.
+2025-11-17 10:55:30 - INFO - app.routers.item_router - Usuário 'test_admin_user' deletou Item ID 1 (Num: 1, Contrato ID: 1).
+2025-11-17 10:55:30 - INFO - httpx - HTTP Request: DELETE http://testserver/api/itens/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:30 - WARNING - app.routers.item_router - Item ID 1 não encontrado.
+2025-11-17 10:55:30 - INFO - httpx - HTTP Request: GET http://testserver/api/itens/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:30 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:30 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:31 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local de Teste 1'
+2025-11-17 10:55:31 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local de Teste 1').
+2025-11-17 10:55:31 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:31 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:31 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:31 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local de Teste 2'
+2025-11-17 10:55:31 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local de Teste 2').
+2025-11-17 10:55:31 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:31 - INFO - httpx - HTTP Request: GET http://testserver/api/locais/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:31 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:32 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:32 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local A'
+2025-11-17 10:55:32 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local A').
+2025-11-17 10:55:32 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:32 - INFO - app.repositories.local_repository - Local criado com ID 2: 'Local B'
+2025-11-17 10:55:32 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 2 ('Local B').
+2025-11-17 10:55:32 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:32 - INFO - httpx - HTTP Request: GET http://testserver/api/locais/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:32 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:32 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:32 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local Original'
+2025-11-17 10:55:32 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local Original').
+2025-11-17 10:55:32 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:32 - INFO - app.repositories.local_repository - Local ID 1 atualizado de 'Local Original' para 'Local Atualizado'.
+2025-11-17 10:55:32 - INFO - app.routers.local_router - Usuário 'test_admin_user' atualizou Local ID 1 de 'Local Original' para 'Local Atualizado'.
+2025-11-17 10:55:32 - INFO - httpx - HTTP Request: PUT http://testserver/api/locais/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:32 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:33 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:33 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local Para Deletar'
+2025-11-17 10:55:33 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local Para Deletar').
+2025-11-17 10:55:33 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:33 - INFO - app.repositories.local_repository - Local ID 1 ('Local Para Deletar') deletado.
+2025-11-17 10:55:33 - INFO - app.routers.local_router - Usuário 'test_admin_user' deletou Local ID 1 ('Local Para Deletar').
+2025-11-17 10:55:33 - INFO - httpx - HTTP Request: DELETE http://testserver/api/locais/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:33 - WARNING - app.routers.local_router - Local ID 1 não encontrado.
+2025-11-17 10:55:33 - INFO - httpx - HTTP Request: GET http://testserver/api/locais/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:33 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:34 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:34 - INFO - app.repositories.modalidade_repository - Modalidade criada com ID 1: 'Modalidade de Teste 1'
+2025-11-17 10:55:34 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' criou Modalidade ID 1 ('Modalidade de Teste 1').
+2025-11-17 10:55:34 - INFO - httpx - HTTP Request: POST http://testserver/api/modalidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:34 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:34 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:34 - INFO - app.repositories.modalidade_repository - Modalidade criada com ID 1: 'Modalidade de Teste 2'
+2025-11-17 10:55:34 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' criou Modalidade ID 1 ('Modalidade de Teste 2').
+2025-11-17 10:55:34 - INFO - httpx - HTTP Request: POST http://testserver/api/modalidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:34 - INFO - httpx - HTTP Request: GET http://testserver/api/modalidades/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:34 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:35 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:35 - INFO - app.repositories.modalidade_repository - Modalidade criada com ID 1: 'Modalidade A'
+2025-11-17 10:55:35 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' criou Modalidade ID 1 ('Modalidade A').
+2025-11-17 10:55:35 - INFO - httpx - HTTP Request: POST http://testserver/api/modalidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:35 - INFO - app.repositories.modalidade_repository - Modalidade criada com ID 2: 'Modalidade B'
+2025-11-17 10:55:35 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' criou Modalidade ID 2 ('Modalidade B').
+2025-11-17 10:55:35 - INFO - httpx - HTTP Request: POST http://testserver/api/modalidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:35 - INFO - httpx - HTTP Request: GET http://testserver/api/modalidades/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:35 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:35 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:36 - INFO - app.repositories.modalidade_repository - Modalidade criada com ID 1: 'Modalidade Original'
+2025-11-17 10:55:36 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' criou Modalidade ID 1 ('Modalidade Original').
+2025-11-17 10:55:36 - INFO - httpx - HTTP Request: POST http://testserver/api/modalidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:36 - INFO - app.repositories.modalidade_repository - Modalidade ID 1 atualizada de 'Modalidade Original' para 'Modalidade Atualizada'.
+2025-11-17 10:55:36 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' atualizou Modalidade ID 1 de 'Modalidade Original' para 'Modalidade Atualizada'.
+2025-11-17 10:55:36 - INFO - httpx - HTTP Request: PUT http://testserver/api/modalidades/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:36 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:36 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:36 - INFO - app.repositories.modalidade_repository - Modalidade criada com ID 1: 'Modalidade Para Deletar'
+2025-11-17 10:55:36 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' criou Modalidade ID 1 ('Modalidade Para Deletar').
+2025-11-17 10:55:36 - INFO - httpx - HTTP Request: POST http://testserver/api/modalidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:36 - INFO - app.repositories.modalidade_repository - Modalidade ID 1 ('Modalidade Para Deletar') deletada.
+2025-11-17 10:55:36 - INFO - app.routers.modalidade_router - Usuário 'test_admin_user' deletou Modalidade ID 1 ('Modalidade Para Deletar').
+2025-11-17 10:55:36 - INFO - httpx - HTTP Request: DELETE http://testserver/api/modalidades/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:36 - WARNING - app.routers.modalidade_router - Modalidade ID 1 não encontrada.
+2025-11-17 10:55:36 - INFO - httpx - HTTP Request: GET http://testserver/api/modalidades/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:36 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:37 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:37 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade criado com ID 1: '123/2025'
+2025-11-17 10:55:37 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' criou NumeroModalidade ID 1 ('123/2025').
+2025-11-17 10:55:37 - INFO - httpx - HTTP Request: POST http://testserver/api/numeros-modalidade/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:37 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:37 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:37 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade criado com ID 1: '456/2025'
+2025-11-17 10:55:37 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' criou NumeroModalidade ID 1 ('456/2025').
+2025-11-17 10:55:37 - INFO - httpx - HTTP Request: POST http://testserver/api/numeros-modalidade/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:37 - INFO - httpx - HTTP Request: GET http://testserver/api/numeros-modalidade/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:37 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:38 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:38 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade criado com ID 1: '789/2025'
+2025-11-17 10:55:38 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' criou NumeroModalidade ID 1 ('789/2025').
+2025-11-17 10:55:38 - INFO - httpx - HTTP Request: POST http://testserver/api/numeros-modalidade/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:38 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade criado com ID 2: '101/2026'
+2025-11-17 10:55:38 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' criou NumeroModalidade ID 2 ('101/2026').
+2025-11-17 10:55:38 - INFO - httpx - HTTP Request: POST http://testserver/api/numeros-modalidade/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:38 - INFO - httpx - HTTP Request: GET http://testserver/api/numeros-modalidade/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:38 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:38 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:39 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade criado com ID 1: 'Original/2025'
+2025-11-17 10:55:39 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' criou NumeroModalidade ID 1 ('Original/2025').
+2025-11-17 10:55:39 - INFO - httpx - HTTP Request: POST http://testserver/api/numeros-modalidade/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:39 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade ID 1 atualizado de 'Original/2025' para 'Atualizado/2025'.
+2025-11-17 10:55:39 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' atualizou NumeroModalidade ID 1 de 'Original/2025' para 'Atualizado/2025'.
+2025-11-17 10:55:39 - INFO - httpx - HTTP Request: PUT http://testserver/api/numeros-modalidade/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:39 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:39 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:39 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade criado com ID 1: 'ParaDeletar/2025'
+2025-11-17 10:55:39 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' criou NumeroModalidade ID 1 ('ParaDeletar/2025').
+2025-11-17 10:55:39 - INFO - httpx - HTTP Request: POST http://testserver/api/numeros-modalidade/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:39 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade ID 1 ('ParaDeletar/2025') deletado.
+2025-11-17 10:55:39 - INFO - app.routers.numero_modalidade_router - Usuário 'test_admin_user' deletou NumeroModalidade ID 1 ('ParaDeletar/2025').
+2025-11-17 10:55:39 - INFO - httpx - HTTP Request: DELETE http://testserver/api/numeros-modalidade/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:39 - WARNING - app.routers.numero_modalidade_router - NumeroModalidade ID 1 não encontrado.
+2025-11-17 10:55:39 - INFO - httpx - HTTP Request: GET http://testserver/api/numeros-modalidade/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:39 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:40 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:40 - INFO - app.repositories.categoria_repository - Categoria 'Categoria de Pedidos' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento de Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade de Pedidos' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PEDIDO-111/2025')
+2025-11-17 10:55:40 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PEDIDO-111/2025').
+2025-11-17 10:55:40 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:40 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:40 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:40 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:40 - INFO - app.repositories.unidade_repository - Unidade 'Unidade (Pedido)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.local_repository - Local 'Local (Pedido)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.agente_repository - Agente 'Agente (Pedido)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação (Pedido)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:40 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-PEDIDO-222/2025')
+2025-11-17 10:55:40 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-PEDIDO-222/2025').
+2025-11-17 10:55:40 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:40 - INFO - app.repositories.pedido_repository - Pedido criado com ID 1 (Item ID 1) para AOCS ID 1
+2025-11-17 10:55:40 - INFO - app.routers.pedido_router - Usuário 'test_admin_user' adicionou Pedido ID 1 (Item ID 1) à AOCS ID 1.
+2025-11-17 10:55:40 - INFO - httpx - HTTP Request: POST http://testserver/api/pedidos/?id_aocs=1 "HTTP/1.1 201 Created"
+2025-11-17 10:55:40 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:41 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:41 - INFO - app.repositories.categoria_repository - Categoria 'Categoria de Pedidos' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento de Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade de Pedidos' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PEDIDO-111/2025')
+2025-11-17 10:55:41 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PEDIDO-111/2025').
+2025-11-17 10:55:41 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:41 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:41 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:41 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:41 - INFO - app.repositories.unidade_repository - Unidade 'Unidade (Pedido)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.local_repository - Local 'Local (Pedido)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.agente_repository - Agente 'Agente (Pedido)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação (Pedido)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:41 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-PEDIDO-222/2025')
+2025-11-17 10:55:41 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-PEDIDO-222/2025').
+2025-11-17 10:55:41 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:41 - WARNING - app.repositories.pedido_repository - A quantidade pedida (2000.00) excede o saldo disponível do item. Total do Contrato: 1000.00, Já reservado: 0.00, Saldo: 1000.00
+2025-11-17 10:55:41 - WARNING - app.repositories.pedido_repository - Erro ao validar FKs/Saldo durante criação do Pedido (Req: item_contrato_id=1 quantidade_pedida=Decimal('2000')): A quantidade pedida (2000.00) excede o saldo disponível do item. Total do Contrato: 1000.00, Já reservado: 0.00, Saldo: 1000.00
+2025-11-17 10:55:41 - WARNING - app.routers.pedido_router - Erro de validação (ValueError) ao criar Pedido por 'test_admin_user': A quantidade pedida (2000.00) excede o saldo disponível do item. Total do Contrato: 1000.00, Já reservado: 0.00, Saldo: 1000.00
+2025-11-17 10:55:41 - INFO - httpx - HTTP Request: POST http://testserver/api/pedidos/?id_aocs=1 "HTTP/1.1 400 Bad Request"
+2025-11-17 10:55:41 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:41 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:42 - INFO - app.repositories.categoria_repository - Categoria 'Categoria de Pedidos' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento de Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade de Pedidos' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Pedidos' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-PEDIDO-111/2025')
+2025-11-17 10:55:42 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-PEDIDO-111/2025').
+2025-11-17 10:55:42 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:42 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:42 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:42 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:42 - INFO - app.repositories.unidade_repository - Unidade 'Unidade (Pedido)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.local_repository - Local 'Local (Pedido)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.agente_repository - Agente 'Agente (Pedido)' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação (Pedido)' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:42 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-PEDIDO-222/2025')
+2025-11-17 10:55:42 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-PEDIDO-222/2025').
+2025-11-17 10:55:42 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:42 - INFO - app.repositories.pedido_repository - Pedido criado com ID 1 (Item ID 1) para AOCS ID 1
+2025-11-17 10:55:42 - INFO - app.routers.pedido_router - Usuário 'test_admin_user' adicionou Pedido ID 1 (Item ID 1) à AOCS ID 1.
+2025-11-17 10:55:42 - INFO - httpx - HTTP Request: POST http://testserver/api/pedidos/?id_aocs=1 "HTTP/1.1 201 Created"
+2025-11-17 10:55:42 - INFO - httpx - HTTP Request: GET http://testserver/api/pedidos/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:42 - INFO - app.repositories.pedido_repository - Pedido ID 1 (Item ID: 1, AOCS ID: 1) deletado e saldo liberado.
+2025-11-17 10:55:42 - INFO - app.routers.pedido_router - Usuário 'test_admin_user' deletou Pedido ID 1 (Item ID: 1, AOCS ID: 1).
+2025-11-17 10:55:42 - INFO - httpx - HTTP Request: DELETE http://testserver/api/pedidos/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:42 - WARNING - app.routers.pedido_router - Pedido ID 1 não encontrado.
+2025-11-17 10:55:42 - INFO - httpx - HTTP Request: GET http://testserver/api/pedidos/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:42 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:43 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:43 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório criado com ID 1: 'PL 001/2025'
+2025-11-17 10:55:43 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' criou Processo Licitatório ID 1 ('PL 001/2025').
+2025-11-17 10:55:43 - INFO - httpx - HTTP Request: POST http://testserver/api/processos-licitatorios/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:43 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:43 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:43 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório criado com ID 1: 'PL 002/2025'
+2025-11-17 10:55:43 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' criou Processo Licitatório ID 1 ('PL 002/2025').
+2025-11-17 10:55:43 - INFO - httpx - HTTP Request: POST http://testserver/api/processos-licitatorios/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:43 - INFO - httpx - HTTP Request: GET http://testserver/api/processos-licitatorios/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:43 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:44 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:44 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório criado com ID 1: 'PL A'
+2025-11-17 10:55:44 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' criou Processo Licitatório ID 1 ('PL A').
+2025-11-17 10:55:44 - INFO - httpx - HTTP Request: POST http://testserver/api/processos-licitatorios/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:44 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório criado com ID 2: 'PL B'
+2025-11-17 10:55:44 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' criou Processo Licitatório ID 2 ('PL B').
+2025-11-17 10:55:44 - INFO - httpx - HTTP Request: POST http://testserver/api/processos-licitatorios/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:44 - INFO - httpx - HTTP Request: GET http://testserver/api/processos-licitatorios/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:44 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:44 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:44 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório criado com ID 1: 'PL Original'
+2025-11-17 10:55:44 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' criou Processo Licitatório ID 1 ('PL Original').
+2025-11-17 10:55:45 - INFO - httpx - HTTP Request: POST http://testserver/api/processos-licitatorios/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:45 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório ID 1 atualizado de 'PL Original' para 'PL Atualizado'.
+2025-11-17 10:55:45 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' atualizou Processo Licitatório ID 1 de 'PL Original' para 'PL Atualizado'.
+2025-11-17 10:55:45 - INFO - httpx - HTTP Request: PUT http://testserver/api/processos-licitatorios/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:45 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:45 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:45 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório criado com ID 1: 'PL Para Deletar'
+2025-11-17 10:55:45 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' criou Processo Licitatório ID 1 ('PL Para Deletar').
+2025-11-17 10:55:45 - INFO - httpx - HTTP Request: POST http://testserver/api/processos-licitatorios/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:45 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório ID 1 ('PL Para Deletar') deletado.
+2025-11-17 10:55:45 - INFO - app.routers.processo_licitatorio_router - Usuário 'test_admin_user' deletou Processo Licitatório ID 1 ('PL Para Deletar').
+2025-11-17 10:55:45 - INFO - httpx - HTTP Request: DELETE http://testserver/api/processos-licitatorios/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:45 - WARNING - app.routers.processo_licitatorio_router - Processo Licitatório ID 1 não encontrado.
+2025-11-17 10:55:45 - INFO - httpx - HTTP Request: GET http://testserver/api/processos-licitatorios/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:45 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:45 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:46 - INFO - app.repositories.tipo_documento_repository - TipoDocumento criado com ID 1: 'Nota Fiscal'
+2025-11-17 10:55:46 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' criou TipoDocumento ID 1 ('Nota Fiscal').
+2025-11-17 10:55:46 - INFO - httpx - HTTP Request: POST http://testserver/api/tipos-documento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:46 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:46 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:46 - INFO - app.repositories.tipo_documento_repository - TipoDocumento criado com ID 1: 'Orçamento'
+2025-11-17 10:55:46 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' criou TipoDocumento ID 1 ('Orçamento').
+2025-11-17 10:55:46 - INFO - httpx - HTTP Request: POST http://testserver/api/tipos-documento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:46 - INFO - httpx - HTTP Request: GET http://testserver/api/tipos-documento/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:46 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:47 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:47 - INFO - app.repositories.tipo_documento_repository - TipoDocumento criado com ID 1: 'Tipo Doc A'
+2025-11-17 10:55:47 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' criou TipoDocumento ID 1 ('Tipo Doc A').
+2025-11-17 10:55:47 - INFO - httpx - HTTP Request: POST http://testserver/api/tipos-documento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:47 - INFO - app.repositories.tipo_documento_repository - TipoDocumento criado com ID 2: 'Tipo Doc B'
+2025-11-17 10:55:47 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' criou TipoDocumento ID 2 ('Tipo Doc B').
+2025-11-17 10:55:47 - INFO - httpx - HTTP Request: POST http://testserver/api/tipos-documento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:47 - INFO - httpx - HTTP Request: GET http://testserver/api/tipos-documento/ "HTTP/1.1 200 OK"
+2025-11-17 10:55:47 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:47 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:47 - INFO - app.repositories.tipo_documento_repository - TipoDocumento criado com ID 1: 'Tipo Original'
+2025-11-17 10:55:47 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' criou TipoDocumento ID 1 ('Tipo Original').
+2025-11-17 10:55:47 - INFO - httpx - HTTP Request: POST http://testserver/api/tipos-documento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:47 - INFO - app.repositories.tipo_documento_repository - TipoDocumento ID 1 atualizado de 'Tipo Original' para 'Tipo Atualizado'.
+2025-11-17 10:55:47 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' atualizou TipoDocumento ID 1 de 'Tipo Original' para 'Tipo Atualizado'.
+2025-11-17 10:55:47 - INFO - httpx - HTTP Request: PUT http://testserver/api/tipos-documento/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:47 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:48 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:48 - INFO - app.repositories.tipo_documento_repository - TipoDocumento criado com ID 1: 'Tipo Para Deletar'
+2025-11-17 10:55:48 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' criou TipoDocumento ID 1 ('Tipo Para Deletar').
+2025-11-17 10:55:48 - INFO - httpx - HTTP Request: POST http://testserver/api/tipos-documento/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:48 - INFO - app.repositories.tipo_documento_repository - TipoDocumento ID 1 ('Tipo Para Deletar') deletado.
+2025-11-17 10:55:48 - INFO - app.routers.tipo_documento_router - Usuário 'test_admin_user' deletou TipoDocumento ID 1 ('Tipo Para Deletar').
+2025-11-17 10:55:48 - INFO - httpx - HTTP Request: DELETE http://testserver/api/tipos-documento/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:55:48 - WARNING - app.routers.tipo_documento_router - TipoDocumento ID 1 não encontrado.
+2025-11-17 10:55:48 - INFO - httpx - HTTP Request: GET http://testserver/api/tipos-documento/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:55:48 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:48 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:48 - INFO - httpx - HTTP Request: GET http://testserver/login "HTTP/1.1 200 OK"
+2025-11-17 10:55:48 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:49 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:49 - INFO - httpx - HTTP Request: GET http://testserver/ "HTTP/1.1 302 Found"
+2025-11-17 10:55:49 - INFO - httpx - HTTP Request: GET http://testserver/login "HTTP/1.1 200 OK"
+2025-11-17 10:55:49 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:49 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:49 - INFO - httpx - HTTP Request: GET http://testserver/static/style.css "HTTP/1.1 200 OK"
+2025-11-17 10:55:49 - INFO - httpx - HTTP Request: GET http://testserver/static/js/index.js "HTTP/1.1 200 OK"
+2025-11-17 10:55:49 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:50 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:50 - INFO - httpx - HTTP Request: GET http://testserver/home "HTTP/1.1 401 Unauthorized"
+2025-11-17 10:55:50 - INFO - httpx - HTTP Request: GET http://testserver/categorias-ui "HTTP/1.1 401 Unauthorized"
+2025-11-17 10:55:50 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:50 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/home "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/categorias-ui "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/contratos-ui "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/pedidos-ui "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/consultas "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/relatorios "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/importar "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/gerenciar-tabelas "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - httpx - HTTP Request: GET http://testserver/admin/usuarios "HTTP/1.1 200 OK"
+2025-11-17 10:55:51 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:52 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:52 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Teste UI' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Teste UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Teste UI' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Teste UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Teste UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-UI-123/2025')
+2025-11-17 10:55:52 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-UI-123/2025').
+2025-11-17 10:55:52 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:52 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:52 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:52 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:52 - INFO - app.repositories.unidade_repository - Unidade 'Unidade Teste UI' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.local_repository - Local 'Local Teste UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.agente_repository - Agente 'Agente Teste UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.dotacao_repository - Dotação 'Dotação Teste UI' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:52 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-UI-789/2025')
+2025-11-17 10:55:52 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-UI-789/2025').
+2025-11-17 10:55:52 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:52 - INFO - app.repositories.pedido_repository - Pedido criado com ID 1 (Item ID 1) para AOCS ID 1
+2025-11-17 10:55:52 - INFO - app.routers.pedido_router - Usuário 'test_admin_user' adicionou Pedido ID 1 (Item ID 1) à AOCS ID 1.
+2025-11-17 10:55:52 - INFO - httpx - HTTP Request: POST http://testserver/api/pedidos/?id_aocs=1 "HTTP/1.1 201 Created"
+2025-11-17 10:55:52 - WARNING - app.repositories.anexo_repository - Nenhum anexo encontrado para id_aocs=1 E tipo_entidade=aocs
+2025-11-17 10:55:52 - INFO - httpx - HTTP Request: GET http://testserver/pedido/AOCS-UI-789/2025 "HTTP/1.1 200 OK"
+2025-11-17 10:55:52 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:53 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:53 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Detalhe UI' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:53 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:53 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Detalhe UI' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:53 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:53 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:53 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-UI-DETALHE-555/2025')
+2025-11-17 10:55:53 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-UI-DETALHE-555/2025').
+2025-11-17 10:55:53 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:53 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:53 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:53 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:53 - WARNING - app.repositories.anexo_repository - Nenhum anexo encontrado para id_contrato=1 E tipo_entidade=contrato
+2025-11-17 10:55:53 - INFO - httpx - HTTP Request: GET http://testserver/contrato/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:53 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:53 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:54 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Detalhe UI' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:54 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:54 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Detalhe UI' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:54 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:54 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:54 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-UI-DETALHE-555/2025')
+2025-11-17 10:55:54 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-UI-DETALHE-555/2025').
+2025-11-17 10:55:54 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:54 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:54 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:54 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:54 - INFO - httpx - HTTP Request: GET http://testserver/api/contratos/1 "HTTP/1.1 200 OK"
+2025-11-17 10:55:54 - INFO - httpx - HTTP Request: GET http://testserver/categoria/1/contratos "HTTP/1.1 200 OK"
+2025-11-17 10:55:54 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:54 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:54 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Para Novo Pedido'
+2025-11-17 10:55:54 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Para Novo Pedido').
+2025-11-17 10:55:54 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:54 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade Dropdown Teste'
+2025-11-17 10:55:54 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade Dropdown Teste').
+2025-11-17 10:55:54 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:54 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local Dropdown Teste'
+2025-11-17 10:55:54 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local Dropdown Teste').
+2025-11-17 10:55:54 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:54 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente Dropdown Teste'
+2025-11-17 10:55:55 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente Dropdown Teste').
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:55 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotacao Dropdown Teste'
+2025-11-17 10:55:55 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotacao Dropdown Teste').
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: GET http://testserver/categoria/1/novo-pedido "HTTP/1.1 200 OK"
+2025-11-17 10:55:55 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:55 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:55 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade Teste CI-UI'
+2025-11-17 10:55:55 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade Teste CI-UI').
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:55 - INFO - app.repositories.local_repository - Local criado com ID 1: 'Local Teste CI-UI'
+2025-11-17 10:55:55 - INFO - app.routers.local_router - Usuário 'test_admin_user' criou Local ID 1 ('Local Teste CI-UI').
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: POST http://testserver/api/locais/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:55 - INFO - app.repositories.agente_repository - Agente criado com ID 1: 'Agente Teste CI-UI'
+2025-11-17 10:55:55 - INFO - app.routers.agente_router - Usuário 'test_admin_user' criou Agente ID 1 ('Agente Teste CI-UI').
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: POST http://testserver/api/agentes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:55 - INFO - app.repositories.dotacao_repository - Dotação criada com ID 1: 'Dotacao Teste CI-UI'
+2025-11-17 10:55:55 - INFO - app.routers.dotacao_router - Usuário 'test_admin_user' criou Dotação ID 1 ('Dotacao Teste CI-UI').
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: POST http://testserver/api/dotacoes/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:55 - INFO - app.repositories.aocs_repository - AOCS criada com ID 1 ('AOCS-CI-UI-444/2025')
+2025-11-17 10:55:55 - INFO - app.routers.aocs_router - Usuário 'test_admin_user' criou AOCS ID 1 ('AOCS-CI-UI-444/2025').
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: POST http://testserver/api/aocs/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:55 - INFO - httpx - HTTP Request: GET http://testserver/pedido/AOCS-CI-UI-444/2025/nova-ci "HTTP/1.1 200 OK"
+2025-11-17 10:55:55 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:56 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:56 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Detalhe UI' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:56 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:56 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Detalhe UI' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:56 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:56 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:56 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-UI-DETALHE-555/2025')
+2025-11-17 10:55:56 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-UI-DETALHE-555/2025').
+2025-11-17 10:55:56 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:56 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:56 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:56 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:56 - INFO - httpx - HTTP Request: GET http://testserver/contrato/1/importar-itens "HTTP/1.1 200 OK"
+2025-11-17 10:55:56 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:56 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:57 - INFO - httpx - HTTP Request: POST http://testserver/login "HTTP/1.1 302 Found"
+2025-11-17 10:55:57 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:57 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:57 - INFO - httpx - HTTP Request: GET http://testserver/logout "HTTP/1.1 302 Found"
+2025-11-17 10:55:57 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:57 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:58 - INFO - app.repositories.categoria_repository - Categoria criada com ID 1: 'Categoria Visível na UI 123'
+2025-11-17 10:55:58 - INFO - app.routers.categoria_router - Usuário 'test_admin_user' criou Categoria ID 1 ('Categoria Visível na UI 123').
+2025-11-17 10:55:58 - INFO - httpx - HTTP Request: POST http://testserver/api/categorias/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:58 - INFO - httpx - HTTP Request: GET http://testserver/categorias-ui "HTTP/1.1 200 OK"
+2025-11-17 10:55:58 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:58 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:58 - INFO - app.repositories.categoria_repository - Categoria 'Categoria Detalhe UI' não encontrada/inativa, criada nova com ID 1.
+2025-11-17 10:55:58 - INFO - app.repositories.instrumento_repository - Instrumento 'Instrumento Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:58 - INFO - app.repositories.modalidade_repository - Modalidade 'Modalidade Detalhe UI' não encontrada/erro na busca, criada nova com ID 1.
+2025-11-17 10:55:58 - INFO - app.repositories.numero_modalidade_repository - NumeroModalidade 'NumMod Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:58 - INFO - app.repositories.processo_licitatorio_repository - Processo Licitatório 'PL Detalhe UI' não encontrado/erro na busca, criado novo com ID 1.
+2025-11-17 10:55:58 - INFO - app.repositories.contrato_repository - Contrato criado com ID 1 ('CT-UI-DETALHE-555/2025')
+2025-11-17 10:55:58 - INFO - app.routers.contrato_router - Usuário 'test_admin_user' criou Contrato ID 1 ('CT-UI-DETALHE-555/2025').
+2025-11-17 10:55:58 - INFO - httpx - HTTP Request: POST http://testserver/api/contratos/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:58 - INFO - app.repositories.item_repository - Item criado com ID 1 (Num: 1) para Contrato ID 1
+2025-11-17 10:55:58 - INFO - app.routers.item_router - Usuário 'test_admin_user' criou Item ID 1 (Num: 1) para Contrato ID 1.
+2025-11-17 10:55:58 - INFO - httpx - HTTP Request: POST http://testserver/api/itens/ "HTTP/1.1 201 Created"
+2025-11-17 10:55:58 - INFO - app.routers.ui_router - Buscando contratos: page=1, busca=None, status=None, sort=numero_contrato, order=asc, mv=None, dvf=None
+2025-11-17 10:55:58 - INFO - httpx - HTTP Request: GET http://testserver/contratos-ui "HTTP/1.1 200 OK"
+2025-11-17 10:55:58 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:55:59 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:55:59 - INFO - httpx - HTTP Request: GET http://testserver/admin/usuarios "HTTP/1.1 200 OK"
+2025-11-17 10:55:59 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:00 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:00 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade de Teste 1'
+2025-11-17 10:56:00 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade de Teste 1').
+2025-11-17 10:56:00 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:00 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:00 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:00 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade de Teste 2'
+2025-11-17 10:56:00 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade de Teste 2').
+2025-11-17 10:56:00 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:00 - INFO - httpx - HTTP Request: GET http://testserver/api/unidades/1 "HTTP/1.1 200 OK"
+2025-11-17 10:56:00 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:01 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:01 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade A'
+2025-11-17 10:56:01 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade A').
+2025-11-17 10:56:01 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:01 - INFO - app.repositories.unidade_repository - Unidade criada com ID 2: 'Unidade B'
+2025-11-17 10:56:01 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 2 ('Unidade B').
+2025-11-17 10:56:01 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:01 - INFO - httpx - HTTP Request: GET http://testserver/api/unidades/ "HTTP/1.1 200 OK"
+2025-11-17 10:56:01 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:01 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:01 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade Original'
+2025-11-17 10:56:01 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade Original').
+2025-11-17 10:56:01 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:01 - INFO - app.repositories.unidade_repository - Unidade ID 1 atualizada de 'Unidade Original' para 'Unidade Atualizada'.
+2025-11-17 10:56:01 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' atualizou Unidade ID 1 de 'Unidade Original' para 'Unidade Atualizada'.
+2025-11-17 10:56:02 - INFO - httpx - HTTP Request: PUT http://testserver/api/unidades/1 "HTTP/1.1 200 OK"
+2025-11-17 10:56:02 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:02 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:02 - INFO - app.repositories.unidade_repository - Unidade criada com ID 1: 'Unidade Para Deletar'
+2025-11-17 10:56:02 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' criou Unidade ID 1 ('Unidade Para Deletar').
+2025-11-17 10:56:02 - INFO - httpx - HTTP Request: POST http://testserver/api/unidades/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:02 - INFO - app.repositories.unidade_repository - Unidade ID 1 ('Unidade Para Deletar') deletada.
+2025-11-17 10:56:02 - INFO - app.routers.unidade_router - Usuário 'test_admin_user' deletou Unidade ID 1 ('Unidade Para Deletar').
+2025-11-17 10:56:02 - INFO - httpx - HTTP Request: DELETE http://testserver/api/unidades/1 "HTTP/1.1 204 No Content"
+2025-11-17 10:56:02 - WARNING - app.routers.unidade_router - Unidade ID 1 não encontrada.
+2025-11-17 10:56:02 - INFO - httpx - HTTP Request: GET http://testserver/api/unidades/1 "HTTP/1.1 404 Not Found"
+2025-11-17 10:56:02 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:02 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:03 - INFO - httpx - HTTP Request: POST http://testserver/api/users/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:03 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:03 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:03 - INFO - httpx - HTTP Request: POST http://testserver/api/users/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:03 - INFO - httpx - HTTP Request: GET http://testserver/api/users/2 "HTTP/1.1 200 OK"
+2025-11-17 10:56:03 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:04 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:04 - INFO - httpx - HTTP Request: POST http://testserver/api/users/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:04 - INFO - httpx - HTTP Request: PUT http://testserver/api/users/2 "HTTP/1.1 200 OK"
+2025-11-17 10:56:04 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:04 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:05 - INFO - httpx - HTTP Request: POST http://testserver/api/users/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:05 - INFO - httpx - HTTP Request: DELETE http://testserver/api/users/2 "HTTP/1.1 204 No Content"
+2025-11-17 10:56:05 - INFO - httpx - HTTP Request: GET http://testserver/api/users/2 "HTTP/1.1 404 Not Found"
+2025-11-17 10:56:05 - INFO - app.main - Aplicação Gestão Pública API encerrada.
+2025-11-17 10:56:05 - INFO - app.main - Aplicação Gestão Pública API iniciada.
+2025-11-17 10:56:06 - INFO - httpx - HTTP Request: POST http://testserver/api/users/ "HTTP/1.1 201 Created"
+2025-11-17 10:56:06 - INFO - httpx - HTTP Request: POST http://testserver/api/users/2/reset-password "HTTP/1.1 200 OK"
+2025-11-17 10:56:06 - INFO - app.main - Aplicação Gestão Pública API encerrada.

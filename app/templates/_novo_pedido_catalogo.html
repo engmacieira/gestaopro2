@@ -1,13 +1,9 @@
-{# Componente: templates/_novo_pedido_catalogo.html #}
-{# Inclui a estrutura de busca, tabela e container de paginação #}
-
 <div class="card full-width">
     <div class="card-actions">
         <div class="search-form">
             <i class="fa-solid fa-search search-icon"></i>
             <input type="search" id="campo-busca" placeholder="Buscar por descrição do item..." class="form-control">
         </div>
-        {# Nenhum botão de submit, a busca é disparada no 'Enter' via JS #}
     </div>
     
     <div class="table-wrapper">
@@ -22,12 +18,9 @@
                 </tr>
             </thead>
             <tbody id="corpo-tabela-itens">
-            {# Conteúdo preenchido via JS #}
             </tbody>
         </table>
     </div>
-    {# Container dedicado para a paginação, injetado via JS #}
     <div id="pagination-container" class="card-footer">
-        {# O JavaScript cuidará de renderizar a paginação aqui #}
     </div>
 </div>

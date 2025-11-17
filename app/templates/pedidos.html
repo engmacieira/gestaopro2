@@ -10,7 +10,6 @@
 </header>
 
 <div class="card full-width">
-    {# 1. INCLUSÃO DO COMPONENTE DA BARRA DE FILTRO (Já refatorado) #}
     {% include '_pedidos_filter_bar.html' %}
 
     <div class="table-wrapper">
@@ -18,7 +17,6 @@
             <thead>
                 <tr>
                     <th class="sortable-header">
-                        {# Link de ordenação AOCS refatorado #}
                         {% set next_order_aocs = 'asc' if sort_by == 'aocs' and order == 'desc' else 'desc' %}
                         {% set params_aocs = query_params.copy() %}
                         {% set _ = params_aocs.update({'sort_by': 'aocs', 'order': next_order_aocs}) %}
@@ -28,16 +26,14 @@
                     </th>
                     <th>Nº Pedido</th>
                     <th class="sortable-header">
-                        {# Link de ordenação Fornecedor refatorado #}
-                        {% set next_order_forn = 'asc' if sort_by == 'fornecedor' and order == 'desc' else 'asc' %} {# Correção: 'asc' else 'asc' -> 'desc' else 'asc' #}
+                        {% set next_order_forn = 'asc' if sort_by == 'fornecedor' and order == 'desc' else 'asc' %} 
                         {% set params_forn = query_params.copy() %}
                         {% set _ = params_forn.update({'sort_by': 'fornecedor', 'order': next_order_forn}) %}
                         {% set base_path_forn = request.app.url_path_for('pedidos_ui') %}
                         {% set query_parts_forn = [] %}{% for key, value in params_forn.items() if value is not none and value != '' %}{% set _ = query_parts_forn.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_forn = "?" ~ (query_parts_forn | join('&')) if query_parts_forn else "" %}
                         <a href="{{ base_path_forn }}{{ query_string_forn }}">Fornecedor {% if sort_by == 'fornecedor' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
                     </th>
-                    <th class="sortable-header text-right"> {# Adicionado text-right #}
-                        {# Link de ordenação Valor refatorado #}
+                    <th class="sortable-header text-right"> 
                         {% set next_order_valor = 'asc' if sort_by == 'valor' and order == 'desc' else 'desc' %}
                         {% set params_valor = query_params.copy() %}
                         {% set _ = params_valor.update({'sort_by': 'valor', 'order': next_order_valor}) %}
@@ -46,7 +42,6 @@
                         <a href="{{ base_path_valor }}{{ query_string_valor }}">Valor Total (R$) {% if sort_by == 'valor' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
                     </th>
                     <th class="sortable-header">
-                        {# Link de ordenação Data refatorado #}
                         {% set next_order_data = 'asc' if sort_by == 'data' and order == 'desc' else 'desc' %}
                         {% set params_data = query_params.copy() %}
                         {% set _ = params_data.update({'sort_by': 'data', 'order': next_order_data}) %}
@@ -54,60 +49,51 @@
                         {% set query_parts_data = [] %}{% for key, value in params_data.items() if value is not none and value != '' %}{% set _ = query_parts_data.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_data = "?" ~ (query_parts_data | join('&')) if query_parts_data else "" %}
                         <a href="{{ base_path_data }}{{ query_string_data }}">Data {% if sort_by == 'data' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
                     </th>
-                    <th class="sortable-header text-center"> {# Adicionado text-center #}
-                        {# Link de ordenação Status refatorado #}
-                        {% set next_order_status = 'asc' if sort_by == 'status' and order == 'desc' else 'asc' %} {# Correção: 'asc' else 'asc' -> 'desc' else 'asc' #}
+                    <th class="sortable-header text-center"> 
+                        {% set next_order_status = 'asc' if sort_by == 'status' and order == 'desc' else 'asc' %} 
                         {% set params_status = query_params.copy() %}
                         {% set _ = params_status.update({'sort_by': 'status', 'order': next_order_status}) %}
                         {% set base_path_status = request.app.url_path_for('pedidos_ui') %}
                         {% set query_parts_status = [] %}{% for key, value in params_status.items() if value is not none and value != '' %}{% set _ = query_parts_status.append(key ~ '=' ~ (value|string)) %}{% endfor %}{% set query_string_status = "?" ~ (query_parts_status | join('&')) if query_parts_status else "" %}
                         <a href="{{ base_path_status }}{{ query_string_status }}">Status da Entrega {% if sort_by == 'status' %}<i class="fa-solid {{ 'fa-arrow-down-z-a' if order == 'desc' else 'fa-arrow-up-a-z' }}"></i>{% endif %}</a>
                     </th>
-                    <th class="text-right">Ações</th> {# Adicionado text-right #}
+                    <th class="text-right">Ações</th> 
                 </tr>
             </thead>
             <tbody>
                 {% if pedidos_lista %}
                     {% for pedido in pedidos_lista %}
                     <tr>
-                        {# Alterado url_for para request.app.url_path_for #}
                         <td><strong><a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
                         <td>{{ pedido.numero_pedido or 'N/A' }}</td>
                         <td>{{ pedido.fornecedor }}</td>
-                         {# Adicionado text-right e formatação segura #}
                         <td class="text-right">{{ "%.2f"|format(pedido.valor_total)|replace('.', ',') if pedido.valor_total is not none else '0,00' }}</td>
-                         {# Formatação segura da data #}
                         <td>{{ pedido.data_pedido.strftime('%d/%m/%Y') if pedido.data_pedido else 'N/D' }}</td>
-                        <td class="text-center"> {# Adicionado text-center #}
+                        <td class="text-center"> 
                             {% set status_class = 'gray' %}
                             {% if pedido.status_entrega == 'Entregue' %}{% set status_class = 'green' %}{% endif %}
                             {% if pedido.status_entrega == 'Entrega Parcial' %}{% set status_class = 'orange' %}{% endif %}
-                            <span class="status-badge {{ status_class }}">{{ pedido.status_entrega or 'Pendente' }}</span> {# Default 'Pendente' se nulo #}
+                            <span class="status-badge {{ status_class }}">{{ pedido.status_entrega or 'Pendente' }}</span> 
                         </td>
-                        <td class="actions-cell text-right"> {# Adicionado text-right #}
-                            {# Alterado url_for para request.app.url_path_for #}
+                        <td class="actions-cell text-right"> 
                             <a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}" class="btn-link-action">
                                 <i class="fa-solid fa-eye"></i> Ver Detalhes
                             </a>
-                            {# Alterado url_for para request.app.url_path_for #}
                             <a href="{{ request.app.url_path_for('imprimir_aocs', numero_aocs=pedido.numero_aocs) }}" class="btn-link-action" target="_blank">
                                 <i class="fa-solid fa-print"></i> Imprimir
                             </a>
                         </td>
                     </tr>
-                    {% else %} {# Adicionado else #}
+                    {% else %} 
                     <tr><td colspan="7"><div class="empty-state mini"><p>Nenhum pedido encontrado para os filtros aplicados.</p></div></td></tr>
-                {% endfor %} {# Corrigido endfor aqui #}
+                {% endfor %} 
                 {% endif %}
             </tbody>
         </table>
     </div>
 
     <div class="card-footer">
-        {# Chamada da macro já refatorada #}
         {{ render_pagination(pagina_atual, total_paginas, 'pedidos_ui', query_params=query_params) }}
     </div>
 </div>
 {% endblock %}
-
-{# NENHUM SCRIPT ADICIONAL É NECESSÁRIO #}

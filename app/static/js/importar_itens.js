@@ -5,10 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewTable = document.getElementById('preview-table');
     const errorMessageDiv = document.getElementById('error-message');
     const btnSalvar = document.getElementById('btn-salvar-dados');
-    // Seleciona a área de notificação dentro do main-content
     const notificationArea = document.querySelector('.main-content #notification-area');
 
-    // idContratoGlobal e redirectUrlGlobal são definidos no HTML
     let dadosParaSalvar = [];
 
     function showNotification(message, type = 'error') {
@@ -21,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        notificationArea.prepend(notification); // Usa prepend
+        notificationArea.prepend(notification); 
         setTimeout(() => {
             if (notification) {
                 notification.style.opacity = '0';
@@ -30,14 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
-    // Função para recarregar ou redirecionar com mensagem
     function navigateWithMessage(url, message, type = 'success') {
         sessionStorage.setItem('notificationMessage', message);
         sessionStorage.setItem('notificationType', type);
-        window.location.href = url; // Redireciona para a URL fornecida
+        window.location.href = url; 
     }
 
-    // Exibir notificação após redirecionamento/reload (se houver)
     const msg = sessionStorage.getItem('notificationMessage');
     if (msg) {
         showNotification(msg, sessionStorage.getItem('notificationType'));
@@ -50,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             errorMessageDiv.innerText = '';
             previewContainer.style.display = 'none';
-            dadosParaSalvar = []; // Limpa dados anteriores
+            dadosParaSalvar = [];
 
             const formData = new FormData(formUpload);
             const submitButton = formUpload.querySelector('button[type="submit"]');
@@ -58,8 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Carregando...';
 
             try {
-                // API CALL: Preview (POST /api/importar/itens/{id_contrato}/preview)
-                // Certifique-se que este endpoint existe no seu router (ex: item_router.py)
                 const response = await fetch(`/api/importar/itens/${idContratoGlobal}/preview`, {
                     method: 'POST',
                     body: formData
@@ -86,18 +80,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderizarPreview(dados) {
         if (!dados || dados.length === 0) {
             errorMessageDiv.innerText = 'Nenhum dado válido encontrado na planilha.';
-            previewContainer.style.display = 'none'; // Esconde se vazio
+            previewContainer.style.display = 'none'; 
             return;
         }
 
-        // UX Improvement: usa flex para exibir o container do passo 2
         previewContainer.style.display = 'flex';
-        previewTable.innerHTML = ''; // Limpa tabela anterior
+        previewTable.innerHTML = ''; 
 
-        // Assume que o primeiro item tem todas as colunas
         const headers = Object.keys(dados[0]);
         let headerHTML = '<tr>';
-        headers.forEach(h => headerHTML += `<th>${h.replace(/_/g, ' ')}</th>`); // Formata cabeçalhos
+        headers.forEach(h => headerHTML += `<th>${h.replace(/_/g, ' ')}</th>`); 
         headerHTML += '</tr>';
         previewTable.createTHead().innerHTML = headerHTML;
 
@@ -107,9 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
             headers.forEach(h => {
                 let value = linha[h];
                 if (value === null || value === undefined) {
-                    value = ''; // Exibe vazio em vez de 'null'
+                    value = ''; 
                 } else if (typeof value === 'number' && (h === 'quantidade' || h === 'valor_unitario')) {
-                    // Formata números decimais com vírgula
                     value = value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 }
                 bodyHTML += `<td>${value}</td>`;
@@ -130,18 +121,15 @@ document.addEventListener('DOMContentLoaded', function() {
             btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
 
             try {
-                // API CALL: Save (POST /api/importar/itens/{id_contrato}/salvar)
-                // Certifique-se que este endpoint existe no seu router (ex: item_router.py)
                 const response = await fetch(`/api/importar/itens/${idContratoGlobal}/salvar`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dadosParaSalvar) // Envia os dados pré-visualizados
+                    body: JSON.stringify(dadosParaSalvar) 
                 });
                 const resultado = await response.json();
 
                 if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Ocorreu um erro ao salvar os itens.');
 
-                // Usa a URL de redirecionamento global definida no HTML
                 navigateWithMessage(redirectUrlGlobal, resultado.mensagem || `${dadosParaSalvar.length} itens importados com sucesso!`, 'success');
 
             } catch (error) {

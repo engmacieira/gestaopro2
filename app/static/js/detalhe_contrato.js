@@ -1,20 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    // --- Referências Globais e de Elementos ---
     const formContainer = document.getElementById('form-container-item');
     const formItem = document.getElementById('form-item');
     const formItemTitulo = document.getElementById('form-item-titulo');
-    // Seleciona a área de notificação dentro do main-content
     const notificationArea = document.querySelector('.main-content #notification-area');
-    // Referência ao formulário de anexos pelo ID adicionado
     const formAnexos = document.getElementById('form-upload-anexo-contrato');
 
     let idItemEmEdicao = null;
-    // idContratoGlobal e nomeContratoGlobal são definidos no HTML
 
-    // --- Funções de UI Auxiliares ---
     function showNotification(message, type = 'error') {
-        // Remove notificação flash inicial se houver
         const initialFlash = notificationArea.querySelector('.notification.flash');
         if(initialFlash) initialFlash.remove();
 
@@ -24,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const notificationDiv = document.createElement('div');
         notificationDiv.className = `notification ${type}`;
         notificationDiv.textContent = message;
-        notificationArea.prepend(notificationDiv); // Usa prepend
+        notificationArea.prepend(notificationDiv); 
         setTimeout(() => {
             if (notificationDiv) {
                 notificationDiv.style.opacity = '0';
@@ -39,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
         location.reload();
     }
 
-    // Exibir notificação após redirecionamento/reload
     const msg = sessionStorage.getItem('notificationMessage');
     if (msg) {
         showNotification(msg, sessionStorage.getItem('notificationType'));
@@ -47,9 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('notificationType');
     }
 
-    // --- Lógica do Formulário de Item ---
-
-    // Botão para mostrar/esconder formulário de item
     const btnToggleForm = document.getElementById('btn-toggle-form');
     if (btnToggleForm) {
         btnToggleForm.addEventListener('click', () => {
@@ -62,24 +52,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Função global para abrir modal de edição de item (chamada pelo onclick)
     window.abrirFormParaEditarItem = async (id) => {
         idItemEmEdicao = id;
         try {
-            // API GET /api/itens/{id}
             const response = await fetch(`/api/itens/${id}`);
             const item = await response.json();
             if (!response.ok) throw new Error(item.detail || item.erro || 'Item não encontrado');
 
             formItemTitulo.innerText = 'Editar Item';
 
-            // Preenche os campos do formulário
             for (const key in item) {
-                if (key === 'descricao' && formItem.elements['descricao']) { // Trata objeto aninhado
+                if (key === 'descricao' && formItem.elements['descricao']) { 
                     formItem.elements['descricao'].value = item[key].descricao;
-                } else if ((key === 'quantidade' || key === 'valor_unitario') && formItem.elements[key]) { // Formata decimais
+                } else if ((key === 'quantidade' || key === 'valor_unitario') && formItem.elements[key]) { 
                      formItem.elements[key].value = parseFloat(item[key]).toFixed(2).replace('.', ',');
-                } else if (formItem.elements[key]) { // Campos simples
+                } else if (formItem.elements[key]) { 
                     formItem.elements[key].value = item[key];
                 }
             }
@@ -91,14 +78,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Submissão do formulário de item (Adicionar/Editar)
     formItem.addEventListener('submit', async function(event) {
         event.preventDefault();
 
         const dadosForm = Object.fromEntries(new FormData(formItem).entries());
         let quantidadeNumerica, valorNumerico;
 
-        // 1. Validação e Conversão de Decimais
         try {
             const qtdStr = String(dadosForm.quantidade).replace('.', '').replace(',', '.');
             const valorStr = String(dadosForm.valor_unitario).replace('.', '').replace(',', '.');
@@ -114,14 +99,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // 2. Monta o Payload para a API (Schema ItemRequest)
         const payload = {
-            numero_item: parseInt(dadosForm.numero_item), // Garante que seja número
-            marca: dadosForm.marca || null, // Envia null se vazio
+            numero_item: parseInt(dadosForm.numero_item), 
+            marca: dadosForm.marca || null, 
             unidade_medida: dadosForm.unidade_medida,
-            quantidade: quantidadeNumerica.toFixed(2), // Envia como string formatada para API (Pydantic/Decimal lidam com isso)
-            valor_unitario: valorNumerico.toFixed(2), // Envia como string formatada
-            contrato_nome: nomeContratoGlobal, // Usa a variável global
+            quantidade: quantidadeNumerica.toFixed(2), 
+            valor_unitario: valorNumerico.toFixed(2), 
+            contrato_nome: nomeContratoGlobal, 
             descricao: {
                 descricao: dadosForm.descricao
             }
@@ -144,12 +128,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status}`);
 
-            // Esconde o formulário após sucesso
             formContainer.style.display = 'none';
             formItem.reset();
             idItemEmEdicao = null;
 
-            // Recarrega a página com mensagem
             reloadPageWithMessage(resultado.mensagem || `Item ${idItemEmEdicao ? 'atualizado' : 'cadastrado'} com sucesso!`, 'success');
 
         } catch (error) {
@@ -159,14 +141,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Função global para Ativar/Inativar Item (chamada pelo onclick)
     window.toggleItemStatus = async (id, statusAtualBool) => {
         if (!confirm(`Tem certeza que deseja ${statusAtualBool ? 'inativar' : 'ativar'} este item?`)) return;
 
         const novoStatusBool = !statusAtualBool;
 
         try {
-            // API PATCH /api/itens/{id}/status?activate=true/false
             const response = await fetch(`/api/itens/${id}/status?activate=${novoStatusBool}`, { method: 'PATCH' });
             const resultado = await response.json();
             if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao alterar status');
@@ -177,21 +157,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Função global para Excluir Item (chamada pelo onclick)
     window.excluirItem = async (id) => {
         if (!confirm('ATENÇÃO: Ação permanente. Tem certeza que deseja excluir este item?')) return;
         try {
-            // API DELETE /api/itens/{id}
             const response = await fetch(`/api/itens/${id}`, { method: 'DELETE' });
 
-            if (response.status === 204) { // Sucesso sem conteúdo
+            if (response.status === 204) { 
                 reloadPageWithMessage("Item excluído com sucesso!", 'success');
                 return;
             }
-            // Se não for 204, tenta ler o erro
             const resultado = await response.json();
             if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro na exclusão');
-            // Caso raro: 200 OK com mensagem
              reloadPageWithMessage(resultado.mensagem || "Item excluído.", 'success');
 
         } catch(error) {
@@ -199,25 +175,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- Lógica de Anexos ---
-
-    // Função global para Excluir Anexo (chamada pelo onclick)
     window.excluirAnexo = async function(idAnexo, nomeSeguro, nomeOriginal) {
         const mensagemAlerta = `Você está prestes a excluir o anexo "${nomeOriginal}". Deseja continuar?`;
         if (!confirm(mensagemAlerta)) return;
 
         try {
-            // API DELETE /api/anexos/{id}
             const response = await fetch(`/api/anexos/${idAnexo}`, { method: 'DELETE' });
 
-            if (response.status === 204) { // Sucesso
+            if (response.status === 204) { 
                  reloadPageWithMessage("Anexo excluído com sucesso.", 'success');
                  return;
             }
-            // Tenta ler erro
             const resultado = await response.json();
             if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao excluir anexo');
-             // Caso raro: 200 OK com mensagem
              reloadPageWithMessage(resultado.mensagem || "Anexo excluído.", 'success');
 
         } catch (error) {
@@ -225,7 +195,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Lógica para o select "NOVO TIPO" no formulário de anexos
     const tipoDocumentoSelectAnexo = document.getElementById('tipo_documento_select_anexo');
     const tipoDocumentoNovoInputAnexo = document.getElementById('tipo_documento_novo_anexo');
 
@@ -240,15 +209,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Intercepta o submit do formulário de anexos para tratar via Fetch API
     if (formAnexos) {
         formAnexos.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Impede o envio tradicional
+            event.preventDefault(); 
 
             const formData = new FormData(formAnexos);
             const submitButton = this.querySelector('button[type="submit"]');
 
-            // Validação simples no frontend
             const fileInput = document.getElementById('anexo_file');
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
                  showNotification("Por favor, selecione um arquivo.", "error");
@@ -269,21 +236,19 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
 
             try {
-                // API POST /api/anexos/upload/
                 const response = await fetch(formAnexos.action, {
                     method: 'POST',
-                    body: formData // Envia como FormData
+                    body: formData 
                 });
 
-                const resultado = await response.json(); // Tenta ler JSON mesmo em caso de erro
+                const resultado = await response.json(); 
 
                 if (!response.ok) {
                     throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao enviar anexo.`);
                 }
 
-                // Limpa o formulário e recarrega
                 formAnexos.reset();
-                if(tipoDocumentoNovoInputAnexo) tipoDocumentoNovoInputAnexo.style.display = 'none'; // Esconde campo novo tipo
+                if(tipoDocumentoNovoInputAnexo) tipoDocumentoNovoInputAnexo.style.display = 'none'; 
                 reloadPageWithMessage(resultado.mensagem || 'Anexo enviado com sucesso!', 'success');
 
             } catch (error) {

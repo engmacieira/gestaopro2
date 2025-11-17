@@ -8,7 +8,7 @@ class AocsBase(BaseModel):
     numero_pedido: str | None = None
     empenho: str | None = None
 
-class AocsCreateRequest(AocsBase): # <-- Renomeado para CreateRequest
+class AocsCreateRequest(AocsBase): 
     unidade_requisitante_nome: str
     local_entrega_descricao: str 
     agente_responsavel_nome: str

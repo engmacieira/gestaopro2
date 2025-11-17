@@ -5,7 +5,6 @@
 
 {% block content %}
 <header class="main-header">
-    {# Alterado url_for para request.app.url_path_for #}
     <a href="{{ request.app.url_path_for('contratos_ui') }}" class="back-link">
         &larr; Voltar para a lista de contratos
     </a>
@@ -13,7 +12,6 @@
     <p class="subtitle">Detalhes, itens e anexos do contrato.</p>
 </header>
 
-{# Exibe os detalhes principais do contrato #}
 <div class="details-card">
     <div class="detail-item wide"><span>Fornecedor</span><strong>{{ contrato.fornecedor }}</strong></div>
     <div class="detail-item"><span>CNPJ</span><strong>{{ contrato.cpf_cnpj }}</strong></div>
@@ -26,7 +24,6 @@
     <div class="detail-item"><span>Telefone</span><strong>{{ contrato.telefone or 'Não informado' }}</strong></div>
 </div>
 
-{# 1. INCLUSÃO DO COMPONENTE DE ANEXOS (Já refatorado) #}
 {% include '_contrato_anexos_section.html' %}
 
 
@@ -34,20 +31,17 @@
     <div class="card-actions">
         <h2>Itens do Contrato</h2>
         <div class="actions-group">
-            {# O form de filtro agora submete para a URL atual (construída pelo FastAPI) #}
             <form method="GET" action="" class="filter-form">
                 <label class="checkbox-label">
                     <input type="checkbox" name="mostrar_inativos" value="true" onchange="this.form.submit()" {% if query_params.get('mostrar_inativos') == 'true' %}checked{% endif %}>
                     Mostrar Itens Inativos
                 </label>
             </form>
-            {# Alterado url_for para request.app.url_path_for #}
             <a href="{{ request.app.url_path_for('importar_itens_ui', id_contrato=contrato.id) }}" class="btn btn-secondary"><i class="fa-solid fa-file-excel"></i> Importar</a>
             <button id="btn-toggle-form" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Adicionar Item</button>
         </div>
     </div>
 
-    {# 2. INCLUSÃO DO COMPONENTE DE FORMULÁRIO DE ITEM (Já verificado) #}
     {% include '_contrato_item_form.html' %}
 
    <div class="table-wrapper">
@@ -55,7 +49,6 @@
         <thead>
             <tr>
                 <th class="sortable-header" style="width: 5%;">
-                    {# Link de ordenação refatorado #}
                     {% set next_order_num = 'desc' if sort_by == 'numero_item' and order == 'asc' else 'asc' %}
                     {% set params_num = query_params.copy() %}
                     {% set _ = params_num.update({'sort_by': 'numero_item', 'order': next_order_num}) %}
@@ -64,7 +57,6 @@
                     <a href="{{ base_path_num }}{{ query_string_num }}">Nº {% if sort_by == 'numero_item' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
                 </th>
                 <th class="sortable-header">
-                    {# Link de ordenação refatorado #}
                     {% set next_order_desc = 'desc' if sort_by == 'descricao' and order == 'asc' else 'asc' %}
                     {% set params_desc = query_params.copy() %}
                     {% set _ = params_desc.update({'sort_by': 'descricao', 'order': next_order_desc}) %}
@@ -74,8 +66,7 @@
                 </th>
                 <th>Marca</th>
                 <th>Qtd. Contratada</th>
-                <th class="sortable-header text-right"> {# Adicionado text-right #}
-                    {# Link de ordenação refatorado #}
+                <th class="sortable-header text-right"> 
                     {% set next_order_valor = 'desc' if sort_by == 'valor' and order == 'asc' else 'asc' %}
                     {% set params_valor = query_params.copy() %}
                     {% set _ = params_valor.update({'sort_by': 'valor', 'order': next_order_valor}) %}
@@ -84,7 +75,6 @@
                     <a href="{{ base_path_valor }}{{ query_string_valor }}">Valor Unit. (R$) {% if sort_by == 'valor' %}<i class="fa-solid {{ 'fa-arrow-down-1-9' if order == 'desc' else 'fa-arrow-up-9-1' }}"></i>{% endif %}</a>
                 </th>
                 <th class="sortable-header text-green text-right">
-                    {# Link de ordenação refatorado #}
                     {% set next_order_saldo = 'desc' if sort_by == 'saldo' and order == 'asc' else 'asc' %}
                     {% set params_saldo = query_params.copy() %}
                     {% set _ = params_saldo.update({'sort_by': 'saldo', 'order': next_order_saldo}) %}
@@ -99,16 +89,13 @@
         <tbody>
             {% if itens %}
                 {% for item in itens %}
-                {# Assume que 'item' agora vem da API e tem a estrutura do ItemResponse #}
                 <tr class="{{ 'inactive-row' if not item.ativo }}">
                     <td>{{ item.numero_item }}</td>
-                    <td><strong>{{ item.descricao.descricao }}</strong></td> {# Acesso à descrição aninhada #}
+                    <td><strong>{{ item.descricao.descricao }}</strong></td> 
                     <td>{{ item.marca or 'N/D' }}</td>
-                    {# Formatação de quantidade e valor #}
                     <td class="text-right">{% if item.quantidade == item.quantidade|int %}{{ item.quantidade|int }}{% else %}{{ (item.quantidade | round(2) | string) | replace('.', ',') }}{% endif %} {{ item.unidade_medida }}(s)</td>
                     <td class="text-right">{{ (item.valor_unitario | round(2) | string) | replace('.', ',') }}</td>
-                    {# Saldo precisa ser calculado ou passado pela rota/API #}
-                    {% set saldo_item = item.quantidade - (item.total_pedido if item.total_pedido is defined else 0) %} {# Exemplo de cálculo, idealmente viria da API #}
+                    {% set saldo_item = item.quantidade - (item.total_pedido if item.total_pedido is defined else 0) %} 
                     <td class="text-right {{ 'text-red' if saldo_item <= 0 else 'text-green' }}" style="font-weight: 700;">
                         {% if saldo_item == saldo_item|int %}
                             {{ saldo_item|int }}
@@ -118,14 +105,12 @@
                     </td>
                     <td>{% if item.ativo %}<span class="status-badge green">Ativo</span>{% else %}<span class="status-badge gray">Inativo</span>{% endif %}</td>
                     <td class="actions-cell">
-                        {# Onclick mantido, chama JS #}
                         <button class="btn-link-action" onclick="abrirFormParaEditarItem({{ item.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
-                        {# Passa o status booleano para a função JS #}
                         <button class="btn-link-action {{ 'red' if item.ativo else 'green' }}" onclick="toggleItemStatus({{ item.id }}, {{ 'true' if item.ativo else 'false' }})"><i class="fa-solid fa-power-off"></i> {{ 'Inativar' if item.ativo else 'Ativar' }}</button>
                         <button class="btn-link-action red" onclick="excluirItem({{ item.id }})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
                     </td>
                 </tr>
-                {% else %} {# Adicionado else #}
+                {% else %} 
                  <tr><td colspan="8"><div class="empty-state mini"><p>Nenhum item encontrado para os filtros aplicados.</p></div></td></tr>
                 {% endfor %}
             {% endif %}
@@ -133,16 +118,13 @@
     </table>
    </div>
    <div class="card-footer">
-        {# Chamada da macro já refatorada #}
         {{ render_pagination(pagina_atual, total_paginas, 'detalhe_contrato', {'id_contrato': contrato.id}, query_params) }}
    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-{# Bloco de scripts agora apenas inclui o ficheiro externo #}
 <script>
-    // Passa dados do contrato para o JavaScript
     const idContratoGlobal = {{ contrato.id }};
     const nomeContratoGlobal = "{{ contrato.numero_contrato }}";
 </script>

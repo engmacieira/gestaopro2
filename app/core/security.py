@@ -21,7 +21,6 @@ if not SECRET_KEY:
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
-#CRACHÁ
 def create_access_token(user: User) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     data_to_encode = {
@@ -33,7 +32,6 @@ def create_access_token(user: User) -> str:
     encoded_jwt = jwt.encode(data_to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-#PORTEIRO
 def get_current_user(
     token_header: str | None = Depends(oauth2_scheme), 
     access_token_cookie: str | None = Cookie(None, alias="access_token"), 
@@ -69,7 +67,6 @@ def get_current_user(
         raise credentials_exception
     return user
 
-#NIVEL DE ACESSO
 def require_access_level(required_level: int):
     async def check_permission(current_user: User = Depends(get_current_user)) -> User:
         if current_user.nivel_acesso > required_level:

@@ -5,12 +5,10 @@
 {% block unidade_requisitante %}{{ secretaria }}{% endblock %}
 
 {% block relatorio_content %}
-    {# Título Principal - Similar à AOCS #}
     <div class="title">
         COMUNICAÇÃO INTERNA - Nº {{ numero_ci }}
     </div>
 
-    {# Seção I: Informações Gerais (DE/PARA/DATA/REF) #}
     <div class="section-box">
         <div class="section-title">I - INFORMAÇÕES GERAIS</div>
         <table>
@@ -37,16 +35,13 @@
         </table>
     </div>
 
-    {# Seção II: Solicitação (Parágrafo principal) - Destaque no Valor #}
     <div class="section-box">
         <div class="section-title">II - SOLICITAÇÃO</div>
-        {# Aplicando estilos robustos (justify, indent) para layout de texto formal #}
         <p style="text-align: justify; text-indent: 4em;">
             Venho por meio desta, solicitar pagamento no valor de <strong style="color: #343a40;">R$ {{ "%.2f"|format(valor_nf)|replace('.', ',') }}</strong> ({{ valor_por_extenso }}) conforme Nota Fiscal de Nº {{ numero_nf }} – EMITIDA {{ data_nf }} – {{ fornecedor }}, CNPJ: {{ cnpj }}, referente à {{ referencia }}.
         </p>
     </div>
 
-    {# Seção III: Valor Total - Aumentando o destaque para a informação chave #}
      <div class="section-box">
         <div class="section-title">III - VALOR TOTAL</div>
         <p style="font-weight: bold; text-align: center; font-size: 12pt;">
@@ -54,7 +49,6 @@
         </p>
     </div>
 
-    {# Seção IV: Observações (Opcional) #}
     {% if observacoes %}
     <div class="section-box">
         <div class="section-title">IV - OBSERVAÇÕES</div>
@@ -64,14 +58,12 @@
     </div>
     {% endif %}
 
-    {# Texto de Fechamento (Fora das seções) #}
     <p style="margin-top: 2cm; margin-bottom: 1.5cm;">
         Sem mais para o momento, agradeço e me coloco à disposição para outras informações que se fizerem necessárias.
         <br><br>
         Atenciosamente,
     </p>
 
-    {# Rodapé com Assinatura - Idêntico à AOCS #}
     <footer class="footer">
          <div class="signature-block">
             <div class="line"></div>
@@ -79,7 +71,6 @@
         </div>
     </footer>
 
-    {# Rodapé de Controle (Texto estático, layout simples) #}
     <div style="margin-top: 2cm; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 8pt; color: #666; text-align: center;">
         <span style="margin: 0 10px;">CONFECCIONADA: _____________________</span>
         <span style="margin: 0 10px;">SOLICITANTE: {{ solicitante }}</span>

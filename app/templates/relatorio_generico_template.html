@@ -1,6 +1,5 @@
 {% extends "relatorios_base.html" %}
 
-{# Define uma Unidade Requisitante padrão, já que é um relatório gerencial #}
 {% block unidade_requisitante %}ADMINISTRAÇÃO GERAL{% endblock %} 
 
 {% block relatorio_title %}{{ titulo_relatorio }}{% endblock %}
@@ -32,7 +31,6 @@
                     {% for item in resultados %}
                     <tr>
                         {% for coluna in colunas %}
-                            {# Tenta alinhar à direita para campos que parecem ser numéricos (como valor, qtd ou id) #}
                             {% set align_class = 'text-right' if 'valor' in coluna.key or 'qtd' in coluna.key or 'total' in coluna.key or 'id' in coluna.key else 'item-description' %}
                             <td class="{{ align_class }}">
                                 {{ item[coluna.key] }}
@@ -49,7 +47,6 @@
         </table>
     </div>
     
-    {# Inclui o footer de rastreamento do documento #}
     <footer class="footer">
         <p style="text-align: center; font-size: 8pt; color: #777;">
             Gerado em: {{ data_geracao }} | GestãoPRO v{{ versao_software }}

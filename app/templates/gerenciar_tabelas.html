@@ -13,9 +13,7 @@
 <div class="management-container">
     <aside class="management-sidebar">
         <nav>
-            {# O loop 'tabelas' é fornecido pelo contexto FastAPI #}
             {% for key, config in tabelas.items() %}
-                {# data-nome-exibicao usa filtros Jinja padrão #}
                 <a href="#" class="management-link" data-tabela="{{ key }}" data-nome-exibicao="{{ config.tabela|replace('_', ' ')|title }}">
                     {{ config.tabela|replace('_', ' ')|title }}
                 </a>
@@ -25,7 +23,6 @@
 
     <main class="management-content">
         <div id="content-area">
-            {# Conteúdo inicial ou tabela carregada pelo JS #}
             <div class="empty-state">
                 <i class="fa-solid fa-arrow-left"></i>
                 <h2>Selecione uma tabela</h2>
@@ -33,18 +30,15 @@
             </div>
         </div>
 
-        {# INCLUSÃO DO TEMPLATE DA TABELA (Usado pelo JS) (Já verificado) #}
         {% include '_tabela_generica_crud.html' %}
 
     </main>
 </div>
 
-{# INCLUSÃO DO MODAL (Usado pelo JS) (Já verificado) #}
 {% include '_modal_generica_crud.html' %}
 
 {% endblock %}
 
 {% block scripts %}
-{# Bloco de scripts agora apenas inclui o ficheiro externo #}
 <script src="{{ request.app.url_path_for('static', path='js/gerenciar_tabelas.js') }}" defer></script>
 {% endblock %}

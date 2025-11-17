@@ -41,12 +41,9 @@
                 <tr>
                     <td>{{ item.numero_item_contrato }}</td>
                     <td class="item-description">{{ item.descricao }}</td>
-                    {# Todas as quantidades formatadas com duas casas e alinhadas à direita para uniformidade #}
                     <td class="text-right">{{ "%.2f"|format(item.quantidade_pedida)|replace('.', ',') }}</td>
                     <td class="text-right">{{ "%.2f"|format(item.quantidade_entregue)|replace('.', ',') }}</td>
-                    {# Saldo Pendente em destaque (vermelho) #}
                     <td class="text-right" style="font-weight: bold; color: #dc3545;">{{ "%.2f"|format(item.saldo_pendente)|replace('.', ',') }}</td>
-                    {# Valor total pendente formatado como moeda #}
                     <td class="text-right">R$ {{ "%.2f"|format(item.saldo_pendente * item.valor_unitario)|replace('.', ',') }}</td>
                 </tr>
                 {% endfor %}

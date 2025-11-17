@@ -1,7 +1,4 @@
-{# Componente: templates/_pedido_controle_entrega.html #}
-
 <div class="card full-width">
-    {# Título mais descritivo #}
     <h2>Controle de Entrega & Status dos Itens</h2> 
     
     <div class="table-wrapper">
@@ -24,7 +21,6 @@
                             <small>Contrato: {{ item.numero_contrato }}</small>
                         </td>
                         
-                        {# Qtd. Pedida - Alinhado à Direita, Formatação com vírgula #}
                         <td class="text-right">
                             {% if item.quantidade_pedida == item.quantidade_pedida|int %}
                                 {{ item.quantidade_pedida|int }}
@@ -33,7 +29,6 @@
                             {% endif %}
                         </td>
                         
-                        {# Qtd. Entregue - Alinhado à Direita, Formatação com vírgula #}
                         <td class="text-right text-green">
                             {% if item.quantidade_entregue == item.quantidade_entregue|int %}
                                 {{ item.quantidade_entregue|int }}
@@ -42,7 +37,6 @@
                             {% endif %}
                         </td>
                         
-                        {# Saldo - Alinhado à Direita, Formatação com vírgula #}
                         {% set saldo_restante = item.quantidade_pedida - item.quantidade_entregue %}
                         <td class="text-right text-blue" style="font-weight: 700;">
                             {% if saldo_restante == saldo_restante|int %}

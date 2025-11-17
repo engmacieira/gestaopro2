@@ -18,7 +18,6 @@ from app.repositories.aocs_repository import AocsRepository
 from werkzeug.utils import secure_filename 
 from datetime import datetime
 
-# Configuração de Paths (sem alterações)
 APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
 BASE_DIR = os.path.dirname(APP_DIR)
 UPLOAD_FOLDER = os.path.join(BASE_DIR, os.environ.get("UPLOAD_FOLDER", "uploads"))
@@ -34,10 +33,7 @@ router = APIRouter(
 def _generate_secure_filename_paths(original_filename: str, tipo_doc: str | None,
                                   entidade_id: int, tipo_entidade: str, 
                                   db_conn: connection) -> tuple[str, str, str]:
-    """
-    Gera um nome de ficheiro seguro e os caminhos de diretório.
-    (Função auxiliar, sem alterações)
-    """
+
     if tipo_doc:
         tipo_doc_saneado = secure_filename(tipo_doc).upper()
     else:
@@ -64,18 +60,11 @@ def _generate_secure_filename_paths(original_filename: str, tipo_doc: str | None
     
     return path_absoluto_save, nome_seguro_base, nome_seguro_com_path
 
-
-# --- INÍCIO DA CORREÇÃO DE ORDEM ---
-
-# ROTA GET (Específica): /download/{id}
-# Esta deve vir PRIMEIRO para não ser "roubada"
 @router.get("/download/{id}", 
             response_class=FileResponse,
             dependencies=[Depends(require_access_level(3))])
 async def download_anexo(id: int, db_conn: connection = Depends(get_db)):
-    """
-    Faz o download de um anexo pelo seu ID.
-    """
+
     repo = AnexoRepository(db_conn)
     anexo = repo.get_by_id(id)
     if not anexo:
@@ -93,8 +82,6 @@ async def download_anexo(id: int, db_conn: connection = Depends(get_db)):
 
     return FileResponse(path=file_path, filename=anexo.nome_original, media_type='application/octet-stream')
 
-# ROTA GET (Genérica): /{id_entidade}/{tipo_entidade}
-# Esta deve vir DEPOIS da rota /download
 @router.get("/{id_entidade}/{tipo_entidade}", 
             response_model=List[AnexoResponse],
             status_code=status.HTTP_200_OK)
@@ -103,21 +90,15 @@ def get_anexos_por_entidade(
     tipo_entidade: str, 
     db_conn: connection = Depends(get_db)
 ):
-    """
-    Busca todos os anexos de uma entidade (Contrato, AOCS, etc.).
-    """
+
     try:
         repo_anexo = AnexoRepository(db_conn)
         anexos = repo_anexo.get_by_entidade(id_entidade, tipo_entidade)
-        # (A lógica incorreta do 404 já foi removida)
         return anexos
     
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar anexos para {tipo_entidade} ID {id_entidade}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
-
-# --- FIM DA CORREÇÃO DE ORDEM ---
-
 
 @router.post("/upload/", 
              response_model=AnexoResponse, 
@@ -131,9 +112,7 @@ async def upload_file(
     current_user: User = Depends(get_current_user),
     db_conn: connection = Depends(get_db)
 ):
-    """
-    Faz upload de um novo anexo e o associa a uma entidade.
-    """
+
     try:
         save_dir, _, nome_seguro_com_path = _generate_secure_filename_paths(
             file.filename, tipo_documento, id_entidade, tipo_entidade, db_conn
@@ -151,7 +130,7 @@ async def upload_file(
         file.file.close()
 
     try:
-        # Criar registro no banco
+
         repo = AnexoRepository(db_conn)
         anexo_data = AnexoCreate(
             id_entidade=id_entidade, 
@@ -183,9 +162,7 @@ async def delete_anexo(
     current_user: User = Depends(get_current_user), 
     db_conn: connection = Depends(get_db)
 ):
-    """
-    Deleta um anexo (registro do BD e ficheiro físico).
-    """
+
     repo = AnexoRepository(db_conn)
     success, anexo_deletado = repo.delete(id)
     
@@ -205,7 +182,7 @@ async def delete_anexo(
                 logger.info(f"Usuário '{current_user.username}' deletou arquivo físico: {file_path}")
             else:
                 logger.warning(f"Arquivo físico não encontrado para anexo ID {id} deletado do banco: {file_path}")
-            return # Retorna 204 No Content
+            return 
 
         except OSError as e:
             logger.exception(f"Erro OS ao deletar arquivo físico {anexo_deletado.nome_seguro} (anexo ID {id}, registro BD removido): {e}")

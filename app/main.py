@@ -5,7 +5,7 @@ if os.environ.get("TESTING") != "true":
     load_dotenv()
 
 import logging
-from contextlib import asynccontextmanager # <--- IMPORTAR ISTO
+from contextlib import asynccontextmanager 
 from app.core.logging_config import setup_logging
 setup_logging()
 
@@ -23,35 +23,28 @@ from app.routers import (
 
 logger = logging.getLogger(__name__) 
 
-# --- A NOVA LÓGICA DE LIFESPAN ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Código que roda ANTES do app iniciar
     logger.info("Aplicação Gestão Pública API iniciada.")
     yield
-    # Código que roda DEPOIS do app desligar
     logger.info("Aplicação Gestão Pública API encerrada.")
-# --- FIM DA NOVA LÓGICA ---
 
-# Define o diretório base do PROJETO (a pasta 'Refatoracao')
-APP_DIR = os.path.dirname(os.path.abspath(__file__)) # -> /app
-BASE_DIR = os.path.dirname(APP_DIR) # -> / (raiz do projeto)
+APP_DIR = os.path.dirname(os.path.abspath(__file__)) 
+BASE_DIR = os.path.dirname(APP_DIR) 
 
 app = FastAPI(
     title="Gestão Pública API",
     description="API para o sistema de gestão pública (Refatorado com FastAPI)", 
     version="3.0.0",
-    lifespan=lifespan  # <--- DIZ AO FASTAPI PARA USAR O NOVO LIFESPAN
+    lifespan=lifespan  
 )
 
-# Aponta para a pasta 'static' dentro da 'app'
 app.mount("/static", StaticFiles(directory=os.path.join(APP_DIR, "static")), name="static")
 
 @app.get("/")
 def read_root():
     return RedirectResponse(url="/login", status_code=302)
 
-# Inclui os routers (como antes, com o prefixo /api)
 app.include_router(auth_router.router, prefix="/api")
 app.include_router(user_router.router, prefix="/api") 
 app.include_router(agente_router.router, prefix="/api")
@@ -71,7 +64,4 @@ app.include_router(processo_licitatorio_router.router, prefix="/api")
 app.include_router(tipo_documento_router.router, prefix="/api")
 app.include_router(unidade_router.router, prefix="/api")
 
-app.include_router(ui_router.router) # UI router (sem prefixo /api)
-
-# --- REMOVEMOS OS @app.on_event ANTIGOS ---
-# (Eles agora estão dentro da função 'lifespan')
+app.include_router(ui_router.router) 

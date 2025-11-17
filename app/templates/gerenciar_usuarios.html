@@ -9,7 +9,6 @@
 </header>
 
 <div class="card full-width">
-    {# 1. INCLUSÃO DO COMPONENTE DO CABEÇALHO DA TABELA (Já verificado) #}
     {% include '_usuarios_table_header.html' %}
 
     <div class="table-wrapper">
@@ -23,9 +22,9 @@
                 </tr>
             </thead>
             <tbody>
-                {% if usuarios %} {# Adicionado if para caso a lista esteja vazia #}
+                {% if usuarios %} 
                     {% for usuario in usuarios %}
-                    <tr class="{{ 'inactive-row' if not usuario.ativo }}"> {# Adicionado classe para inativos #}
+                    <tr class="{{ 'inactive-row' if not usuario.ativo }}"> 
                         <td><strong>{{ usuario.username }}</strong></td>
                         <td>
                             {% if usuario.nivel_acesso == 1 %}Admin
@@ -39,10 +38,8 @@
                             </span>
                         </td>
                         <td class="actions-cell">
-                            {# Onclick mantido, chama JS #}
                             <button class="btn-link-action" onclick="abrirModalParaEditar({{ usuario.id }})"><i class="fa-solid fa-pencil"></i> Editar</button>
                             <button class="btn-link-action" onclick="resetarSenha({{ usuario.id }})"><i class="fa-solid fa-key"></i> Redefinir Senha</button>
-                            {# Passa o status booleano para a função JS #}
                             <button class="btn-link-action {{ 'red' if usuario.ativo else 'green' }}" onclick="toggleUserStatus({{ usuario.id }}, {{ 'true' if usuario.ativo else 'false' }})">
                                 <i class="fa-solid fa-power-off"></i> {{ 'Inativar' if usuario.ativo else 'Ativar' }}
                             </button>
@@ -57,11 +54,9 @@
     </div>
 </div>
 
-{# 2. INCLUSÃO DO COMPONENTE MODAL (Já verificado) #}
 {% include '_modal_gerenciar_usuarios.html' %}
 {% endblock %}
 
 {% block scripts %}
-{# Bloco de scripts agora apenas inclui o ficheiro externo #}
 <script src="{{ request.app.url_path_for('static', path='js/gerenciar_usuarios.js') }}" defer></script>
 {% endblock %}

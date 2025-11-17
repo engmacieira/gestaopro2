@@ -46,14 +46,10 @@ def create_instrumento(
 def get_all_instrumentos( 
     db_conn: connection = Depends(get_db)
 ):
-    """
-    Lista todos os Instrumentos Contratuais.
-    """
+
     try:
         repo = InstrumentoRepository(db_conn)
         
-        # --- AQUI ESTÁ A CORREÇÃO ---
-        # Chamada simples, sem argumentos
         instrumentos = repo.get_all() 
         
         return instrumentos

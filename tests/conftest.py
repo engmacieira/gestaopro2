@@ -1,11 +1,9 @@
-# tests/conftest.py
-
 import pytest
 import os
 os.environ["TESTING"] = "true" 
 import psycopg2
 from psycopg2.extras import DictCursor
-from fastapi.testclient import TestClient # <--- VOLTAMOS PARA O TestClient
+from fastapi.testclient import TestClient 
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env.test')
@@ -13,7 +11,6 @@ load_dotenv(dotenv_path='.env.test')
 from app.main import app 
 from app.core.database import get_db, _get_db_connection
 
-# Imports necessários para a fixture de autenticação
 from app.core.security import create_access_token 
 from app.models.user_model import User 
 from app.repositories.user_repository import UserRepository
@@ -22,9 +19,6 @@ from app.schemas.user_schema import UserCreateRequest
 
 @pytest.fixture(scope="session")
 def db_conn_test():
-    """
-    Cria uma conexão-mãe com o banco de TESTE para toda a sessão de testes.
-    """
     conn = None
     try:
         conn = _get_db_connection()
@@ -41,13 +35,8 @@ def db_conn_test():
 
 @pytest.fixture(scope="function")
 def db_session(db_conn_test):
-    """
-    Garante isolamento total do teste limpando o banco de dados ANTES de cada teste
-    usando TRUNCATE.
-    """    
     try:
         with db_conn_test.cursor() as cursor:
-            # Limpa tabelas em ordem de dependência
             cursor.execute("TRUNCATE TABLE pedidos RESTART IDENTITY CASCADE;")
             cursor.execute("TRUNCATE TABLE ci_pagamento RESTART IDENTITY CASCADE;")
             cursor.execute("TRUNCATE TABLE anexos RESTART IDENTITY CASCADE;")
@@ -55,9 +44,7 @@ def db_session(db_conn_test):
             cursor.execute("TRUNCATE TABLE aocs RESTART IDENTITY CASCADE;")
             cursor.execute("TRUNCATE TABLE contratos RESTART IDENTITY CASCADE;")
             cursor.execute("TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE;")
-            cursor.execute("TRUNCATE TABLE categorias RESTART IDENTITY CASCADE;")
-            
-            # Limpa o resto das tabelas de domínio
+            cursor.execute("TRUNCATE TABLE categorias RESTART IDENTITY CASCADE;")            
             cursor.execute("TRUNCATE TABLE instrumentocontratual RESTART IDENTITY CASCADE;")
             cursor.execute("TRUNCATE TABLE modalidade RESTART IDENTITY CASCADE;")
             cursor.execute("TRUNCATE TABLE numeromodalidade RESTART IDENTITY CASCADE;")
@@ -79,19 +66,15 @@ def db_session(db_conn_test):
     yield db_conn_test
 
 @pytest.fixture(scope="function")
-def test_client(db_session): # <--- MUDANÇA: 'def' (não mais 'async def')
-    """
-    Cria um TestClient síncrono para testar a aplicação.
-    """
+def test_client(db_session): 
     def override_get_db():
         try:
             yield db_session
         finally:
-            pass # A limpeza é feita pelo TRUNCATE
+            pass 
 
     app.dependency_overrides[get_db] = override_get_db
-    
-    # MUDANÇA: Voltamos a usar o TestClient
+
     with TestClient(app) as client:
         yield client
     
@@ -99,9 +82,6 @@ def test_client(db_session): # <--- MUDANÇA: 'def' (não mais 'async def')
 
 @pytest.fixture(scope="function")
 def admin_auth_headers(db_session): 
-    """
-    Fixture global de autenticação (sem alterações).
-    """
     repo = UserRepository(db_session)
     user_data = UserCreateRequest(
         username="test_admin_user",
@@ -122,27 +102,20 @@ def admin_auth_headers(db_session):
 
 @pytest.fixture(scope="function")
 def user_auth_headers(db_session): 
-    """
-    Fixture global de autenticação para utilizador-padrão.
-    """
     repo = UserRepository(db_session)
     user_data = UserCreateRequest(
         username="test_user_user",
         password="password123",
         nivel_acesso=3
     )
-    # Tenta criar o utilizador
     try:
         user = repo.create(user_data)
     except psycopg2.IntegrityError:
         db_session.rollback()
         user = repo.get_by_username("test_user_user")
     
-    # Garantia de que o utilizador existe
     assert user is not None, "Falha ao criar ou obter o 'test_user_user' na fixture"
 
-    # --- A CORREÇÃO ---
-    # Chamada igual à da fixture do admin
     access_token = create_access_token(user) 
     
     return {"Authorization": f"Bearer {access_token}"}

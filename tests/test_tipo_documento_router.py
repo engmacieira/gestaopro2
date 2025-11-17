@@ -1,13 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 
-# O 'admin_auth_headers' é pego automaticamente do conftest.py
-
 def test_create_tipo_documento(test_client: TestClient, admin_auth_headers: dict):
-    """Testa POST /api/tipos-documento/"""
     response = test_client.post(
         "/api/tipos-documento/", 
-        json={"nome": "Nota Fiscal"}, # Schema do TipoDocumento
+        json={"nome": "Nota Fiscal"}, 
         headers=admin_auth_headers
     )
     assert response.status_code == 201
@@ -16,7 +13,6 @@ def test_create_tipo_documento(test_client: TestClient, admin_auth_headers: dict
     assert data["id"] is not None
 
 def test_get_tipo_documento_by_id(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/tipos-documento/{id}"""
     response_create = test_client.post(
         "/api/tipos-documento/",
         json={"nome": "Orçamento"},
@@ -35,7 +31,6 @@ def test_get_tipo_documento_by_id(test_client: TestClient, admin_auth_headers: d
     assert data["id"] == new_id
 
 def test_get_all_tipos_documento(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/tipos-documento/"""
     test_client.post("/api/tipos-documento/", json={"nome": "Tipo Doc A"}, headers=admin_auth_headers)
     test_client.post("/api/tipos-documento/", json={"nome": "Tipo Doc B"}, headers=admin_auth_headers)
 
@@ -48,7 +43,6 @@ def test_get_all_tipos_documento(test_client: TestClient, admin_auth_headers: di
     assert "Tipo Doc A" in [item["nome"] for item in data]
 
 def test_update_tipo_documento(test_client: TestClient, admin_auth_headers: dict):
-    """Testa PUT /api/tipos-documento/{id}"""
     response_create = test_client.post(
         "/api/tipos-documento/",
         json={"nome": "Tipo Original"},
@@ -67,7 +61,6 @@ def test_update_tipo_documento(test_client: TestClient, admin_auth_headers: dict
     assert data["nome"] == "Tipo Atualizado"
 
 def test_delete_tipo_documento(test_client: TestClient, admin_auth_headers: dict):
-    """Testa DELETE /api/tipos-documento/{id}"""
     response_create = test_client.post(
         "/api/tipos-documento/",
         json={"nome": "Tipo Para Deletar"},
@@ -86,5 +79,5 @@ def test_delete_tipo_documento(test_client: TestClient, admin_auth_headers: dict
         f"/api/tipos-documento/{new_id}",
         headers=admin_auth_headers
     )
-    # Como você fez a Tarefa 1, este teste deve passar
+
     assert response_get.status_code == 404

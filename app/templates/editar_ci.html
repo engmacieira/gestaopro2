@@ -4,7 +4,6 @@
 
 {% block content %}
 <header class="main-header">
-    {# Alterado url_for para request.app.url_path_for #}
     <a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=aocs.numero_aocs) }}" class="back-link">&larr; Voltar para Detalhes do Pedido</a>
     <h1>Editar Comunicação Interna de Pagamento</h1>
     <p class="subtitle">CI Número: <strong class="text-blue">{{ ci.numero_ci }}</strong> | AOCS: <strong class="text-blue">{{ aocs.numero_aocs }}</strong></p>
@@ -12,20 +11,14 @@
 
 <div class="card full-width">
 
-    {# Alterado action para apontar para a rota POST 'editar_ci_post' #}
     <form method="POST" action="{{ request.app.url_path_for('editar_ci_post', id_ci=ci.id) }}">
 
-        {# INCLUINDO O COMPONENTE DO FORMULÁRIO (Já verificado). #}
-        {# Passa o contexto atual para o include #}
         {% include '_ci_form_fields.html' with context %}
 
         <div class="form-actions" style="margin-top: 30px;">
-            {# Alterado url_for para request.app.url_path_for #}
             <a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=aocs.numero_aocs) }}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Salvar Alterações</button>
         </div>
     </form>
 </div>
 {% endblock %}
-
-{# Não há bloco de scripts neste template #}

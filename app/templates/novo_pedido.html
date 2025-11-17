@@ -6,7 +6,6 @@
 <div id="notification-area"></div>
 
 <header class="main-header">
-    {# Alterado url_for para request.app.url_path_for #}
     <a href="{{ request.app.url_path_for('contratos_por_categoria', id_categoria=categoria.id) }}" class="back-link">
         &larr; Voltar para o Catálogo
     </a>
@@ -16,7 +15,6 @@
 
 <div class="pedido-container">
 
-    {# 1. INCLUSÃO DO NOVO COMPONENTE DE CATÁLOGO (Já verificado) #}
     {% include '_novo_pedido_catalogo.html' %}
 
     <div class="side-cart">
@@ -41,7 +39,6 @@
     </div>
 </div>
 
-{# MODAL DE FINALIZAÇÃO (Mantido no corpo para simplificar) #}
 <div id="modal-finalizar-pedido" class="modal-overlay">
     <div class="modal-content large">
         <div class="modal-header">
@@ -103,7 +100,6 @@
 
                 <h4>Números das AOCS por Contrato</h4>
                 <div id="aocs-por-contrato-container">
-                    {# Conteúdo preenchido via JS #}
                 </div>
             </div>
             <div class="modal-footer">
@@ -119,11 +115,9 @@
 {% endblock %}
 
 {% block scripts %}
-{# Passa variáveis necessárias para o JavaScript externo #}
 <script>
     const idCategoriaGlobal = {{ categoria.id }};
     const redirectUrlPedidosGlobal = "{{ request.app.url_path_for('pedidos_ui') }}";
 </script>
-{# Inclui o ficheiro JS externo #}
 <script src="{{ request.app.url_path_for('static', path='js/novo_pedido.js') }}" defer></script>
 {% endblock %}

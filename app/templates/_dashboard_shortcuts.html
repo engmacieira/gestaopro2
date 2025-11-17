@@ -1,15 +1,10 @@
-{# Componente para o card de atalhos lateral #}
-
 <div class="shortcut-card">
     <h3>Atalhos do Sistema</h3>
-    {# Botão Iniciar Pedido #}
     <button id="btn-iniciar-pedido-shortcut" class="action-button" style="background-color: rgba(25, 135, 84, 0.1); border-color: var(--action-success); color: var(--action-success);">
         <i class="fa-solid fa-cart-plus" style="color: var(--action-success);"></i><span>Iniciar Novo Pedido</span>
     </button>
-    {# Links Corrigidos #}
     <a href="{{ request.app.url_path_for('categorias_ui') }}" class="action-button"><i class="fa-solid fa-tags"></i><span>Gerenciar Categorias</span></a>
     <a href="{{ request.app.url_path_for('contratos_ui') }}" class="action-button"><i class="fa-solid fa-file-signature"></i><span>Gerenciar Contratos</span></a>
-    {# CORREÇÃO: Gerar URL base e adicionar query parameters manualmente #}
     {% set base_url = request.app.url_path_for('contratos_ui') %}
     {% set query_string = "mostrar_vencidos=false&data_vencimento_filtro=60d" %}
     <a href="{{ base_url }}?{{ query_string }}" class="action-button" style="border-color: var(--action-warning); color: #856404;">

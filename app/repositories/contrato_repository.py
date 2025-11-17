@@ -52,7 +52,6 @@ class ContratoRepository:
             return None
 
     def create(self, contrato_req: ContratoCreateRequest) -> Contrato:
-        """Cria um novo contrato, resolvendo FKs."""
         cursor = None
         try:
             cat = self.categoria_repo.get_or_create(contrato_req.categoria_nome)

@@ -8,20 +8,16 @@
     <p class="subtitle">Encontre contratos ou pedidos com base em seus vínculos no sistema.</p>
 </header>
 
-{# INCLUINDO O COMPONENTE DO FORMULÁRIO (Já verificado) #}
 {% include '_consultas_form.html' %}
 
 <div id="area-resultados" style="margin-top: 30px;">
-    {# Conteúdo inicial ou resultados renderizados pelo JS #}
     <div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h2>Aguardando sua consulta</h2><p>Selecione um tipo de consulta e um valor para buscar os resultados.</p></div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-{# Inclui o ficheiro JS externo #}
-{# Passa a configuração das entidades para o JavaScript através de um objeto global ou data attribute (opção global mostrada aqui) #}
+
 <script>
-    // Passa a configuração do Python/Jinja para o JavaScript
     const configEntidades = {{ entidades_pesquisaveis | tojson }};
 </script>
 <script src="{{ request.app.url_path_for('static', path='js/consultas.js') }}" defer></script>

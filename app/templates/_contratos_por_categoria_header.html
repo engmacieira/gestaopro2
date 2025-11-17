@@ -1,6 +1,4 @@
-{# Componente: templates/_contratos_por_categoria_header.html #}
 <header class="main-header">
-    {# Alterado url_for para request.app.url_path_for #}
     <a href="{{ request.app.url_path_for('categorias_ui') }}" class="back-link">
         &larr; Voltar para a lista de categorias
     </a>
@@ -9,13 +7,11 @@
 </header>
 
 <div class="card-actions" style="flex-wrap: wrap; justify-content: space-between;">
-    {# Alterado url_for para request.app.url_path_for, passando id_categoria como path param #}
     <form method="GET" action="{{ request.app.url_path_for('contratos_por_categoria', id_categoria=categoria.id) }}" class="search-form" style="flex: 1 1 70%;">
         <i class="fa-solid fa-search search-icon"></i>
         <input type="search" name="busca" placeholder="Buscar por descrição do item..." value="{{ query_params.busca or '' }}" class="form-control" style="flex: 1;">
         <button type="submit" class="btn btn-secondary">Buscar</button>
     </form>
-    {# Alterado url_for para request.app.url_path_for, passando id_categoria como path param #}
     <a href="{{ request.app.url_path_for('novo_pedido_pagina', id_categoria=categoria.id) }}" class="btn btn-primary" style="flex-shrink: 0; min-width: 200px;">
         <i class="fa-solid fa-cart-plus"></i>
         Iniciar Novo Pedido

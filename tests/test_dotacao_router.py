@@ -1,13 +1,10 @@
 import pytest
 from fastapi.testclient import TestClient
 
-# O 'admin_auth_headers' é pego automaticamente do conftest.py
-
 def test_create_dotacao(test_client: TestClient, admin_auth_headers: dict):
-    """Testa POST /api/dotacoes/"""
     response = test_client.post(
         "/api/dotacoes/", 
-        json={"info_orcamentaria": "01.01.01 - Teste"}, # Schema da Dotação
+        json={"info_orcamentaria": "01.01.01 - Teste"}, 
         headers=admin_auth_headers
     )
     assert response.status_code == 201
@@ -16,7 +13,6 @@ def test_create_dotacao(test_client: TestClient, admin_auth_headers: dict):
     assert data["id"] is not None
 
 def test_get_dotacao_by_id(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/dotacoes/{id}"""
     response_create = test_client.post(
         "/api/dotacoes/",
         json={"info_orcamentaria": "02.02.02 - Buscar"},
@@ -35,7 +31,6 @@ def test_get_dotacao_by_id(test_client: TestClient, admin_auth_headers: dict):
     assert data["id"] == new_id
 
 def test_get_all_dotacoes(test_client: TestClient, admin_auth_headers: dict):
-    """Testa GET /api/dotacoes/"""
     test_client.post("/api/dotacoes/", json={"info_orcamentaria": "Dotação A"}, headers=admin_auth_headers)
     test_client.post("/api/dotacoes/", json={"info_orcamentaria": "Dotação B"}, headers=admin_auth_headers)
 
@@ -48,7 +43,6 @@ def test_get_all_dotacoes(test_client: TestClient, admin_auth_headers: dict):
     assert "Dotação A" in [item["info_orcamentaria"] for item in data]
 
 def test_update_dotacao(test_client: TestClient, admin_auth_headers: dict):
-    """Testa PUT /api/dotacoes/{id}"""
     response_create = test_client.post(
         "/api/dotacoes/",
         json={"info_orcamentaria": "Dotação Original"},
@@ -67,7 +61,6 @@ def test_update_dotacao(test_client: TestClient, admin_auth_headers: dict):
     assert data["info_orcamentaria"] == "Dotação Atualizada"
 
 def test_delete_dotacao(test_client: TestClient, admin_auth_headers: dict):
-    """Testa DELETE /api/dotacoes/{id}"""
     response_create = test_client.post(
         "/api/dotacoes/",
         json={"info_orcamentaria": "Dotação Para Deletar"},
@@ -86,5 +79,5 @@ def test_delete_dotacao(test_client: TestClient, admin_auth_headers: dict):
         f"/api/dotacoes/{new_id}",
         headers=admin_auth_headers
     )
-    # Se a Tarefa 1 foi feita, este assert (o mais importante) vai passar
+
     assert response_get.status_code == 404
