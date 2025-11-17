@@ -120,6 +120,37 @@ def update_categoria(
         logger.exception(f"Erro inesperado ao atualizar categoria ID {id} por '{current_user.username}': {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
+@router.patch("/status/{id}", 
+              response_model=CategoriaResponse,
+              status_code=status.HTTP_200_OK,
+              dependencies=[Depends(require_access_level(2))])
+def update_categoria_status(
+    id: int,
+    ativo: bool, 
+    db_conn: connection = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    repo = CategoriaRepository(db_conn)
+    
+    categoria_db = repo.get_by_id(id)
+    if not categoria_db:
+        logger.warning(f"Tentativa de alterar status da categoria ID {id} (não encontrada) por '{current_user.username}'.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Categoria não encontrada."
+        )
+    
+    try:
+        categoria_atualizada = repo.change_status(id, ativo)
+        
+        status_log = "ATIVADA" if ativo else "DESATIVADA"
+        logger.info(f"Usuário '{current_user.username}' alterou o status da Categoria ID {id} para {status_log}.")
+        return categoria_atualizada
+
+    except Exception as e:
+        logger.exception(f"Erro inesperado ao alterar status da categoria ID {id} por '{current_user.username}': {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
+
 @router.patch("/{id}/status", 
              response_model=CategoriaResponse,
              dependencies=[Depends(require_access_level(2))])

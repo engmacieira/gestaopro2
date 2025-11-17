@@ -226,3 +226,26 @@ class CategoriaRepository:
         finally:
             if cursor and not cursor.closed:
                 cursor.close()
+    
+    def change_status(self, id: int, status: bool) -> Categoria | None:
+        cursor = None
+        try:
+            cursor = self.db_conn.cursor(cursor_factory=DictCursor)
+            sql = "UPDATE categorias SET ativo = %s WHERE id = %s RETURNING *"
+            cursor.execute(sql, (status, id))
+            
+            updated_row = cursor.fetchone()
+            if not updated_row:
+                return None 
+                
+            self.db_conn.commit()
+            
+            return self._map_row_to_model(updated_row)
+
+        except (Exception, psycopg2.DatabaseError) as error:
+             if self.db_conn: self.db_conn.rollback()
+             logger.exception(f"Erro ao alterar status da categoria ID {id} para {status}: {error}")
+             raise
+        finally:
+            if cursor:
+                cursor.close()
