@@ -322,7 +322,7 @@ def setup_scenario_saldo_item(db_session: connection) -> int:
         id_aocs=aocs.id 
     )
     
-    pedido = pedido_repo.create(pedido_req)
+    pedido = pedido_repo.create(id_aocs=aocs.id, pedido_create_req=pedido_req)
 
     return categoria.id 
 
@@ -337,7 +337,7 @@ def test_get_itens_com_saldo_por_categoria(
     id_categoria = setup_scenario_saldo_item
 
     response = test_client.get(
-        f"/api/categorias/itens-com-saldo/{id_categoria}",
+        f"/api/categorias/{id_categoria}/itens",
         headers=admin_auth_headers
     )
 
@@ -351,6 +351,6 @@ def test_get_itens_com_saldo_por_categoria(
 
     item_na_lista = data["itens"][0]
     assert item_na_lista["descricao"]["descricao"] == "Item para Cálculo de Saldo"
-    assert item_na_lista["quantidade"] == 100   
-    assert item_na_lista["total_pedido"] == 10  
-    assert item_na_lista["saldo"] == 90
+    assert item_na_lista["quantidade"] == "100.000" 
+    assert item_na_lista["total_pedido"] == "10.000"
+    assert item_na_lista["saldo"] == "90.000"

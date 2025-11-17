@@ -88,7 +88,7 @@ def setup_full_pedido_scenario(test_client: TestClient, admin_auth_headers: dict
     assert resp_aocs.status_code == 201
     id_aocs = resp_aocs.json()["id"]
 
-    pedido_payload = {"item_contrato_id": id_item, "quantidade_pedida": 25}
+    pedido_payload = {"item_contrato_id": id_item, "quantidade_pedida": 25, "id_aocs": id_aocs}
     resp_pedido = test_client.post(f"/api/pedidos/?id_aocs={id_aocs}", json=pedido_payload, headers=admin_auth_headers)
     assert resp_pedido.status_code == 201
 

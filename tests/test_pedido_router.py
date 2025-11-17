@@ -54,7 +54,8 @@ def test_create_pedido_sucesso(test_client: TestClient, admin_auth_headers: dict
     
     pedido_payload = {
         "item_contrato_id": id_item_com_saldo,
-        "quantidade_pedida": 10.5 
+        "quantidade_pedida": 10.5,
+        "id_aocs": id_aocs_criada 
     }
 
     response = test_client.post(
@@ -76,7 +77,8 @@ def test_create_pedido_sem_saldo(test_client: TestClient, admin_auth_headers: di
     
     pedido_payload = {
         "item_contrato_id": id_item_com_saldo,
-        "quantidade_pedida": 2000 
+        "quantidade_pedida": 2000,
+        "id_aocs": id_aocs_criada 
     }
 
     response = test_client.post(
@@ -89,9 +91,14 @@ def test_create_pedido_sem_saldo(test_client: TestClient, admin_auth_headers: di
     assert "excede o saldo disponível" in response.json()["detail"]
 
 def test_get_and_delete_pedido(test_client: TestClient, admin_auth_headers: dict, setup_contrato_com_item: dict, setup_aocs: dict):
+    payload_pedido = {
+        "item_contrato_id": setup_contrato_com_item['id_item'], 
+        "quantidade_pedida": 5,
+        "id_aocs": setup_aocs['id_aocs'] 
+    }
     response_create = test_client.post(
         f"/api/pedidos/?id_aocs={setup_aocs['id_aocs']}",
-        json={"item_contrato_id": setup_contrato_com_item['id_item'], "quantidade_pedida": 5},
+        json=payload_pedido,
         headers=admin_auth_headers
     )
     assert response_create.status_code == 201
