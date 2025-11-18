@@ -34,6 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = url; 
     }
 
+    function formatNumberForDisplay(value) {
+        if (typeof value === 'number') {
+            return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        return value;
+    }
+
     const msg = sessionStorage.getItem('notificationMessage');
     if (msg) {
         showNotification(msg, sessionStorage.getItem('notificationType'));
@@ -60,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 const resultado = await response.json();
 
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Ocorreu um erro ao pré-visualizar.');
+                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao pré-visualizar.`);
 
                 dadosParaSalvar = resultado;
                 renderizarPreview(dadosParaSalvar);
@@ -91,6 +98,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let headerHTML = '<tr>';
         headers.forEach(h => headerHTML += `<th>${h.replace(/_/g, ' ')}</th>`); 
         headerHTML += '</tr>';
+        
+        if (previewTable.tHead) previewTable.tHead.remove();
+        if (previewTable.tBodies.length > 0) previewTable.tBodies[0].remove();
+        
         previewTable.createTHead().innerHTML = headerHTML;
 
         let bodyHTML = '';
@@ -100,8 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 let value = linha[h];
                 if (value === null || value === undefined) {
                     value = ''; 
-                } else if (typeof value === 'number' && (h === 'quantidade' || h === 'valor_unitario')) {
-                    value = value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else if (h === 'quantidade' || h === 'valor_unitario') {
+                    value = formatNumberForDisplay(value); 
                 }
                 bodyHTML += `<td>${value}</td>`;
             });
@@ -128,13 +139,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 const resultado = await response.json();
 
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Ocorreu um erro ao salvar os itens.');
+                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao salvar os itens.`);
 
-                navigateWithMessage(redirectUrlGlobal, resultado.mensagem || `${dadosParaSalvar.length} itens importados com sucesso!`, 'success');
+                const successMessage = resultado.mensagem || `${dadosParaSalvar.length} itens importados com sucesso!`;
+                
+                navigateWithMessage(redirectUrlGlobal, successMessage, 'success');
 
             } catch (error) {
                 console.error('Erro ao salvar:', error);
                 showNotification(`Erro ao salvar: ${error.message}`);
+            } finally {
                 btnSalvar.disabled = false;
                 btnSalvar.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Itens no Contrato';
             }

@@ -7,6 +7,73 @@ document.addEventListener('DOMContentLoaded', function() {
     const formConsulta = document.getElementById('form-consulta');
     const areaResultados = document.getElementById('area-resultados');
 
+    function formatarValor(col, valor) {
+        if (col.format && typeof col.format === 'function') {
+            return col.format(valor);
+        }
+        if (valor === true) return 'Sim';
+        if (valor === false) return 'Não';
+        if (valor === null || valor === undefined) return 'N/D';
+        return valor;
+    }
+
+    function criarLink(col, item, valor) {
+        if (col.link) {
+            const linkValue = item.id !== undefined ? item.id : item.numero_aocs;
+            const encodedLinkValue = encodeURIComponent(linkValue);
+            return `<a href="${col.link}${encodedLinkValue}"><strong>${valor}</strong></a>`;
+        }
+        return valor;
+    }
+
+    function criarLinha(item, colunas) {
+        let rowHtml = '<tr>';
+        colunas.forEach(col => {
+            let valor = item[col.key];
+            valor = formatarValor(col, valor);
+            valor = criarLink(col, item, valor);
+            rowHtml += `<td>${valor}</td>`;
+        });
+        rowHtml += '</tr>';
+        return rowHtml;
+    }
+
+    const colunasMap = {
+        'processo_licitatorio': [
+            { header: 'Contrato', key: 'numero_contrato', link: '/contrato/' }, 
+            { header: 'Fornecedor', key: 'fornecedor' },
+            { header: 'Categoria', key: 'nome_categoria' },
+            { header: 'Status', key: 'ativo', format: (val) => `<span class="status-badge ${val ? 'green' : 'gray'}">${val ? 'Ativo' : 'Inativo'}</span>` }
+        ],
+        'unidade_requisitante': [
+            { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' }, 
+            { header: 'Data', key: 'data_criacao' },
+            { header: 'Fornecedor', key: 'fornecedor' },
+            { header: 'Status', key: 'status_entrega', format: (val) => {
+                 const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
+                 return `<span class="status-badge ${statusClass}">${val}</span>`;
+            }}
+        ],
+        'local_entrega': [
+            { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' }, 
+            { header: 'Data', key: 'data_criacao' },
+            { header: 'Fornecedor', key: 'fornecedor' },
+             { header: 'Status', key: 'status_entrega', format: (val) => {
+                 const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
+                 return `<span class="status-badge ${statusClass}">${val}</span>`;
+            }}
+        ],
+        'dotacao': [
+            { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' }, 
+            { header: 'Data', key: 'data_criacao' },
+            { header: 'Fornecedor', key: 'fornecedor' },
+             { header: 'Status', key: 'status_entrega', format: (val) => {
+                 const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
+                 return `<span class="status-badge ${statusClass}">${val}</span>`;
+            }}
+        ]
+    };
+
     tipoConsultaSelect.addEventListener('change', async function() {
         const tipo = this.value;
         valorConsultaSelect.innerHTML = '<option value="">Carregando...</option>';
@@ -68,85 +135,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function renderizarResultados(data) {
-        if (!data.resultados || data.resultados.length === 0) {
+        
+        const resultados = data.resultados;
+        
+        if (!resultados || resultados.length === 0) {
             areaResultados.innerHTML = '<div class="empty-state mini"><p>Nenhum resultado encontrado.</p></div>';
             return;
         }
-
-        const colunasMap = {
-            'processo_licitatorio': [
-                { header: 'Contrato', key: 'numero_contrato', link: '/contrato/' }, 
-                { header: 'Fornecedor', key: 'fornecedor' },
-                { header: 'Categoria', key: 'nome_categoria' },
-                { header: 'Status', key: 'ativo', format: (val) => `<span class="status-badge ${val ? 'green' : 'gray'}">${val ? 'Ativo' : 'Inativo'}</span>` }
-            ],
-            'unidade_requisitante': [
-                { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' }, 
-                { header: 'Data', key: 'data_criacao' },
-                { header: 'Fornecedor', key: 'fornecedor' },
-                { header: 'Status', key: 'status_entrega', format: (val) => {
-                     const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
-                     return `<span class="status-badge ${statusClass}">${val}</span>`;
-                }}
-            ],
-            'local_entrega': [
-                { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' }, 
-                { header: 'Data', key: 'data_criacao' },
-                { header: 'Fornecedor', key: 'fornecedor' },
-                 { header: 'Status', key: 'status_entrega', format: (val) => {
-                     const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
-                     return `<span class="status-badge ${statusClass}">${val}</span>`;
-                }}
-            ],
-            'dotacao': [
-                { header: 'AOCS', key: 'numero_aocs', link: '/pedido/' }, 
-                { header: 'Data', key: 'data_criacao' },
-                { header: 'Fornecedor', key: 'fornecedor' },
-                 { header: 'Status', key: 'status_entrega', format: (val) => {
-                     const statusClass = val === 'Entregue' ? 'green' : (val === 'Entrega Parcial' ? 'orange' : 'gray');
-                     return `<span class="status-badge ${statusClass}">${val}</span>`;
-                }}
-            ]
-        };
 
         const colunas = colunasMap[data.tipo];
         if (!colunas) { areaResultados.innerHTML = '<div class="notification error">Erro de configuração de renderização para este tipo de consulta.</div>'; return; }
 
         let tableHtml = `
             <div class="card full-width">
-                <h2>${data.titulo || 'Resultados da Consulta'} (${data.resultados.length})</h2>
+                <h2>${data.titulo || 'Resultados da Consulta'} (${resultados.length})</h2>
                 <div class="table-wrapper"><table class="data-table">
                     <thead><tr>${colunas.map(c => `<th>${c.header}</th>`).join('')}</tr></thead>
                     <tbody>
         `;
 
-        data.resultados.forEach(item => {
-            tableHtml += '<tr>';
-            colunas.forEach(col => {
-                let valor = item[col.key];
-
-                if (col.format && typeof col.format === 'function') {
-                    valor = col.format(valor);
-                } else if (valor === true) {
-                     valor = 'Sim';
-                } else if (valor === false) {
-                     valor = 'Não';
-                } else if (valor === null || valor === undefined) {
-                     valor = 'N/D';
-                }
-
-                if (col.link) {
-                    const linkValue = item.id !== undefined ? item.id : item.numero_aocs;
-                    const encodedLinkValue = encodeURIComponent(linkValue);
-                    valor = `<a href="${col.link}${encodedLinkValue}"><strong>${valor}</strong></a>`;
-                }
-
-                tableHtml += `<td>${valor}</td>`;
-            });
-            tableHtml += '</tr>';
+        resultados.forEach(item => {
+            tableHtml += criarLinha(item, colunas); 
         });
 
         tableHtml += '</tbody></table></div></div>';
         areaResultados.innerHTML = tableHtml;
     }
+
 });

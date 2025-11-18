@@ -101,11 +101,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ nome: nome })
             });
-            const resultado = await response.json();
 
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
+            if (!response.ok) {
+                const erro = await response.json();
+                throw new Error(erro.detail || erro.erro || `Erro de servidor: ${response.status}`);
+            }
+            
+            const categoria = await response.json(); 
 
-            showNotificationAndReload(resultado.mensagem || `Categoria ${idCategoriaEmEdicao ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+            const acao = idCategoriaEmEdicao ? 'atualizada' : 'criada';
+            showNotificationAndReload(`Categoria '${categoria.nome}' ${acao} com sucesso!`, 'success');
 
         } catch (error) {
             showNotification(`Erro ao salvar: ${error.message}`);
@@ -121,12 +126,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch(`/api/categorias/${id}/status?activate=${novoStatusBool}`, { method: 'PATCH' });
-            const resultado = await response.json();
+            
+            if (!response.ok) {
+                const erro = await response.json();
+                throw new Error(erro.detail || erro.erro || `Erro de servidor: ${response.status}`);
+            }
 
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
+            const categoria = await response.json();
 
             const acao = novoStatusBool ? 'ativada' : 'inativada';
-            showNotificationAndReload(resultado.mensagem || `Categoria ${acao} com sucesso!`, 'success');
+            showNotificationAndReload(`Categoria '${categoria.nome}' ${acao} com sucesso!`, 'success');
 
         } catch(error) {
             showNotification(`Erro ao alterar status: ${error.message}`);
@@ -144,9 +153,12 @@ document.addEventListener('DOMContentLoaded', function() {
                  return;
             }
 
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro);
-            showNotificationAndReload(resultado.mensagem || "Categoria excluída.", 'success');
+            if (!response.ok) {
+                const resultado = await response.json();
+                throw new Error(resultado.detail || resultado.erro || `Erro de servidor: ${response.status}`);
+            }
+            
+            showNotificationAndReload("Categoria excluída com sucesso!", 'success');
 
 
         } catch(error) {

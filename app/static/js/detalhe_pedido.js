@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        notificationArea.prepend(notification); // Usa prepend
+        notificationArea.prepend(notification); 
         setTimeout(() => {
             if (notification) {
                 notification.style.opacity = '0';
@@ -29,6 +29,16 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.setItem('notificationMessage', message);
         sessionStorage.setItem('notificationType', type);
         location.reload();
+    }
+
+    function parseBrazilianFloat(str) {
+        if (!str) return 0;
+        const cleanedStr = String(str).replace(/\./g, '').replace(',', '.'); 
+        const num = parseFloat(cleanedStr);
+        if (isNaN(num) || num < 0) {
+            throw new Error("O valor deve ser um número válido e não negativo.");
+        }
+        return num;
     }
 
     const msg = sessionStorage.getItem('notificationMessage');
@@ -47,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ [campo]: valor })
             });
             const resultado = await response.json();
-             if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao atualizar campo.');
+            
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao atualizar campo.`);
+            
             showNotification(resultado.mensagem || 'Campo atualizado.', 'success');
         } catch (error) {
             showNotification(`Erro ao atualizar ${campo}: ${error.message}`, 'error');
@@ -63,7 +75,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ data_criacao: data }) 
             });
             const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao atualizar data.');
+            
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao atualizar data.`);
+            
             showNotification(resultado.mensagem || 'Data atualizada.', 'success');
         } catch (error) {
             showNotification(`Erro ao atualizar data: ${error.message}`, 'error');
@@ -85,14 +99,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         idPedidoParaEntrega = idPedido;
         descModalEntrega.textContent = descricao; 
-        saldoModalEntrega.textContent = saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); 
-        inputQtdEntrega.value = saldo.toFixed(2).replace('.', ','); 
+        
+        const saldoFormatado = saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        saldoModalEntrega.textContent = saldoFormatado; 
+        
+        inputQtdEntrega.value = saldoFormatado;
         inputQtdEntrega.max = saldo; 
-        inputQtdEntrega.placeholder = saldo.toFixed(2).replace('.', ','); 
+        inputQtdEntrega.placeholder = saldoFormatado; 
+        
         dataEntregaInput.valueAsDate = new Date(); 
         formEntrega.reset(); 
         formEntrega.elements['item_pedido_id'].value = idPedido;
-        formEntrega.elements['quantidade_entregue'].value = saldo.toFixed(2).replace('.', ',');
+        formEntrega.elements['quantidade_entregue'].value = saldoFormatado; 
 
         modalEntrega.style.display = 'flex';
         inputQtdEntrega.focus();
@@ -111,11 +129,12 @@ document.addEventListener('DOMContentLoaded', function() {
              const dados = Object.fromEntries(formData.entries());
 
              let quantidadeEntregueNum;
+             const max = parseFloat(inputQtdEntrega.max); 
+             
              try {
-                const qtdStr = String(dados.quantidade_entregue).replace('.', '').replace(',', '.');
-                quantidadeEntregueNum = parseFloat(qtdStr);
-                const max = parseFloat(inputQtdEntrega.max); 
-                 if (isNaN(quantidadeEntregueNum) || quantidadeEntregueNum <= 0 || quantidadeEntregueNum > max) {
+                quantidadeEntregueNum = parseBrazilianFloat(dados.quantidade_entregue);
+                
+                 if (quantidadeEntregueNum <= 0 || quantidadeEntregueNum > max) {
                     throw new Error(`Quantidade inválida. Deve ser maior que 0 e no máximo ${max.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`);
                  }
              } catch(e) {
@@ -135,15 +154,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        quantidade: quantidadeEntregueNum.toFixed(2) 
+                        quantidade: quantidadeEntregueNum.toFixed(2), 
+                        data_entrega: dados.data_entrega,
+                        nota_fiscal: dados.nota_fiscal
                     })
                 });
+                
                 const resultado = await response.json();
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao registrar entrega');
+                
+                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao registrar entrega`);
 
-                reloadPageWithMessage(resultado.mensagem || 'Entrega registrada com sucesso!', 'success');
+                const pedidoAtualizado = resultado; 
+                
+                reloadPageWithMessage(`Entrega de ${pedidoAtualizado.quantidade_entregue} registrada com sucesso!`, 'success');
+                
             } catch (error) {
                 showNotification(`Erro: ${error.message}`);
+            } finally {
                 submitButton.disabled = false;
                  submitButton.innerHTML = '<i class="fa-solid fa-truck-ramp-box"></i> Confirmar Entrega';
             }
@@ -215,10 +242,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(payload) 
                 });
                 const resultado = await response.json();
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao salvar alterações');
-                reloadPageWithMessage(resultado.mensagem || 'Dados da AOCS atualizados!', 'success');
+                
+                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao salvar alterações`);
+                
+                const aocsAtualizada = resultado;
+
+                reloadPageWithMessage(`Dados da AOCS ${aocsAtualizada.numero_aocs} atualizados!`, 'success');
             } catch (error) {
                 showNotification(`Erro ao salvar: ${error.message}`, 'error');
+            } finally {
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
             }
@@ -262,15 +294,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 const response = await fetch(formAnexos.action, { method: 'POST', body: formData });
+                
+                 if (response.status === 204) {
+                     formAnexos.reset();
+                     if(tipoDocumentoNovoInputAnexo) tipoDocumentoNovoInputAnexo.style.display = 'none';
+                     reloadPageWithMessage('Anexo enviado com sucesso!', 'success');
+                     return;
+                 }
+                 
                 const resultado = await response.json(); 
+                
                 if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status}`);
 
                 formAnexos.reset();
                  if(tipoDocumentoNovoInputAnexo) tipoDocumentoNovoInputAnexo.style.display = 'none';
-                reloadPageWithMessage(resultado.mensagem || 'Anexo enviado com sucesso!', 'success');
+                reloadPageWithMessage('Anexo enviado com sucesso!', 'success');
 
             } catch (error) {
                 showNotification(`Erro ao enviar anexo: ${error.message}`, 'error');
+            } finally {
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fa-solid fa-upload"></i> Enviar Anexo';
             }
@@ -317,8 +359,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = document.querySelector('.back-link').href; 
                     return;
                 }
+                
                 const resultado = await response.json();
                 if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao excluir AOCS');
+                 
                  sessionStorage.setItem('notificationMessage', resultado.mensagem || `AOCS ${numeroAOCSGlobal} excluída.`);
                  sessionStorage.setItem('notificationType', 'success');
                  window.location.href = document.querySelector('.back-link').href;

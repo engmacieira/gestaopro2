@@ -78,12 +78,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             itens.forEach(item => {
                 const tr = document.createElement('tr');
-                const nomeEscapado = item.nome.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const nomeEscapado = JSON.stringify(item.nome); 
                 tr.innerHTML = `
                     <td>${item.id}</td>
                     <td>${item.nome}</td>
                     <td class="actions-cell">
-                        <button class="btn-link-action" onclick="abrirModalParaEditar(${item.id}, '${nomeEscapado}')"><i class="fa-solid fa-pencil"></i> Editar</button>
+                        <button class="btn-link-action" onclick="abrirModalParaEditar(${item.id}, ${nomeEscapado})"><i class="fa-solid fa-pencil"></i> Editar</button>
                         <button class="btn-link-action red" onclick="excluirItem(${item.id})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
                     </td>
                 `;
@@ -133,11 +133,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nome: nome })
                 });
-                const resultado = await response.json();
+                
+                if (!response.ok) {
+                    const erro = await response.json();
+                    throw new Error(erro.detail || erro.erro || `Erro ${response.status} na API`);
+                }
+                
+                const item = await response.json();
 
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro na API');
-
-                showNotification(resultado.mensagem || `Item ${idItemEmEdicao ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+                const acao = idItemEmEdicao ? 'atualizado' : 'criado';
+                showNotification(`Item '${item.nome}' ${acao} com sucesso!`, 'success');
 
                 fecharModal();
                 if(tabelaAtiva) carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva);

@@ -33,6 +33,16 @@ document.addEventListener('DOMContentLoaded', function() {
         location.reload();
     }
 
+    function parseBrazilianFloat(str) {
+        if (!str) return 0;
+        const cleanedStr = String(str).replace('.', '').replace(',', '.');
+        const num = parseFloat(cleanedStr);
+        if (isNaN(num) || num < 0) {
+            throw new Error("Quantidade e Valor Unitário devem ser números válidos e não negativos.");
+        }
+        return num;
+    }
+
     const msg = sessionStorage.getItem('notificationMessage');
     if (msg) {
         showNotification(msg, sessionStorage.getItem('notificationType'));
@@ -64,9 +74,11 @@ document.addEventListener('DOMContentLoaded', function() {
             for (const key in item) {
                 if (key === 'descricao' && formItem.elements['descricao']) { 
                     formItem.elements['descricao'].value = item[key].descricao;
-                } else if ((key === 'quantidade' || key === 'valor_unitario') && formItem.elements[key]) { 
-                     formItem.elements[key].value = parseFloat(item[key]).toFixed(2).replace('.', ',');
-                } else if (formItem.elements[key]) { 
+                } 
+                else if ((key === 'quantidade' || key === 'valor_unitario') && formItem.elements[key]) { 
+                    formItem.elements[key].value = parseFloat(item[key]).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } 
+                else if (formItem.elements[key]) { 
                     formItem.elements[key].value = item[key];
                 }
             }
@@ -84,18 +96,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const dadosForm = Object.fromEntries(new FormData(formItem).entries());
         let quantidadeNumerica, valorNumerico;
 
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando...`;
+
         try {
-            const qtdStr = String(dadosForm.quantidade).replace('.', '').replace(',', '.');
-            const valorStr = String(dadosForm.valor_unitario).replace('.', '').replace(',', '.');
-
-            quantidadeNumerica = parseFloat(qtdStr);
-            valorNumerico = parseFloat(valorStr);
-
-            if (isNaN(quantidadeNumerica) || isNaN(valorNumerico) || quantidadeNumerica < 0 || valorNumerico < 0) {
-                throw new Error("Quantidade e Valor Unitário devem ser números válidos e não negativos.");
-            }
+            quantidadeNumerica = parseBrazilianFloat(dadosForm.quantidade);
+            valorNumerico = parseBrazilianFloat(dadosForm.valor_unitario);
+            
         } catch (e) {
             showNotification(e.message);
+            submitButton.disabled = false;
+            submitButton.innerHTML = `Salvar`;
             return;
         }
 
@@ -105,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             unidade_medida: dadosForm.unidade_medida,
             quantidade: quantidadeNumerica.toFixed(2), 
             valor_unitario: valorNumerico.toFixed(2), 
-            contrato_nome: nomeContratoGlobal, 
+            contrato_nome: window.nomeContratoGlobal, 
             descricao: {
                 descricao: dadosForm.descricao
             }
@@ -114,30 +126,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = idItemEmEdicao ? `/api/itens/${idItemEmEdicao}` : `/api/itens`;
         const method = idItemEmEdicao ? 'PUT' : 'POST';
 
-        const submitButton = this.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-        submitButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando...`;
-
         try {
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            const resultado = await response.json();
+            
+            if (!response.ok) {
+                 const erro = await response.json();
+                 throw new Error(erro.detail || erro.erro || `Erro ${response.status}`);
+            }
 
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status}`);
+            const item = await response.json();
 
             formContainer.style.display = 'none';
             formItem.reset();
             idItemEmEdicao = null;
 
-            reloadPageWithMessage(resultado.mensagem || `Item ${idItemEmEdicao ? 'atualizado' : 'cadastrado'} com sucesso!`, 'success');
+            const acao = idItemEmEdicao ? 'atualizado' : 'cadastrado';
+            reloadPageWithMessage(`Item #${item.numero_item} ${acao} com sucesso!`, 'success');
 
         } catch (error) {
             showNotification(`Erro ao salvar item: ${error.message}`);
+        } finally {
             submitButton.disabled = false;
-             submitButton.innerHTML = `Salvar`;
+            submitButton.innerHTML = `Salvar`;
         }
     });
 
@@ -148,10 +162,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch(`/api/itens/${id}/status?activate=${novoStatusBool}`, { method: 'PATCH' });
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao alterar status');
+            
+            if (!response.ok) {
+                const erro = await response.json();
+                throw new Error(erro.detail || erro.erro || 'Erro ao alterar status');
+            }
+            
+            const item = await response.json();
+            const acao = novoStatusBool ? 'ativado' : 'inativado';
 
-            reloadPageWithMessage(resultado.mensagem || `Status do item alterado com sucesso!`, 'success');
+            reloadPageWithMessage(`Status do Item #${item.numero_item} ${acao} com sucesso!`, 'success');
         } catch(error) {
             showNotification(`Erro ao alterar status: ${error.message}`);
         }
@@ -166,9 +186,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 reloadPageWithMessage("Item excluído com sucesso!", 'success');
                 return;
             }
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro na exclusão');
-             reloadPageWithMessage(resultado.mensagem || "Item excluído.", 'success');
+            
+            if (!response.ok) {
+                const resultado = await response.json();
+                throw new Error(resultado.detail || resultado.erro || 'Erro na exclusão');
+            }
+            
+            reloadPageWithMessage("Item excluído.", 'success');
 
         } catch(error) {
             showNotification(`Erro ao excluir item: ${error.message}`);
@@ -186,9 +210,13 @@ document.addEventListener('DOMContentLoaded', function() {
                  reloadPageWithMessage("Anexo excluído com sucesso.", 'success');
                  return;
             }
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao excluir anexo');
-             reloadPageWithMessage(resultado.mensagem || "Anexo excluído.", 'success');
+            
+            if (!response.ok) {
+                const resultado = await response.json();
+                throw new Error(resultado.detail || resultado.erro || 'Erro ao excluir anexo');
+            }
+            
+            reloadPageWithMessage("Anexo excluído com sucesso.", 'success');
 
         } catch (error) {
             showNotification(`Erro ao excluir anexo: ${error.message}`);
@@ -201,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (tipoDocumentoSelectAnexo && tipoDocumentoNovoInputAnexo) {
         tipoDocumentoSelectAnexo.addEventListener('change', function() {
             const isNovo = this.value === 'NOVO';
-            tipoDocumentoNovoInputAnexo.style.display = isNovo ? 'block' : 'none';
+            tipoDocumentoNovoInputAnexo.style.display = isNovo ? 'block' : 'none'; 
             tipoDocumentoNovoInputAnexo.required = isNovo;
             if (!isNovo) {
                 tipoDocumentoNovoInputAnexo.value = '';
@@ -249,10 +277,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 formAnexos.reset();
                 if(tipoDocumentoNovoInputAnexo) tipoDocumentoNovoInputAnexo.style.display = 'none'; 
-                reloadPageWithMessage(resultado.mensagem || 'Anexo enviado com sucesso!', 'success');
+                
+                reloadPageWithMessage('Anexo enviado com sucesso!', 'success');
 
             } catch (error) {
                 showNotification(`Erro ao enviar anexo: ${error.message}`);
+            } finally {
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fa-solid fa-upload"></i> Enviar';
             }

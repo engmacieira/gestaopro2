@@ -1,5 +1,36 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        const str = String(unsafe);
+        return str
+             .replace(/&/g, '&amp;')
+             .replace(/</g, '&lt;')
+             .replace(/>/g, '&gt;')
+             .replace(/"/g, '&quot;')
+             .replace(/'/g, '&#039;');
+    }
+    
+    function formatBrazilianNumber(value) {
+        if (typeof value === 'number') {
+            return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        return value;
+    }
+
+    function formatDateForPreview(value) {
+        if (!value) return '';
+        try {
+            const dateObj = new Date(value);
+            if (!isNaN(dateObj.getTime())) {
+                return dateObj.toLocaleDateString('pt-BR', { timeZone: 'UTC' }); 
+            }
+        } catch (e) {
+            console.warn("Erro ao formatar data:", e);
+        }
+        return String(value); 
+    }
+
     const tabLinks = document.querySelectorAll('.tab-link');
     const tabContents = document.querySelectorAll('.tab-content');
     if (tabLinks.length > 0 && tabContents.length > 0) {
@@ -43,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('notificationMessage');
         sessionStorage.removeItem('notificationType');
     }
-
+    
     function setupImportSection(formId, previewContainerId, previewTableId, errorDivId, saveBtnId, previewUrl, saveUrl, redirectUrl) {
         const form = document.getElementById(formId);
         if (!form) {
@@ -83,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (!response.ok) {
-                    let errorDetail = result.detail || result.erro || 'Erro desconhecido ao pré-visualizar.';
+                    let errorDetail = result.detail || result.erro || `Erro ${response.status} ao pré-visualizar.`;
                     throw new Error(errorDetail);
                 }
 
@@ -118,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (!response.ok) {
-                    let errorDetail = result.detail || result.erro || 'Erro desconhecido ao salvar.';
+                    let errorDetail = result.detail || result.erro || `Erro ${response.status} ao salvar.`;
                     throw new Error(errorDetail);
                 }
 
@@ -156,23 +187,22 @@ document.addEventListener('DOMContentLoaded', function() {
             <tr>
                 ${headers.map(h => {
                     let value = row[h];
-                    if ((h.includes('data_inicio') || h.includes('data_fim')) && value) {
-                        try {
-                            const dateObj = new Date(value);
-                             if (!isNaN(dateObj.getTime())) {
-                                 value = dateObj.toLocaleDateString('pt-BR', { timeZone: 'UTC' }); 
-                             } else {
-                                 value = String(value); 
-                             }
-                        } catch (e) {
-                             value = String(value); 
-                        }
-                    } else if (value === null || value === undefined) {
+
+                    if (h.includes('data_inicio') || h.includes('data_fim') || h.includes('data_criacao') ) { 
+                        value = formatDateForPreview(value);
+                    } 
+                    else if (h === 'quantidade' || h === 'valor_unitario') {
+                         value = formatBrazilianNumber(value);
+                    } 
+                    
+                    if (value === null || value === undefined) {
                          value = ''; 
-                    } else if (typeof value === 'number' && (h === 'quantidade' || h === 'valor_unitario')) {
-                         value = value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    } else {
+                         value = String(value);
                     }
-                    const escapedValue = String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+                    const escapedValue = escapeHtml(value);
+                    
                     return `<td>${escapedValue}</td>`;
                 }).join('')}
             </tr>

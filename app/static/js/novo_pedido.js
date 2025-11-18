@@ -19,6 +19,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const paginationContainer = document.getElementById('pagination-container');
     const containerAOCSInputs = document.getElementById('aocs-por-contrato-container'); 
 
+    function formatBrazilianNumber(value) {
+        if (value === null || value === undefined) return 'N/D';
+        if (typeof value !== 'number') value = parseFloat(value);
+        if (isNaN(value)) return 'N/D';
+        return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function parseBrazilianFloat(str) {
+        if (!str) return 0;
+        const cleanedStr = String(str).replace(/\./g, '').replace(',', '.'); 
+        const num = parseFloat(cleanedStr);
+        return isNaN(num) ? 0 : num;
+    }
+
     function showNotification(message, type = 'error') {
         if (!notificationArea) return;
         const initialFlash = notificationArea.querySelector('.notification.flash');
@@ -38,14 +52,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
+    function navigateWithMessage(url, message, type = 'success') {
+        sessionStorage.setItem('notificationMessage', message);
+        sessionStorage.setItem('notificationType', type);
+        window.location.href = url;
+    }
+
     async function fetchItens(page = 1, busca = '') {
         if (!corpoTabelaItens) return; 
         corpoTabelaItens.innerHTML = '<tr><td colspan="5">Carregando itens...</td></tr>';
         try {
             const url = `/api/categorias/${idCategoriaGlobal}/itens?page=${page}&busca=${encodeURIComponent(busca)}&sort_by=${sortColumn}&order=${sortDirection}`;
             const response = await fetch(url);
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || data.erro || 'Falha ao carregar dados.');
+            const data = await response.json().catch(() => ({})); 
+            
+            if (!response.ok) {
+                const errorDetail = data.detail || data.erro || `Erro ${response.status} ao carregar itens.`;
+                throw new Error(errorDetail);
+            }
 
             renderizarTabelaItens(data.itens);
             renderizarPaginacao(data.total_paginas, data.pagina_atual);
@@ -88,11 +112,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         itens.forEach(item => {
             const itemNoCarrinho = carrinho.find(c => c.id === item.id);
-            const quantidadeNoCarrinho = itemNoCarrinho ? itemNoCarrinho.quantidade : '';
+            const quantidadeNoCarrinho = itemNoCarrinho ? formatBrazilianNumber(itemNoCarrinho.quantidade) : ''; 
             const linha = document.createElement('tr');
             linha.className = itemNoCarrinho ? 'item-in-cart' : '';
 
-            const saldoFormatado = item.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const saldoFormatado = formatBrazilianNumber(item.saldo); 
             const valorUnitFormatado = parseFloat(item.valor_unitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
             linha.innerHTML = `
@@ -112,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
             corpoTabelaItens.appendChild(linha);
         });
     }
-
+    
     function renderizarPaginacao(total_paginas, pagina_atual) {
         if (!paginationContainer) return;
         paginationContainer.innerHTML = ''; 
@@ -176,11 +200,13 @@ document.addEventListener('DOMContentLoaded', function() {
         carrinho.forEach(item => {
             const precoFormatado = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             const subtotalFormatado = item.subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const quantidadeFormatada = formatBrazilianNumber(item.quantidade);
+            
             divItensCarrinho.innerHTML += `
                 <div class="cart-item">
                     <div class="cart-item-info">
                         <span class="cart-item-name">${item.nome}</span>
-                        <span class="cart-item-price">${item.quantidade.toLocaleString('pt-BR')} x ${precoFormatado}</span>
+                        <span class="cart-item-price">${quantidadeFormatada} x ${precoFormatado}</span>
                     </div>
                     <strong class="cart-item-subtotal">${subtotalFormatado}</strong>
                 </div>`;
@@ -192,20 +218,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleQuantidadeChange(input) {
         const itemId = parseInt(input.dataset.itemId);
-        let quantidadeStr = input.value.replace('.', '').replace(',', '.'); 
-        let quantidade = parseFloat(quantidadeStr);
+        let quantidade = parseBrazilianFloat(input.value); 
         const itemDoCatalogo = JSON.parse(input.dataset.itemFull);
+        const saldoDisponivel = parseFloat(itemDoCatalogo.saldo);
 
-        if (isNaN(quantidade) || quantidade <= 0) {
+        if (quantidade <= 0) {
             carrinho = carrinho.filter(item => item.id !== itemId);
             input.value = ''; 
             quantidade = 0; 
         } else {
-            const saldoDisponivel = parseFloat(itemDoCatalogo.saldo);
             if (quantidade > saldoDisponivel) {
-                showNotification(`Saldo insuficiente! O máximo para "${itemDoCatalogo.descricao.descricao}" é ${saldoDisponivel.toLocaleString('pt-BR')}.`, 'warning');
+                showNotification(`Saldo insuficiente! O máximo para "${itemDoCatalogo.descricao.descricao}" é ${formatBrazilianNumber(saldoDisponivel)}.`, 'warning');
                 quantidade = saldoDisponivel;
-                input.value = quantidade.toFixed(2); 
             }
 
             const valorUnitarioNumerico = parseFloat(itemDoCatalogo.valor_unitario);
@@ -225,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     numeroContrato: itemDoCatalogo.numero_contrato 
                 });
             }
-             input.value = quantidade.toFixed(2);
+             input.value = formatBrazilianNumber(quantidade); 
         }
 
         renderizarCarrinho();
@@ -313,11 +337,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(aocsPayload)
             })
             .then(async response => { 
+                const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    const errorDetail = await response.json().catch(() => ({ detail: `Erro ${response.status}` }));
-                    return Promise.reject({ message: `Falha ao criar AOCS ${numeroAOCS}.`, error: errorDetail.detail });
+                    const errorDetail = data.detail || data.erro || `Erro ${response.status} na criação da AOCS.`;
+                    return Promise.reject({ message: `Falha ao criar AOCS ${numeroAOCS}.`, error: errorDetail });
                 }
-                return response.json(); 
+                return data; 
             })
             .then(aocsResult => {
                 const id_aocs_criada = aocsResult.id;
@@ -328,14 +353,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify(item) 
                     })
                     .then(async response => { 
+                        const data = await response.json().catch(() => ({}));
                         if (!response.ok) {
-                            const errorDetail = await response.json().catch(() => ({ detail: `Erro ${response.status}` }));
+                            const errorDetail = data.detail || data.erro || `Erro ${response.status} ao adicionar item.`;
                             return Promise.reject({
                                 message: `Falha ao adicionar Item ID ${item.item_contrato_id} à AOCS ${numeroAOCS}.`,
-                                error: errorDetail.detail
+                                error: errorDetail
                             });
                         }
-                        return response.json(); 
+                        return data; 
                     })
                 );
                 return Promise.all(pedidoPromises);
@@ -353,11 +379,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const resultados = await Promise.all(promessasDeFetch);
-            showNotification(`${resultados.length} AOCS(s) criada(s) com sucesso! Redirecionando...`, 'success');
-            setTimeout(() => { window.location.href = redirectUrlPedidosGlobal; }, 2000);
+            
+            const aocsCriadas = resultados.length; 
+            
+            showNotification(`${aocsCriadas} AOCS(s) criada(s) com sucesso! Redirecionando...`, 'success');
+            
+            setTimeout(() => { navigateWithMessage(redirectUrlPedidosGlobal, `${aocsCriadas} AOCS(s) criada(s) com sucesso!`, 'success'); }, 2000);
+
         } catch (error) {
             console.error("Erro ao enviar pedido:", error);
-            showNotification(`Erro ao enviar pedido. Detalhe: ${error.message} (${error.error || 'Erro desconhecido'})`, 'error');
+            const errorMessage = `Erro ao enviar pedido: ${error.message}. Detalhe: ${error.error || 'Erro desconhecido.'}`;
+            showNotification(errorMessage, 'error');
             submitButton.disabled = false;
             submitButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar e Enviar';
         }
@@ -376,10 +408,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (confirm('Tem certeza que deseja limpar todos os itens do pedido?')) {
                 carrinho = [];
                 renderizarCarrinho();
-                document.querySelectorAll('#corpo-tabela-itens input[type="number"]').forEach(input => {
+                document.querySelectorAll('.small-input').forEach(input => {
                     input.value = '';
                     input.closest('tr')?.classList.remove('item-in-cart');
                 });
+                fetchItens(1, campoBusca.value);
             }
         });
     }

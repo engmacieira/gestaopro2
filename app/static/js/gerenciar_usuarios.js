@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/api/users/${id}`);
             const usuario = await response.json();
 
-            if (!response.ok) throw new Error(usuario.detail || 'Erro ao carregar usuário');
+            if (!response.ok) throw new Error(usuario.detail || usuario.erro || 'Erro ao carregar usuário');
 
             modalTitle.textContent = 'Editar Usuário';
             formUser.elements.username.value = usuario.username;
@@ -88,16 +88,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
          try {
              const response = await fetch(`/api/users/${id}`, {
-                 method: 'PUT',
+                 method: 'PATCH', 
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify({ ativo: novoStatusBool }) 
              });
-             const resultado = await response.json();
+             
+             const usuario = await response.json();
 
-             if (!response.ok) throw new Error(resultado.detail || 'Erro ao alterar status');
+             if (!response.ok) throw new Error(usuario.detail || usuario.erro || `Erro ${response.status} ao alterar status`);
 
              const acao = novoStatusBool ? 'ativado' : 'inativado';
-             showNotificationAndReload(`Usuário ${acao} com sucesso!`, 'success');
+             showNotificationAndReload(`Usuário '${usuario.username}' ${acao} com sucesso!`, 'success');
 
          } catch (error) {
              showNotification(`Erro ao alterar status: ${error.message}`);
@@ -110,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/api/users/${id}/reset-password`, { method: 'POST' });
             const resultado = await response.json();
 
-            if (!response.ok) throw new Error(resultado.detail || 'Erro ao resetar senha');
+            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao resetar senha');
 
             alert(`Senha redefinida com sucesso!\n\nA nova senha temporária é:\n\n${resultado.new_password}\n\nCopie esta senha e a entregue ao usuário de forma segura.`);
 
@@ -168,14 +169,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload) 
                 });
-                const resultado = await response.json();
+                
+                const usuario = await response.json();
 
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status}`);
+                if (!response.ok) throw new Error(usuario.detail || usuario.erro || `Erro ${response.status}`);
 
-                showNotificationAndReload(resultado.mensagem || `Usuário ${idUsuarioEmEdicao ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+                const acao = idUsuarioEmEdicao ? 'atualizado' : 'criado';
+                showNotificationAndReload(`Usuário '${usuario.username}' ${acao} com sucesso!`, 'success');
 
             } catch (error) {
                 showNotification(`Erro: ${error.message}`);
+            } finally {
                  submitButton.disabled = false;
                  submitButton.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Salvar`;
             }

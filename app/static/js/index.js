@@ -51,21 +51,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch("/api/categorias?mostrar_inativos=false");
+            
+            const data = await response.json().catch(() => ({})); 
+
             if (!response.ok) {
-                 const errorData = await response.json().catch(() => ({ detail: 'Falha ao buscar categorias.' }));
-                 throw new Error(errorData.detail || `Erro ${response.status}`);
+                 const errorDetail = data.detail || data.erro || 'Falha ao buscar categorias.';
+                 throw new Error(errorDetail);
             }
 
-            const categorias = await response.json();
+            const categorias = data; 
 
-            selectCategoriaPedido.innerHTML = '<option value="" disabled selected>Selecione uma categoria ativa</option>'; // Placeholder
+            selectCategoriaPedido.innerHTML = '<option value="" disabled selected>Selecione uma categoria ativa</option>';
             if (categorias.length > 0) {
                 categorias.forEach(cat => {
-                    const option = new Option(cat.nome, cat.id); 
-                    selectCategoriaPedido.add(option);
+                    if (cat.ativo) { 
+                         const option = new Option(cat.nome, cat.id); 
+                         selectCategoriaPedido.add(option);
+                    }
                 });
                 selectCategoriaPedido.disabled = false;
-                btnContinuarPedido.disabled = false; 
+                if (selectCategoriaPedido.options.length > 1) {
+                    btnContinuarPedido.disabled = false; 
+                } else {
+                    selectCategoriaPedido.innerHTML = '<option value="">Nenhuma categoria ativa encontrada</option>';
+                }
             } else {
                  selectCategoriaPedido.innerHTML = '<option value="">Nenhuma categoria ativa encontrada</option>';
             }
