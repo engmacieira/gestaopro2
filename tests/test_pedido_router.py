@@ -6,6 +6,11 @@ from app.schemas.pedido_schema import PedidoUpdateRequest
 
 @pytest.fixture
 def setup_contrato_com_item(test_client: TestClient, admin_auth_headers: dict) -> dict:
+    test_client.post("/api/categorias/", json={"nome": "Categoria de Pedidos"}, headers=admin_auth_headers)
+    test_client.post("/api/instrumentos/", json={"nome": "Instrumento de Pedidos"}, headers=admin_auth_headers)
+    test_client.post("/api/modalidades/", json={"nome": "Modalidade de Pedidos"}, headers=admin_auth_headers)
+    test_client.post("/api/numeros-modalidade/", json={"numero_ano": "NumMod Pedidos"}, headers=admin_auth_headers)
+    test_client.post("/api/processos-licitatorios/", json={"numero": "PL Pedidos"}, headers=admin_auth_headers)
     contrato_payload = {
         "numero_contrato": "CT-PEDIDO-111/2025",
         "data_inicio": "2025-01-01", "data_fim": "2025-12-31",

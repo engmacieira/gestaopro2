@@ -5,6 +5,11 @@ import os
 
 @pytest.fixture
 def setup_contrato_para_anexo(test_client: TestClient, admin_auth_headers: dict) -> int:
+    test_client.post("/api/categorias/", json={"nome": "Categoria de Anexos"}, headers=admin_auth_headers)
+    test_client.post("/api/instrumentos/", json={"nome": "Instrumento de Anexos"}, headers=admin_auth_headers)
+    test_client.post("/api/modalidades/", json={"nome": "Modalidade de Anexos"}, headers=admin_auth_headers)
+    test_client.post("/api/numeros-modalidade/", json={"numero_ano": "NumMod Anexos"}, headers=admin_auth_headers)
+    test_client.post("/api/processos-licitatorios/", json={"numero": "PL Anexos"}, headers=admin_auth_headers)
     payload = {
         "numero_contrato": "CT-ANEXO-444/2025",
         "data_inicio": "2025-01-01", "data_fim": "2025-12-31",

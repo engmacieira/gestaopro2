@@ -4,6 +4,11 @@ from datetime import date
 
 @pytest.fixture
 def setup_contrato(test_client: TestClient, admin_auth_headers: dict) -> dict:
+    test_client.post("/api/categorias/", json={"nome": "Categoria Padrão de Itens"}, headers=admin_auth_headers)
+    test_client.post("/api/instrumentos/", json={"nome": "Instrumento Padrão"}, headers=admin_auth_headers)
+    test_client.post("/api/modalidades/", json={"nome": "Modalidade Padrão"}, headers=admin_auth_headers)
+    test_client.post("/api/numeros-modalidade/", json={"numero_ano": "NumMod Padrão"}, headers=admin_auth_headers)
+    test_client.post("/api/processos-licitatorios/", json={"numero": "PL Padrão"}, headers=admin_auth_headers)
     payload = {
         "numero_contrato": "CT-PAI-999/2025",
         "data_inicio": "2025-01-01",

@@ -54,14 +54,27 @@ class ContratoRepository:
     def create(self, contrato_req: ContratoCreateRequest) -> Contrato:
         cursor = None
         try:
-            cat = self.categoria_repo.get_or_create(contrato_req.categoria_nome)
-            inst = self.instrumento_repo.get_or_create(contrato_req.instrumento_nome)
-            mod = self.modalidade_repo.get_or_create(contrato_req.modalidade_nome)
-            num_mod = self.numeromodalidade_repo.get_or_create(contrato_req.numero_modalidade_str)
-            proc = self.processolicitatorio_repo.get_or_create(contrato_req.processo_licitatorio_numero)
-
+            cat = self.categoria_repo.get_by_nome(contrato_req.categoria_nome)
+            if not cat:
+                raise ValueError(f"Categoria '{contrato_req.categoria_nome}' não encontrada.")
+            
+            inst = self.instrumento_repo.get_by_nome(contrato_req.instrumento_nome)
+            if not inst:
+                raise ValueError(f"Instrumento '{contrato_req.instrumento_nome}' não encontrado.")
+            
+            mod = self.modalidade_repo.get_by_nome(contrato_req.modalidade_nome)
+            if not mod:
+                raise ValueError(f"Modalidade '{contrato_req.modalidade_nome}' não encontrada.")
+            
+            num_mod = self.numeromodalidade_repo.get_by_numero_ano(contrato_req.numero_modalidade_str)
+            if not num_mod:
+                raise ValueError(f"Número/Ano da Modalidade '{contrato_req.numero_modalidade_str}' não encontrado.")
+            
+            proc = self.processolicitatorio_repo.get_by_numero(contrato_req.processo_licitatorio_numero)
+            if not proc:
+                raise ValueError(f"Processo Licitatório '{contrato_req.processo_licitatorio_numero}' não encontrado.")
+            
             forn_req = contrato_req.fornecedor
-
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             sql = """
                 INSERT INTO contratos (id_categoria, numero_contrato, fornecedor, cpf_cnpj, email, telefone,
@@ -72,14 +85,14 @@ class ContratoRepository:
             """
             params = (
                 cat.id, contrato_req.numero_contrato, forn_req.nome, forn_req.cpf_cnpj, forn_req.email, forn_req.telefone,
-                contrato_req.data_inicio, contrato_req.data_fim, date.today(), True, 
+                contrato_req.data_inicio, contrato_req.data_fim, date.today(), True,
                 inst.id, mod.id, num_mod.id, proc.id
             )
             cursor.execute(sql, params)
             new_data = cursor.fetchone()
             self.db_conn.commit()
-
             new_contrato = self._map_row_to_model(new_data)
+            
             if not new_contrato:
                 logger.error("Falha ao mapear dados do contrato recém-criado.")
                 raise Exception("Falha ao mapear dados do contrato recém-criado.")
@@ -88,6 +101,7 @@ class ContratoRepository:
             return new_contrato
 
         except (ValueError, Exception, psycopg2.DatabaseError) as error:
+
             if self.db_conn: self.db_conn.rollback()
             if isinstance(error, ValueError):
                  logger.warning(f"Erro ao resolver FKs durante criação do Contrato (Req: {contrato_req}): {error}")
@@ -96,6 +110,7 @@ class ContratoRepository:
             else:
                  logger.exception(f"Erro inesperado ao criar Contrato (Req: {contrato_req}): {error}")
             raise
+
         finally:
             if cursor: cursor.close()
 
@@ -155,27 +170,27 @@ class ContratoRepository:
 
         try:
             if contrato_req.categoria_nome is not None:
-                cat = self.categoria_repo.get_or_create(contrato_req.categoria_nome)
+                cat = self.categoria_repo.get_by_nome(contrato_req.categoria_nome)
                 resolved_fks['id_categoria'] = cat.id
                 fields_to_update.append("id_categoria = %s")
                 params.append(cat.id)
             if contrato_req.instrumento_nome is not None:
-                inst = self.instrumento_repo.get_or_create(contrato_req.instrumento_nome)
+                inst = self.instrumento_repo.get_by_nome(contrato_req.instrumento_nome)
                 resolved_fks['id_instrumento_contratual'] = inst.id
                 fields_to_update.append("id_instrumento_contratual = %s")
                 params.append(inst.id)
             if contrato_req.modalidade_nome is not None:
-                 mod = self.modalidade_repo.get_or_create(contrato_req.modalidade_nome)
+                 mod = self.modalidade_repo.get_by_nome(contrato_req.modalidade_nome)
                  resolved_fks['id_modalidade'] = mod.id
                  fields_to_update.append("id_modalidade = %s")
                  params.append(mod.id)
             if contrato_req.numero_modalidade_str is not None:
-                 num_mod = self.numeromodalidade_repo.get_or_create(contrato_req.numero_modalidade_str)
+                 num_mod = self.numeromodalidade_repo.get_by_numero_ano(contrato_req.numero_modalidade_str)
                  resolved_fks['id_numero_modalidade'] = num_mod.id
                  fields_to_update.append("id_numero_modalidade = %s")
                  params.append(num_mod.id)
             if contrato_req.processo_licitatorio_numero is not None:
-                 proc = self.processolicitatorio_repo.get_or_create(contrato_req.processo_licitatorio_numero)
+                 proc = self.processolicitatorio_repo.get_by_numero(contrato_req.processo_licitatorio_numero)
                  resolved_fks['id_processo_licitatorio'] = proc.id
                  fields_to_update.append("id_processo_licitatorio = %s")
                  params.append(proc.id)
