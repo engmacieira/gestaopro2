@@ -35,6 +35,7 @@ class CiPagamentoUpdateRequest(BaseModel):
 class CiPagamentoResponse(CiPagamentoBase):
     id: int
     id_aocs: int
+    id_pedido: int
     id_solicitante: int
     id_secretaria: int
     id_dotacao_pagamento: int

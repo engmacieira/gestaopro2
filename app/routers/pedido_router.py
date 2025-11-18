@@ -145,6 +145,8 @@ def update_pedido(
             status_code=status.HTTP_409_CONFLICT,
             detail="Erro de integridade ao atualizar pedido (ex: status inválido?)."
         )
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
         logger.exception(f"Erro inesperado ao atualizar Pedido ID {id} por '{current_user.username}': {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")

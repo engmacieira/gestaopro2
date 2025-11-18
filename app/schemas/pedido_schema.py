@@ -9,7 +9,6 @@ class PedidoBase(BaseModel):
 
 class PedidoCreateRequest(BaseModel): 
     item_contrato_id: int
-    id_aocs: int
     quantidade_pedida: Decimal = Field(..., gt=0)
     
 class PedidoUpdateRequest(BaseModel): 

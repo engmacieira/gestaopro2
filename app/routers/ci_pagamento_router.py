@@ -23,12 +23,13 @@ router = APIRouter(
              dependencies=[Depends(require_access_level(2))])
 def create_ci_pagamento( 
     ci_req: CiPagamentoCreateRequest, 
+    id_pedido: int,
     db_conn: connection = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     try:
         repo = CiPagamentoRepository(db_conn)
-        nova_ci = repo.create(ci_req)
+        nova_ci = repo.create(ci_req, id_pedido)
         logger.info(f"Usuário '{current_user.username}' criou CI Pagamento ID {nova_ci.id} ('{nova_ci.numero_ci}').")
         return nova_ci
     except ValueError as e: 
@@ -77,6 +78,29 @@ def get_ci_pagamento_by_id(
 
     except Exception as e:
         logger.exception(f"Erro inesperado ao buscar CI Pagamento ID {id}: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor.")
+
+@router.get("/por-pedido/{id_pedido}", response_model=CiPagamentoResponse)
+def get_ci_pagamento_by_pedido_id( 
+    id_pedido: int,
+    db_conn: connection = Depends(get_db)
+):
+    try:
+        repo = CiPagamentoRepository(db_conn)
+        ci = repo.get_by_pedido_id(id_pedido) 
+        if not ci:
+            logger.warning(f"CI Pagamento para Pedido ID {id_pedido} não encontrada.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="CI de Pagamento não encontrada para este Pedido."
+            )
+        return ci
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
+    except Exception as e:
+        logger.exception(f"Erro inesperado ao buscar CI Pagamento por Pedido ID {id_pedido}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
 @router.put("/{id}",

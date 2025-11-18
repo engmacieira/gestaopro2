@@ -1,6 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from datetime import date
+from decimal import Decimal
+from app.schemas.pedido_schema import PedidoUpdateRequest
 
 @pytest.fixture
 def setup_contrato_com_item(test_client: TestClient, admin_auth_headers: dict) -> dict:
@@ -48,14 +50,48 @@ def setup_aocs(test_client: TestClient, admin_auth_headers: dict) -> dict:
     
     return {"id_aocs": aocs_data["id"]}
 
+@pytest.fixture
+def setup_pedido_pronto(
+    test_client: TestClient, 
+    admin_auth_headers: dict, 
+    setup_contrato_com_item: dict, 
+    setup_aocs: dict
+) -> dict:
+    """
+    Cria um pedido completo e retorna seu ID e a quantidade pedida.
+    Usa as fixtures setup_contrato_com_item e setup_aocs.
+    """
+    id_item = setup_contrato_com_item["id_item"]
+    id_aocs = setup_aocs["id_aocs"]
+    qtd_pedida = Decimal("25.0")
+
+    pedido_payload = {
+        "item_contrato_id": id_item,
+        "quantidade_pedida": float(qtd_pedida) 
+    }
+    
+    response = test_client.post(
+        f"/api/pedidos/?id_aocs={id_aocs}", 
+        json=pedido_payload,
+        headers=admin_auth_headers
+    )
+    assert response.status_code == 201
+    data = response.json()
+    
+    return {
+        "id_pedido": data["id"],
+        "id_aocs": id_aocs,
+        "id_item": id_item,
+        "quantidade_pedida": qtd_pedida
+    }
+
 def test_create_pedido_sucesso(test_client: TestClient, admin_auth_headers: dict, setup_contrato_com_item: dict, setup_aocs: dict):
     id_item_com_saldo = setup_contrato_com_item["id_item"]
     id_aocs_criada = setup_aocs["id_aocs"]
     
     pedido_payload = {
         "item_contrato_id": id_item_com_saldo,
-        "quantidade_pedida": 10.5,
-        "id_aocs": id_aocs_criada 
+        "quantidade_pedida": 10.5
     }
 
     response = test_client.post(
@@ -77,8 +113,7 @@ def test_create_pedido_sem_saldo(test_client: TestClient, admin_auth_headers: di
     
     pedido_payload = {
         "item_contrato_id": id_item_com_saldo,
-        "quantidade_pedida": 2000,
-        "id_aocs": id_aocs_criada 
+        "quantidade_pedida": 2000
     }
 
     response = test_client.post(
@@ -93,8 +128,7 @@ def test_create_pedido_sem_saldo(test_client: TestClient, admin_auth_headers: di
 def test_get_and_delete_pedido(test_client: TestClient, admin_auth_headers: dict, setup_contrato_com_item: dict, setup_aocs: dict):
     payload_pedido = {
         "item_contrato_id": setup_contrato_com_item['id_item'], 
-        "quantidade_pedida": 5,
-        "id_aocs": setup_aocs['id_aocs'] 
+        "quantidade_pedida": 5
     }
     response_create = test_client.post(
         f"/api/pedidos/?id_aocs={setup_aocs['id_aocs']}",
@@ -113,3 +147,84 @@ def test_get_and_delete_pedido(test_client: TestClient, admin_auth_headers: dict
 
     response_get_deleted = test_client.get(f"/api/pedidos/{new_id_pedido}", headers=admin_auth_headers)
     assert response_get_deleted.status_code == 404
+    
+def test_update_pedido_sucesso(
+    test_client: TestClient, 
+    admin_auth_headers: dict, 
+    setup_pedido_pronto: dict
+):
+    id_pedido = setup_pedido_pronto["id_pedido"]
+    
+    update_payload = PedidoUpdateRequest(
+        status_entrega="Entregue Parcialmente",
+        quantidade_entregue=Decimal("10.0")
+    )
+    
+    response = test_client.put(
+        f"/api/pedidos/{id_pedido}",
+        json=update_payload.model_dump(mode="json"),
+        headers=admin_auth_headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == id_pedido
+    assert data["status_entrega"] == "Entregue Parcialmente"
+    assert float(data["quantidade_entregue"]) == 10.0
+
+def test_update_pedido_erro_qtd_excede(
+    test_client: TestClient, 
+    admin_auth_headers: dict, 
+    setup_pedido_pronto: dict
+):
+    id_pedido = setup_pedido_pronto["id_pedido"]
+    qtd_pedida = setup_pedido_pronto["quantidade_pedida"]
+    
+    update_payload = PedidoUpdateRequest(
+        quantidade_entregue=qtd_pedida + Decimal("1.0")     
+    )
+    
+    response = test_client.put(
+        f"/api/pedidos/{id_pedido}",
+        json=update_payload.model_dump(mode="json"),
+        headers=admin_auth_headers
+    )
+    
+    assert response.status_code == 400 
+    assert "não pode ser maior que a quantidade pedida" in response.json()["detail"]
+    
+
+def test_get_all_pedidos(
+    test_client: TestClient, 
+    admin_auth_headers: dict, 
+    setup_pedido_pronto: dict
+):
+    id_pedido_criado = setup_pedido_pronto["id_pedido"]
+    
+    response = test_client.get("/api/pedidos/", headers=admin_auth_headers)
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert any(pedido["id"] == id_pedido_criado for pedido in data)
+
+def test_get_pedidos_by_aocs_id(
+    test_client: TestClient, 
+    admin_auth_headers: dict, 
+    setup_pedido_pronto: dict
+):
+    id_pedido_criado = setup_pedido_pronto["id_pedido"]
+    id_aocs = setup_pedido_pronto["id_aocs"]
+    
+    response = test_client.get(
+        f"/api/pedidos/por-aocs/{id_aocs}", 
+        headers=admin_auth_headers
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert data[0]["id"] == id_pedido_criado
+    assert data[0]["id_aocs"] == id_aocs

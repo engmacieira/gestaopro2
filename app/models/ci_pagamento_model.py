@@ -5,6 +5,7 @@ class CiPagamento:
     def __init__(self,
                  id: int,
                  id_aocs: int,
+                 id_pedido: int,
                  numero_ci: str,
                  data_ci: date,
                  numero_nota_fiscal: str,
@@ -18,6 +19,7 @@ class CiPagamento:
                  codigo_acesso_nota: str | None = None):
         self.id: int = id
         self.id_aocs: int = id_aocs
+        self.id_pedido: int = id_pedido
         self.numero_ci: str = numero_ci
         self.data_ci: date = data_ci
         self.numero_nota_fiscal: str = numero_nota_fiscal

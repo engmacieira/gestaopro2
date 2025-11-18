@@ -109,3 +109,79 @@ def test_delete_contrato(test_client: TestClient, admin_auth_headers: dict, cont
     )
 
     assert response_get.status_code == 404
+    
+def test_get_all_contratos(
+    test_client: TestClient, 
+    admin_auth_headers: dict
+):
+    test_client.post("/api/categorias/", json={"nome": "Categoria GET ALL"}, headers=admin_auth_headers)
+    test_client.post("/api/instrumentos/", json={"nome": "Instrumento GET ALL"}, headers=admin_auth_headers)
+    test_client.post("/api/modalidades/", json={"nome": "Modalidade GET ALL"}, headers=admin_auth_headers)
+    test_client.post("/api/numeros-modalidade/", json={"numero_ano": "NumMod GET ALL"}, headers=admin_auth_headers)
+    test_client.post("/api/processos-licitatorios/", json={"numero": "PL GET ALL"}, headers=admin_auth_headers)
+    
+    payload = {
+        "numero_contrato": "CT-GET-ALL-999/2025",
+        "data_inicio": "2025-01-01", "data_fim": "2025-12-31",
+        "fornecedor": {"nome": "Fornecedor GET ALL", "cpf_cnpj": "99.999.999/0001-99"},
+        "categoria_nome": "Categoria GET ALL",
+        "instrumento_nome": "Instrumento GET ALL",
+        "modalidade_nome": "Modalidade GET ALL",
+        "numero_modalidade_str": "NumMod GET ALL",
+        "processo_licitatorio_numero": "PL GET ALL"
+    }
+    response_create = test_client.post("/api/contratos/", json=payload, headers=admin_auth_headers)
+    assert response_create.status_code == 201
+
+    response = test_client.get("/api/contratos/", headers=admin_auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert any(c["numero_contrato"] == "CT-GET-ALL-999/2025" for c in data)
+    
+def test_get_contrato_by_id_not_found(
+    test_client: TestClient, 
+    admin_auth_headers: dict
+):
+    id_inexistente = 999999
+    
+    response = test_client.get(
+        f"/api/contratos/{id_inexistente}", 
+        headers=admin_auth_headers
+    )
+    
+    assert response.status_code == 404
+
+def test_update_contrato_not_found(
+    test_client: TestClient, 
+    admin_auth_headers: dict,
+    contrato_payload: dict 
+):
+    id_inexistente = 999999
+    
+    update_payload = {
+        "numero_contrato": "CT-MUDOU-404/2025",
+        "fornecedor": contrato_payload["fornecedor"]
+    }
+    
+    response = test_client.put(
+        f"/api/contratos/{id_inexistente}",
+        json=update_payload,
+        headers=admin_auth_headers
+    )
+    
+    assert response.status_code == 404
+
+def test_delete_contrato_not_found(
+    test_client: TestClient, 
+    admin_auth_headers: dict
+):
+    id_inexistente = 999999
+    
+    response = test_client.delete(
+        f"/api/contratos/{id_inexistente}", 
+        headers=admin_auth_headers
+    )
+    
+    assert response.status_code == 404

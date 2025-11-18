@@ -4,7 +4,6 @@ from datetime import date, timedelta
 from decimal import Decimal
 from psycopg2.extensions import connection 
 
-from app.repositories.pedido_repository import PedidoRepository
 from app.schemas.pedido_schema import PedidoCreateRequest
 from app.schemas.contrato_schema import ContratoCreateRequest
 from app.schemas.item_schema import ItemRequest
@@ -17,11 +16,6 @@ def setup_pedido_pronto(
     test_client: TestClient, 
     admin_auth_headers: dict
 ) -> dict:
-    """
-    Fixture "Mestra": Cria todas as dependências de ponta a ponta
-    e, por fim, cria um Pedido.
-    Retorna IDs E os dados da AOCS necessários para a CI.
-    """
     
     resp_agente = test_client.post("/api/agentes/", json={"nome": "Solicitante Teste CI"}, headers=admin_auth_headers)
     assert resp_agente.status_code == 201
@@ -29,7 +23,11 @@ def setup_pedido_pronto(
     resp_unidade = test_client.post("/api/unidades/", json={"nome": "Secretaria Teste CI"}, headers=admin_auth_headers)
     assert resp_unidade.status_code == 201
     
-    resp_dotacao = test_client.post("/api/dotacoes/", json={"nome": "Dotacao Teste CI"}, headers=admin_auth_headers)
+    resp_dotacao = test_client.post(
+        "/api/dotacoes/", 
+        json={"info_orcamentaria": "Dotacao Teste CI"},  
+        headers=admin_auth_headers
+    )
     assert resp_dotacao.status_code == 201
 
     resp_local = test_client.post("/api/locais/", json={"descricao": "Local Teste CI"}, headers=admin_auth_headers)
@@ -129,7 +127,7 @@ def setup_ci_pronta(
     
     response = test_client.post(
         f"/api/ci-pagamento/?id_pedido={id_pedido}",
-        data=ci_data_payload,  
+        json=ci_data_payload,  
         headers=admin_auth_headers
     )
     assert response.status_code == 201, f"Falha ao criar CI na fixture 'setup_ci_pronta': {response.json()}"
@@ -164,11 +162,9 @@ def test_create_ci_pagamento_sucesso(
         dotacao_info_orcamentaria=aocs_data["dotacao_info_orcamentaria"]
     )
     
-    ci_data_payload = {k: str(v) for k, v in ci_payload.model_dump().items()}
-    
     response = test_client.post(
         f"/api/ci-pagamento/?id_pedido={id_pedido}",
-        data=ci_data_payload, # <-- MUDAR DE 'json' PARA 'data'
+        json=ci_payload.model_dump(mode="json"), 
         headers=admin_auth_headers
     )
     
@@ -180,29 +176,32 @@ def test_create_ci_pagamento_sucesso(
 def test_create_ci_pagamento_duplicado(
     test_client: TestClient, 
     admin_auth_headers: dict, 
-    setup_ci_pronta: dict 
+    setup_ci_pronta: dict, 
+    setup_pedido_pronto: dict 
 ):
     id_pedido = setup_ci_pronta["id_pedido"] 
     
+    aocs_data = setup_pedido_pronto["aocs_data"]
+
     ci_payload_duplicado = CiPagamentoCreateRequest(
-        numero_ci="CI-TESTE-DUPLICADA",
+        numero_ci="CI-TESTE-123", 
+        
         data_ci=date.today(),
         valor=Decimal("50.00"),
         observacao="Tentativa de duplicar",
-        numero_nota_fiscal="NF-DUP",
+        numero_nota_fiscal="NF-DUP-VALIDA", 
         data_nota_fiscal=date.today(),
         valor_nota_fiscal=Decimal("50.00"),
-        aocs_numero="AOCS-DUP",
-        solicitante_nome="SOL-DUP",
-        secretaria_nome="SEC-DUP",
-        dotacao_info_orcamentaria="DOT-DUP"
+        
+        aocs_numero=aocs_data["numero_aocs"],
+        solicitante_nome=aocs_data["agente_responsavel_nome"],
+        secretaria_nome=aocs_data["unidade_requisitante_nome"],
+        dotacao_info_orcamentaria=aocs_data["dotacao_info_orcamentaria"]
     )
     
-    ci_data_payload_duplicado = {k: str(v) for k, v in ci_payload_duplicado.model_dump().items()}
-
     response = test_client.post(
         f"/api/ci-pagamento/?id_pedido={id_pedido}",
-        data=ci_data_payload_duplicado, 
+        json=ci_payload_duplicado.model_dump(mode="json"), 
         headers=admin_auth_headers
     )
     
@@ -237,7 +236,7 @@ def test_get_ci_by_id(
     data = response.json()
     assert data["id"] == id_ci_criada
     assert data["numero_ci"] == "CI-TESTE-123"
-    assert data["valor"] == "100.50" 
+    assert data["valor_nota_fiscal"] == "100.50"
 
 def test_get_ci_by_pedido_id(
     test_client: TestClient, 
@@ -265,7 +264,7 @@ def test_update_ci_pagamento(
     
     update_payload = CiPagamentoUpdateRequest(
         numero_ci="CI-TESTE-ATUALIZADA",
-        valor=Decimal("200.00"),
+        valor_nota_fiscal=Decimal("200.00"),
         observacao="CI foi atualizada"
     )
     
@@ -279,7 +278,7 @@ def test_update_ci_pagamento(
     data = response.json()
     assert data["id"] == id_ci_criada
     assert data["numero_ci"] == "CI-TESTE-ATUALIZADA"
-    assert data["valor"] == "200.00"
+    assert data["valor_nota_fiscal"] == "200.00" 
 
 def test_delete_ci_pagamento(
     test_client: TestClient, 

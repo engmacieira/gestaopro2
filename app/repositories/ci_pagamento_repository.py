@@ -27,6 +27,7 @@ class CiPagamentoRepository:
             return CiPagamento(
                 id=row['id'],
                 id_aocs=row['id_aocs'],
+                id_pedido=row['id_pedido'],
                 numero_ci=row['numero_ci'],
                 data_ci=row['data_ci'],
                 numero_nota_fiscal=row['numero_nota_fiscal'],
@@ -43,7 +44,7 @@ class CiPagamentoRepository:
             logger.error(f"Erro de mapeamento CI Pagamento: Coluna '{e}' não encontrada.")
             return None
 
-    def create(self, ci_req: CiPagamentoCreateRequest) -> CiPagamento:
+    def create(self, ci_req: CiPagamentoCreateRequest, id_pedido: int) -> CiPagamento:
         cursor = None
         try:
             aoc = self.aocs_repo.get_by_numero_aocs(ci_req.aocs_numero) 
@@ -63,15 +64,15 @@ class CiPagamentoRepository:
                 INSERT INTO ci_pagamento (id_aocs, numero_ci, data_ci, numero_nota_fiscal,
                                           serie_nota_fiscal, codigo_acesso_nota, data_nota_fiscal,
                                           valor_nota_fiscal, id_dotacao_pagamento,
-                                          observacoes_pagamento, id_solicitante, id_secretaria)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                          observacoes_pagamento, id_solicitante, id_secretaria, id_pedido)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING *
             """
             params = (
                 aoc.id, ci_req.numero_ci, ci_req.data_ci, ci_req.numero_nota_fiscal,
                 ci_req.serie_nota_fiscal, ci_req.codigo_acesso_nota, ci_req.data_nota_fiscal,
                 ci_req.valor_nota_fiscal, dot.id, ci_req.observacoes_pagamento,
-                age.id, uni.id
+                age.id, uni.id, id_pedido
             )
             cursor.execute(sql, params)
             new_data = cursor.fetchone()
@@ -107,6 +108,24 @@ class CiPagamentoRepository:
             return self._map_row_to_model(data)
         except (Exception, psycopg2.DatabaseError) as error:
              logger.exception(f"Erro inesperado ao buscar CI Pagamento por ID ({id}): {error}")
+             return None
+        finally:
+            if cursor: cursor.close()
+
+    def get_by_pedido_id(self, id_pedido: int) -> CiPagamento | None:
+        cursor = None
+        try:
+            cursor = self.db_conn.cursor(cursor_factory=DictCursor)
+            
+            sql = "SELECT * FROM ci_pagamento WHERE id_pedido = %s"
+            
+            cursor.execute(sql, (id_pedido,))
+            data = cursor.fetchone()
+            
+            return self._map_row_to_model(data) 
+            
+        except (Exception, psycopg2.DatabaseError) as error:
+             logger.exception(f"Erro inesperado ao buscar CI Pagamento por Pedido ID ({id_pedido}): {error}")
              return None
         finally:
             if cursor: cursor.close()
@@ -173,7 +192,7 @@ class CiPagamentoRepository:
                 'observacoes_pagamento': 'observacoes_pagamento',
             }
             for field_name, value in ci_req.model_dump(exclude_unset=True).items():
-                 if field_name not in resolved_fks and field_name in schema_to_col:
+                 if value is not None and field_name not in resolved_fks and field_name in schema_to_col:
                      db_col_name = schema_to_col[field_name]
                      fields_to_update.append(f"{db_col_name} = %s")
                      params.append(value)
