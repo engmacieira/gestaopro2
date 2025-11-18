@@ -289,18 +289,56 @@ async def contratos_ui(
     
 @router.get("/pedidos-ui", response_class=HTMLResponse, name="pedidos_ui", dependencies=[Depends(require_access_level(3))])
 async def pedidos_ui(request: Request, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
-    pedidos_lista = []
-    pagina_atual = int(request.query_params.get('page', 1))
-    total_paginas = 1
-    query_params = dict(request.query_params)
+    repo = PedidoRepository(db_conn)
+    item_repo = ItemRepository(db_conn)
+    aocs_repo = AocsRepository(db_conn)
+    
+    termo_busca = request.query_params.get('busca', '')
     sort_by = request.query_params.get('sort_by', 'data')
     order = request.query_params.get('order', 'desc')
-    termo_busca = request.query_params.get('busca', '')
+    
+    todos_pedidos = repo.get_all()
+    
+    pedidos_view = []
+    for p in todos_pedidos:
+        item = item_repo.get_by_id(p.id_item_contrato)
+        aocs = aocs_repo.get_by_id(p.id_aocs)
+        
+        if termo_busca:
+            termo = termo_busca.lower()
+            if not (aocs and termo in aocs.numero_aocs.lower()) and \
+               not (item and termo in item.descricao.descricao.lower()):
+                continue
+        
+        valor_unitario = item.valor_unitario if item else Decimal('0.0')
+        valor_total = p.quantidade_pedida * valor_unitario
+        
+        pedidos_view.append({
+            "id": p.id,
+            "numero_aocs": aocs.numero_aocs if aocs else "N/D",
+            "descricao_item": item.descricao.descricao if item else "N/D",
+            "quantidade": p.quantidade_pedida,
+            "valor_unitario": valor_unitario,
+            "valor_total": valor_total,
+            "status": p.status_entrega,
+            "data_pedido": p.data_pedido
+        })
+
+    total_itens = len(pedidos_view)
+    pagina_atual = int(request.query_params.get('page', 1))
+    offset = (pagina_atual - 1) * ITENS_POR_PAGINA
+    pedidos_paginados = pedidos_view[offset:offset + ITENS_POR_PAGINA]
+    total_paginas = math.ceil(total_itens / ITENS_POR_PAGINA) if total_itens > 0 else 1
 
     context = {
         "current_user": current_user,
-        "pedidos_lista": pedidos_lista, "pagina_atual": pagina_atual, "total_paginas": total_paginas,
-        "query_params": query_params, "sort_by": sort_by, "order": order, "termo_busca": termo_busca,
+        "pedidos_lista": pedidos_paginados, 
+        "pagina_atual": pagina_atual, 
+        "total_paginas": total_paginas,
+        "query_params": dict(request.query_params), 
+        "sort_by": sort_by, 
+        "order": order, 
+        "termo_busca": termo_busca,
         "get_flashed_messages": lambda **kwargs: []
     }
     return templates.TemplateResponse(request, "pedidos.html", context)
