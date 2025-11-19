@@ -1,35 +1,45 @@
-# Senhas
-.env
-.env.test
+############################
+# LOGS, TEMPORÁRIOS E COBERTURA
+############################
+*.log
+*.coverage
+.pytest_cache/
+htmlcov/ # Cobertura de testes HTML
 
-# Ambiente Virtual
+############################
+# DEPENDÊNCIAS E AMBIENTES
+############################
+# Ambientes Virtuais (Python)
 venv/
 .venv/
-.pytest_cache/
 
-# Arquivos de cache do Python
+# Dependências (Node/Frontend)
+node_modules/
+
+############################
+# ARQUIVOS GERADOS PELO PYTHON
+############################
+# Bytecode
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Arquivos de IDE
-.idea/
-.vscode/
+############################
+# DADOS SENSÍVEIS E DE AMBIENTE
+############################
+# Senhas e Variáveis de Ambiente (Obrigatório)
+.env
+.env.test
 
-# Arquivos e pastas de usuário
-.uploads/
-uploads/ 
-
-# Arquivos de backup do banco
+# Arquivos de backup, dumps e assets grandes
 *.dump
-
-# Arquivos de texto genéricos (para evitar senhas acidentais)
-*.txt
-!requirements.txt
-
-# Arquivos zipados (backup da versões manuais)
 *.zip
+.uploads/
+uploads/
 
-# Planilhas
-*.xlsx
+############################
+# ARQUIVOS DE FERRAMENTAS / IDEs
+############################
+.idea/ # Pycharm/IntelliJ
+.vscode/ # Visual Studio Code
