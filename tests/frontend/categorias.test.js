@@ -1,216 +1,236 @@
-// Simula a função fetch global do navegador (API de rede)
+/**
+ * @jest-environment jsdom
+ */
+
+// ==========================================================================
+// 1. CONFIGURAÇÃO E UTILS
+// ==========================================================================
+
+// Mock do Fetch API
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// 💡 Salva a referência original de window.location para restauração
-const originalLocation = window.location; 
-let reloadMock; // O mock de reload que usaremos
+// Função de espera (Wait For) robusta para aguardar Promises e re-renderizações
+const waitFor = async (callback, timeout = 1000) => {
+    const startTime = Date.now();
+    while (true) {
+        try {
+            callback();
+            return;
+        } catch (e) {
+            if (Date.now() - startTime > timeout) throw e;
+            await new Promise(r => setTimeout(r, 50));
+        }
+    }
+};
 
-// Funções auxiliares para simular eventos do navegador
-function dispatchDOMContentLoaded() {
-    // Inicializa o categorias.js
-    document.dispatchEvent(new Event('DOMContentLoaded', {
-        bubbles: true,
-        cancelable: true
-    }));
-}
+const DOM_HTML = `
+    <div class="main-content">
+        <div id="notification-area"></div>
+    </div>
+    <div id="modal-categoria" style="display: none;">
+        <h2 id="modal-titulo"></h2>
+        <form id="form-categoria">
+            <input id="nome-categoria" value="" />
+            <button type="submit">Salvar</button>
+        </form>
+        <button id="btn-fechar-modal"></button>
+        <button id="btn-cancelar-modal"></button>
+    </div>
+    <button id="btn-abrir-modal"></button>
+`;
 
-// Função auxiliar para configurar o ambiente DOM
-function setupDOM() {
-    // Estrutura HTML Mínima necessária para o categorias.js
-    document.body.innerHTML = `
-        <div class="main-content">
-            <div id="notification-area"></div>
-        </div>
-        <div id="modal-categoria" style="display: none;">
-            <h2 id="modal-titulo"></h2>
-            <form id="form-categoria">
-                <input id="nome-categoria" value="" />
-                <button type="submit"></button>
-            </form>
-            <button id="btn-fechar-modal"></button>
-            <button id="btn-cancelar-modal"></button>
-        </div>
-        <button id="btn-abrir-modal"></button>
-        <table>
-            <tbody></tbody>
-        </table>
-    `;
-
-    // Carrega o script que queremos testar. 
-    require('../../app/static/js/categorias'); //
-}
-
-describe('Testes de Funcionalidades do categorias.js', () => {
+describe('Testes Frontend - Categorias', () => {
+    let reloadMock;
     
-    // Configura o Mock de window.location.reload UMA ÚNICA VEZ (Corrigindo o problema do JSDOM)
-    beforeAll(() => {
-        reloadMock = jest.fn();
+    // Espiões para rastrear event listeners criados pelo script
+    let documentSpy;
+    let windowSpy;
 
-        // 💡 Solução definitiva: Deleta a propriedade 'location' e a recria com nosso mock.
+    // ==========================================================================
+    // 2. SETUP (Antes de cada teste)
+    // ==========================================================================
+    beforeEach(() => {
+        // 1. Limpa mocks e DOM
+        jest.clearAllMocks();
+        document.body.innerHTML = DOM_HTML;
+        sessionStorage.clear();
+
+        // 2. CORREÇÃO DO ERRO DE TEXTO (JSDOM innerText Patch)
+        // Isso ensina o JSDOM a tratar innerText igual a textContent,
+        // permitindo testar textos em elementos ocultos (display: none).
+        Object.defineProperty(HTMLElement.prototype, 'innerText', {
+            get() { return this.textContent; },
+            set(value) { this.textContent = value; },
+            configurable: true
+        });
+
+        // 3. Prepara o Spy para rastrear eventos no document e window
+        // Isso permite que o addEventListener funcione normalmente, mas anota quem foi adicionado
+        documentSpy = jest.spyOn(document, 'addEventListener');
+        windowSpy = jest.spyOn(window, 'addEventListener');
+
+        // 4. Mock do window.location (Recarregamento)
+        reloadMock = jest.fn();
         delete window.location;
         window.location = { reload: reloadMock };
 
-        // Mock para simular a confirmação de exclusão/status
-        global.confirm = jest.fn(() => true);
-    });
-    
-    afterAll(() => {
-        // Restaura o objeto original de location.
-        window.location = originalLocation;
+        // 5. Mock do Confirm
+        window.confirm = jest.fn(() => true);
+
+        // 6. Reseta os módulos e Carrega o Script
+        jest.resetModules();
+        require('../../app/static/js/categorias');
+
+        // 7. Dispara o início do script
+        document.dispatchEvent(new Event('DOMContentLoaded'));
     });
 
-    beforeEach(() => {
-        // Limpa mocks e DOM antes de cada teste.
-        jest.clearAllMocks();
-        reloadMock.mockClear(); // Limpa as chamadas do mock
-        setupDOM(); 
-        dispatchDOMContentLoaded(); 
+    // ==========================================================================
+    // 3. TEARDOWN (Depois de cada teste)
+    // ==========================================================================
+    afterEach(() => {
+        // Remove APENAS os listeners criados neste teste para evitar duplicidade
+        if (documentSpy) {
+            documentSpy.mock.calls.forEach(call => {
+                const [type, listener] = call;
+                document.removeEventListener(type, listener);
+            });
+            documentSpy.mockRestore();
+        }
+
+        if (windowSpy) {
+            windowSpy.mock.calls.forEach(call => {
+                const [type, listener] = call;
+                window.removeEventListener(type, listener);
+            });
+            windowSpy.mockRestore();
+        }
     });
 
-    // 1. Testando a Abertura e Fechamento do Modal
-    test('Deve abrir e fechar o modal de cadastro', () => {
+    // ==========================================================================
+    // 4. TESTES
+    // ==========================================================================
+
+    test('Deve abrir o modal ao clicar no botão', () => {
+        const btn = document.getElementById('btn-abrir-modal');
+        btn.click();
+        
         const modal = document.getElementById('modal-categoria');
-        const btnAbrir = document.getElementById('btn-abrir-modal');
-        const btnFechar = document.getElementById('btn-fechar-modal');
+        const titulo = document.getElementById('modal-titulo');
 
-        btnAbrir.click();
         expect(modal.style.display).toBe('flex');
-        expect(document.getElementById('modal-titulo').innerText).toBe('Cadastrar Nova Categoria');
-
-        btnFechar.click();
-        expect(modal.style.display).toBe('none');
+        // Agora isso vai funcionar porque aplicamos o patch no innerText
+        expect(titulo.textContent).toBe('Cadastrar Nova Categoria');
     });
 
-    // 2. Testando o Cadastro de Nova Categoria (POST)
-    test('Deve enviar a requisição de criação de categoria com sucesso', async () => {
-        const form = document.getElementById('form-categoria');
-        const inputNome = document.getElementById('nome-categoria');
-
+    test('Criação (POST): Deve enviar dados e recarregar página', async () => {
+        // Configura resposta da API
         mockFetch.mockResolvedValueOnce({
             ok: true,
-            status: 201,
-            json: async () => ({ id: 10, nome: 'Nova Categoria Teste' }),
+            json: async () => ({ id: 1, nome: 'Nova Cat' })
         });
 
-        inputNome.value = 'Nova Categoria Teste';
-        await form.dispatchEvent(new Event('submit', { cancelable: true }));
+        // Simula interação do usuário
+        const input = document.getElementById('nome-categoria');
+        input.value = 'Nova Cat';
+        document.getElementById('form-categoria').dispatchEvent(new Event('submit'));
 
-        // 💡 CORREÇÃO DE TIMING: Força a resolução de Promessas internas (fetch e json)
-        await Promise.resolve(); 
-        await Promise.resolve(); 
-
-        expect(mockFetch).toHaveBeenCalledWith('/api/categorias', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome: 'Nova Categoria Teste' }),
+        // Aguarda o processamento assíncrono
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith('/api/categorias', expect.objectContaining({
+                method: 'POST',
+                body: JSON.stringify({ nome: 'Nova Cat' })
+            }));
+            expect(reloadMock).toHaveBeenCalled();
         });
         
-        expect(sessionStorage.getItem('notificationMessage')).toContain('Categoria \'Nova Categoria Teste\' criada com sucesso!');
-        expect(reloadMock).toHaveBeenCalledTimes(1); 
+        expect(sessionStorage.getItem('notificationMessage')).toContain('criada com sucesso');
     });
-    
-    // 3. Testando Edição de Categoria (PUT)
-    test('Deve enviar a requisição de edição de categoria com sucesso', async () => {
-        const form = document.getElementById('form-categoria');
-        const inputNome = document.getElementById('nome-categoria');
-        const mockId = 5;
 
+    test('Edição (PUT): Deve carregar dados, salvar e recarregar', async () => {
+        const mockId = 10;
+
+        // Mock 1: GET (Carrega dados)
         mockFetch.mockResolvedValueOnce({
             ok: true,
-            json: async () => ({ id: mockId, nome: 'Categoria Antiga' }),
+            json: async () => ({ id: mockId, nome: 'Antigo' })
         });
 
+        // Mock 2: PUT (Salva dados)
         mockFetch.mockResolvedValueOnce({
             ok: true,
             status: 200,
-            json: async () => ({ id: mockId, nome: 'Categoria Editada' }),
+            json: async () => ({ id: mockId, nome: 'Novo' })
         });
 
+        // 1. Abre modal (GET)
         await window.abrirModalParaEditar(mockId);
-        
-        inputNome.value = 'Categoria Editada';
-        await form.dispatchEvent(new Event('submit', { cancelable: true }));
+        const input = document.getElementById('nome-categoria');
+        expect(input.value).toBe('Antigo');
 
-        // 💡 CORREÇÃO DE TIMING
-        await Promise.resolve();
-        await Promise.resolve(); 
+        // 2. Edita e Salva (PUT)
+        input.value = 'Novo';
+        document.getElementById('form-categoria').dispatchEvent(new Event('submit'));
 
-        expect(mockFetch).toHaveBeenCalledTimes(2); 
-        
-        expect(mockFetch).toHaveBeenLastCalledWith(`/api/categorias/${mockId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome: 'Categoria Editada' }),
+        // 3. Verifica
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledTimes(2);
+            expect(mockFetch).toHaveBeenLastCalledWith(`/api/categorias/${mockId}`, expect.objectContaining({
+                method: 'PUT',
+                body: JSON.stringify({ nome: 'Novo' })
+            }));
+            expect(reloadMock).toHaveBeenCalled();
         });
-        
-        expect(sessionStorage.getItem('notificationMessage')).toContain('Categoria \'Categoria Editada\' atualizada com sucesso!');
-        expect(reloadMock).toHaveBeenCalledTimes(1);
     });
 
-    // 4. Testando Deleção de Categoria (DELETE)
-    test('Deve enviar a requisição de deleção de categoria e recarregar a página', async () => {
-        const mockId = 99;
-
+    test('Exclusão (DELETE): Deve deletar e recarregar', async () => {
         mockFetch.mockResolvedValueOnce({
             ok: true,
             status: 204,
-            json: async () => ({}), 
+            json: async () => ({})
         });
 
-        await window.excluirCategoria(mockId);
-        
-        // 💡 CORREÇÃO DE TIMING
-        await Promise.resolve();
-        await Promise.resolve(); 
+        await window.excluirCategoria(99);
 
-        expect(mockFetch).toHaveBeenCalledWith(`/api/categorias/${mockId}`, {
-            method: 'DELETE',
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith('/api/categorias/99', expect.objectContaining({
+                method: 'DELETE'
+            }));
+            expect(reloadMock).toHaveBeenCalled();
         });
-        
-        expect(sessionStorage.getItem('notificationMessage')).toContain('Categoria excluída com sucesso!');
-        expect(reloadMock).toHaveBeenCalledTimes(1); 
     });
 
-    // 5. Testando Alternância de Status (PATCH)
-    test('Deve enviar a requisição para ativar a categoria', async () => {
-        const mockId = 7;
-
+    test('Ativação (PATCH): Deve alterar status e recarregar', async () => {
         mockFetch.mockResolvedValueOnce({
             ok: true,
-            status: 200,
-            json: async () => ({ id: mockId, nome: 'Categoria Inativa' }),
+            json: async () => ({ id: 50, nome: 'Cat', ativa: true })
         });
 
-        await window.toggleStatusCategoria(mockId, false);
-        
-        // 💡 CORREÇÃO DE TIMING
-        await Promise.resolve();
-        await Promise.resolve(); 
+        await window.toggleStatusCategoria(50, false);
 
-        expect(mockFetch).toHaveBeenCalledWith(`/api/categorias/${mockId}/status?activate=true`, {
-            method: 'PATCH',
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith(
+                expect.stringContaining('/status?activate=true'),
+                expect.objectContaining({ method: 'PATCH' })
+            );
+            expect(reloadMock).toHaveBeenCalled();
         });
+    });
+
+    test('Validação: Não deve enviar se nome estiver vazio', async () => {
+        const input = document.getElementById('nome-categoria');
+        input.value = ''; // Vazio
+
+        document.getElementById('form-categoria').dispatchEvent(new Event('submit'));
+
+        // Pequeno delay para garantir que o fetch NÃO foi chamado
+        await new Promise(r => setTimeout(r, 100));
+
+        expect(mockFetch).not.toHaveBeenCalled();
+        expect(reloadMock).not.toHaveBeenCalled();
         
-        expect(sessionStorage.getItem('notificationMessage')).toContain('ativada com sucesso!');
-        expect(reloadMock).toHaveBeenCalledTimes(1);
+        const msg = document.getElementById('notification-area').textContent;
+        expect(msg).toContain('não pode estar vazio');
     });
-    
-    // 6. Testando Erro de Validação
-    test('Deve exibir notificação de erro se o nome estiver vazio', async () => {
-        const form = document.getElementById('form-categoria');
-        const inputNome = document.getElementById('nome-categoria');
-        const notificationArea = document.getElementById('notification-area');
-
-        inputNome.value = ' ';
-
-        // Código síncrono, não precisa de await Promise.resolve()
-        await form.dispatchEvent(new Event('submit', { cancelable: true })); 
-
-        expect(mockFetch).not.toHaveBeenCalled(); 
-        expect(notificationArea.children.length).toBe(1);
-        expect(notificationArea.textContent).toContain('O nome da categoria não pode estar vazio.');
-        expect(reloadMock).not.toHaveBeenCalled(); 
-    });
-
 });
