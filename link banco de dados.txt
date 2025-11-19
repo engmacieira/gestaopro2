@@ -1,0 +1,25 @@
+pg_dump -h localhost -U postgres -d gestao_contratos -Fc -f gestaopro_backup_v?.dump
+pg_restore -h dpg-d3r2a949c44c73d4nnc0-a.oregon-postgres.render.com -U gestaopro_db_user -d gestaopro_db --clean gestaopro_backup_v?.dump
+
+
+
+pg_dump -h dpg-d3r2a949c44c73d4nnc0-a.oregon-postgres.render.com -U gestaopro_db_user -d gestaopro_db -Fc -f gestaopro_backup_v?.dump
+pg_restore -h localhost -U postgres -d gestao_contratos --clean gestaopro_backup_?.dump
+
+
+
+Connections: gestaopro-db
+
+Hostname: dpg-d3r2a949c44c73d4nnc0-a
+Port: 5432
+Database: gestaopro_db
+Username: gestaopro_db_user
+Password: 7R5C1PeoM8T1NBwtrqtUEikHj5Me9B5F
+Internal Database URL: postgresql://gestaopro_db_user:7R5C1PeoM8T1NBwtrqtUEikHj5Me9B5F@dpg-d3r2a949c44c73d4nnc0-a/gestaopro_db
+External Database URL: postgresql://gestaopro_db_user:7R5C1PeoM8T1NBwtrqtUEikHj5Me9B5F@dpg-d3r2a949c44c73d4nnc0-a.oregon-postgres.render.com/gestaopro_db
+PSQL Command: PGPASSWORD=7R5C1PeoM8T1NBwtrqtUEikHj5Me9B5F psql -h dpg-d3r2a949c44c73d4nnc0-a.oregon-postgres.render.com -U gestaopro_db_user gestaopro_db
+
+Environment Variables
+DATABASE_URL: postgresql://gestaopro_db_user:7R5C1PeoM8T1NBwtrqtUEikHj5Me9B5F@dpg-d3r2a949c44c73d4nnc0-a/gestaopro_db
+
+SECRET_KEY: uma-frase-muito-longa-e-segura-para-producao-123!
