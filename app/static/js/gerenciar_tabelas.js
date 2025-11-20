@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if(initialFlash) initialFlash.remove();
 
         const existing = notificationArea.querySelector('.notification:not(.flash)');
-        if (existing) existing.remove();
+        if(existing) existing.remove();
 
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
@@ -44,10 +44,14 @@ document.addEventListener('DOMContentLoaded', function() {
         nomeExibicaoTabelaAtiva = nomeExibicao;
 
         contentArea.innerHTML = '';
+        
+        // --- BLINDAGEM CRÍTICA ---
         if (!tableTemplate) {
-            contentArea.innerHTML = '<div class="notification error">Erro: Template da tabela não encontrado.</div>';
-            return;
+            contentArea.innerHTML = '<div class="notification error">Erro: Template da tabela (ID table-template) não encontrado no DOM.</div>';
+            return; // Para a execução aqui para não quebrar
         }
+        // -------------------------
+
         const clone = tableTemplate.content.cloneNode(true);
         contentArea.appendChild(clone);
 
@@ -154,8 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
                  submitButton.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Salvar`;
             }
         });
-    } else {
-        console.error("Formulário do modal genérico não encontrado.");
     }
 
     window.excluirItem = async (id) => {

@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // --- Funções Auxiliares ---
+
     function escapeHtml(unsafe) {
         if (unsafe === null || unsafe === undefined) return '';
         const str = String(unsafe);
@@ -31,6 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return String(value); 
     }
 
+    // --- Lógica de Abas ---
+
     const tabLinks = document.querySelectorAll('.tab-link');
     const tabContents = document.querySelectorAll('.tab-content');
     if (tabLinks.length > 0 && tabContents.length > 0) {
@@ -44,9 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(activeTab) activeTab.classList.add('active');
             });
         });
-    } else {
-        console.warn("Elementos das abas não encontrados.");
     }
+
+    // --- Lógica de Notificações ---
 
     const notificationArea = document.querySelector('.main-content #notification-area');
     function showNotification(message, type = 'error') {
@@ -75,18 +79,22 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('notificationType');
     }
     
+    // --- Lógica Principal de Importação ---
+
     function setupImportSection(formId, previewContainerId, previewTableId, errorDivId, saveBtnId, previewUrl, saveUrl, redirectUrl) {
         const form = document.getElementById(formId);
-        if (!form) {
-            console.error(`Formulário com ID '${formId}' não encontrado.`);
-            return;
-        }
+        if (!form) return;
+
+        // Verifica se já foi inicializado para evitar duplicidade
+        if (form.dataset.jsImportInitialized === 'true') return; 
+        form.dataset.jsImportInitialized = 'true';
 
         const previewContainer = document.getElementById(previewContainerId);
         const previewTable = document.getElementById(previewTableId);
         const errorDiv = document.getElementById(errorDivId);
         const saveBtn = document.getElementById(saveBtnId);
-        let dataToSave = [];
+        
+        if (saveBtn) saveBtn.type = 'button';
 
         if (!previewContainer || !previewTable || !errorDiv || !saveBtn) {
             console.error(`Elementos necessários para a seção de import '${formId}' não foram encontrados.`);
@@ -97,11 +105,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const uploadButton = form.querySelector('button[type="submit"]');
         const uploadButtonTextDefault = uploadButton ? uploadButton.innerHTML : ''; 
 
+        // Evento 1: Submit do Formulário (Preview)
         form.addEventListener('submit', async function(event) {
+            // Guard Clause: Se o submitter for o botão de salvar, abortar
+            if (saveBtn && event.submitter === saveBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                return; 
+            }
+
             event.preventDefault();
+            
             errorDiv.textContent = '';
-            previewContainer.style.display = 'none'; 
-            dataToSave = []; 
+            previewContainer.style.display = 'none';
+            
+            // Limpa o cache de dados anterior
+            delete previewContainer.dataset.cacheData;
+            
             const formData = new FormData(form);
 
             if (uploadButton) {
@@ -118,8 +138,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(errorDetail);
                 }
 
-                dataToSave = result;
-                renderPreview(dataToSave, previewTable, errorDiv, previewContainer);
+                // [FIX SÊNIOR] Armazena os dados no DOM (Dataset) para persistência
+                // Isso evita que variáveis locais sejam limpas por race conditions
+                previewContainer.dataset.cacheData = JSON.stringify(result);
+                
+                renderPreview(result, previewTable, errorDiv, previewContainer);
 
             } catch (error) {
                 console.error(`Erro no preview (${formId}):`, error);
@@ -132,11 +155,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        saveBtn.addEventListener('click', async function() {
+        // Evento 2: Clique no botão Salvar
+        saveBtn.addEventListener('click', async function(event) {
+            event.preventDefault(); 
+            
+            // [FIX SÊNIOR] Recupera os dados do "cofre" (DOM)
+            const cachedData = previewContainer.dataset.cacheData;
+            const dataToSave = cachedData ? JSON.parse(cachedData) : [];
+
             if (dataToSave.length === 0) {
                 showNotification('Não há dados pré-visualizados para salvar.');
                 return;
             }
+            
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
 
@@ -208,6 +239,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `).join('');
     }
+
+    // --- Inicialização ---
 
     setupImportSection(
         'form-upload-contratos', 'preview-container-contratos', 'preview-table-contratos',

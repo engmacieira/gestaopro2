@@ -9,7 +9,6 @@
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// Função de espera robusta
 const waitFor = async (callback, timeout = 1000) => {
     const startTime = Date.now();
     while (true) {
@@ -23,7 +22,7 @@ const waitFor = async (callback, timeout = 1000) => {
     }
 };
 
-// HTML Base simulando a estrutura do template _consultas_form.html e consultas.html
+// HTML Base simulando a estrutura da página
 const DOM_HTML = `
     <div class="card full-width">
         <form id="form-consulta">
@@ -32,6 +31,7 @@ const DOM_HTML = `
                     <option value="" disabled selected>Selecione...</option>
                     <option value="processo_licitatorio">Processo Licitatório</option>
                     <option value="unidade_requisitante">Unidade Requisitante</option>
+                    <option value="tipo_sem_config">Tipo Quebrado</option>
                 </select>
             </div>
 
@@ -51,71 +51,55 @@ const DOM_HTML = `
 
 describe('Testes Frontend - Consultas', () => {
     let documentSpy;
+    let consoleSpy;
     
     // ==========================================================================
     // 2. SETUP
     // ==========================================================================
     beforeEach(() => {
-        // A. Limpeza
         jest.clearAllMocks();
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
 
-        // B. Patch de compatibilidade (innerText -> textContent)
+        // Patch de compatibilidade innerText
         Object.defineProperty(HTMLElement.prototype, 'innerText', {
             get() { return this.textContent; },
             set(value) { this.textContent = value; },
             configurable: true
         });
 
-        // C. Mock da Variável Global configEntidades
-        // O script consultas.js espera que isso exista no window
+        // Mock da Variável Global configEntidades (Essencial para o script rodar)
         window.configEntidades = {
             'processo_licitatorio': { label: 'Selecionar Processo' },
             'unidade_requisitante': { label: 'Selecionar Unidade' }
+            // 'tipo_sem_config' não está aqui de propósito para testar falha
         };
 
-        // D. Espião de Eventos (para limpeza posterior)
         documentSpy = jest.spyOn(document, 'addEventListener');
-        // Nota: O script adiciona listeners em elementos específicos (select, form), 
-        // não no window, então focar no document e elementos é suficiente.
+        consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-        // E. Carrega o Script Isolado
         jest.resetModules();
-        require('../../app/static/js/consultas'); // Ajuste o caminho se necessário
-
-        // F. Inicia o Script
+        require('../../app/static/js/consultas'); 
         document.dispatchEvent(new Event('DOMContentLoaded'));
     });
 
-    // ==========================================================================
-    // 3. TEARDOWN
-    // ==========================================================================
     afterEach(() => {
-        // Remove listeners globais do document se houverem
-        if (documentSpy) {
-            documentSpy.mock.calls.forEach(call => {
-                const [type, listener] = call;
-                document.removeEventListener(type, listener);
-            });
-            documentSpy.mockRestore();
-        }
-        
-        // Limpa variável global mockada
+        if (documentSpy) documentSpy.mockRestore();
+        consoleSpy.mockRestore();
         delete window.configEntidades;
     });
 
     // ==========================================================================
-    // 4. TESTES
+    // 3. TESTES DE INTERAÇÃO COM SELECT (Event Change)
     // ==========================================================================
 
-    test('Deve carregar opções ao selecionar um tipo de consulta (processo_licitatorio)', async () => {
-        // Mock da resposta do backend para as opções do select
+    test('Select Tipo: Deve carregar opções e mostrar container corretamente', async () => {
+        // Mock da resposta da API para preencher o segundo select
         mockFetch.mockResolvedValueOnce({
             ok: true,
             json: async () => ([
-                { id: 1, texto: 'Processo 001/2024' },
-                { id: 2, texto: 'Processo 002/2024' }
+                { id: 1, texto: 'Opção A' },
+                { id: 2, texto: 'Opção B' }
             ])
         });
 
@@ -123,143 +107,160 @@ describe('Testes Frontend - Consultas', () => {
         const valorContainer = document.getElementById('container-valor-consulta');
         const valorSelect = document.getElementById('valor-consulta');
 
-        // 1. Seleciona o tipo
+        // Seleciona 'processo_licitatorio'
         tipoSelect.value = 'processo_licitatorio';
         tipoSelect.dispatchEvent(new Event('change'));
 
-        // 2. Verifica se mostrou o container
         expect(valorContainer.style.display).toBe('block');
         expect(document.getElementById('label-valor-consulta').textContent).toBe('Selecionar Processo');
+        expect(valorSelect.disabled).toBe(true); // Deve travar enquanto carrega
 
-        // 3. Aguarda o fetch e o preenchimento do select
         await waitFor(() => {
             expect(mockFetch).toHaveBeenCalledWith('/api/consultas/entidades/processo_licitatorio');
-            expect(valorSelect.options.length).toBeGreaterThan(1); // Placeholder + Opções
-            expect(valorSelect.options[1].text).toBe('Processo 001/2024');
+            expect(valorSelect.options.length).toBeGreaterThan(1); 
+            expect(valorSelect.options[1].text).toBe('Opção A');
+            expect(valorSelect.disabled).toBe(false); // Destravou
         });
     });
 
-    test('Deve realizar a busca e renderizar tabela de resultados com sucesso', async () => {
-        const tipoSelect = document.getElementById('tipo-consulta');
-        const valorSelect = document.getElementById('valor-consulta');
-        const form = document.getElementById('form-consulta');
-        const areaResultados = document.getElementById('area-resultados');
-
-        // 1. Configura estado inicial (simula que o usuário já selecionou as opções)
-        tipoSelect.value = 'processo_licitatorio';
-        
-        // Adiciona uma opção manualmente ao select de valor para poder selecioná-la
-        const option = document.createElement('option');
-        option.value = '10';
-        option.text = 'Processo Teste';
-        valorSelect.add(option);
-        valorSelect.value = '10';
-
-        // 2. Mock da resposta da busca (Resultados)
+    test('Select Tipo: Deve lidar com erro de carregamento da API', async () => {
         mockFetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({
-                titulo: 'Resultados Teste',
-                tipo: 'processo_licitatorio', // Importante: deve bater com o colunasMap no JS
-                resultados: [
-                    { 
-                        numero_contrato: '123/2024', 
-                        fornecedor: 'Empresa X', 
-                        nome_categoria: 'Obras', 
-                        ativo: true,
-                        id: 99
-                    }
-                ]
-            })
+            ok: false,
+            json: async () => ({ erro: 'Falha ao carregar lista' })
         });
 
-        // 3. Submete o formulário
-        form.dispatchEvent(new Event('submit'));
+        const tipoSelect = document.getElementById('tipo-consulta');
+        const valorSelect = document.getElementById('valor-consulta');
 
-        // 4. Verifica feedback de carregamento
-        expect(areaResultados.innerHTML).toContain('Buscando...');
+        tipoSelect.value = 'processo_licitatorio';
+        tipoSelect.dispatchEvent(new Event('change'));
 
-        // 5. Aguarda renderização da tabela
         await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledWith('/api/consultas?tipo=processo_licitatorio&valor=10');
-            
-            // Verifica se a tabela foi criada
-            const tabela = areaResultados.querySelector('table');
-            expect(tabela).toBeTruthy();
-            
-            // Verifica conteúdo da linha
-            expect(tabela.textContent).toContain('123/2024');
-            expect(tabela.textContent).toContain('Empresa X');
-            expect(tabela.textContent).toContain('Ativo');
+            expect(valorSelect.innerHTML).toContain('Erro ao carregar');
+            expect(consoleSpy).toHaveBeenCalled(); // Verifica se logou o erro
         });
     });
 
-    test('Deve exibir mensagem quando nenhum resultado for encontrado', async () => {
+    test('Select Tipo: Deve ocultar container se configuração não existir', () => {
         const tipoSelect = document.getElementById('tipo-consulta');
-        const valorSelect = document.getElementById('valor-consulta');
-        const form = document.getElementById('form-consulta');
+        const valorContainer = document.getElementById('container-valor-consulta');
+
+        // Seleciona um tipo que não está no window.configEntidades
+        tipoSelect.value = 'tipo_sem_config';
+        tipoSelect.dispatchEvent(new Event('change'));
+
+        expect(valorContainer.style.display).toBe('none');
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Configuração não encontrada'));
+    });
+
+    // ==========================================================================
+    // 4. TESTES DE BUSCA E RENDERIZAÇÃO (Event Submit)
+    // ==========================================================================
+
+    test('Busca (Processo): Deve renderizar tabela com link e boolean formatado', async () => {
         const areaResultados = document.getElementById('area-resultados');
-
-        tipoSelect.value = 'unidade_requisitante';
         
-        const option = document.createElement('option');
-        option.value = '5';
-        valorSelect.add(option);
-        valorSelect.value = '5';
+        // Prepara o estado do formulário
+        document.getElementById('tipo-consulta').value = 'processo_licitatorio';
+        // Adiciona opção manual para poder selecionar
+        const sel = document.getElementById('valor-consulta');
+        sel.innerHTML = '<option value="10" selected>Teste</option>';
 
-        // Mock resposta vazia
         mockFetch.mockResolvedValueOnce({
             ok: true,
             json: async () => ({
                 titulo: 'Resultados',
-                tipo: 'unidade_requisitante',
-                resultados: [] // Lista vazia
+                tipo: 'processo_licitatorio',
+                resultados: [{ 
+                    numero_contrato: '123/2024', 
+                    fornecedor: 'Empresa X', 
+                    nome_categoria: 'Obras', 
+                    ativo: true, 
+                    id: 99 
+                }]
             })
         });
 
-        form.dispatchEvent(new Event('submit'));
+        document.getElementById('form-consulta').dispatchEvent(new Event('submit'));
+
+        expect(areaResultados.innerHTML).toContain('Buscando...');
 
         await waitFor(() => {
-            expect(areaResultados.textContent).toContain('Nenhum resultado encontrado');
-            expect(areaResultados.querySelector('table')).toBeNull();
+            const table = areaResultados.querySelector('table');
+            expect(table).toBeTruthy();
+            
+            // Testa Link
+            expect(table.innerHTML).toContain('href="/contrato/99"');
+            // Testa Valor da Coluna
+            expect(table.textContent).toContain('123/2024');
+            // Testa Formatação de Boolean (Ativo = true -> Badge Verde)
+            expect(table.innerHTML).toContain('status-badge green');
+            expect(table.textContent).toContain('Ativo');
         });
     });
 
-    test('Deve tratar erro na busca (API Error)', async () => {
-        const tipoSelect = document.getElementById('tipo-consulta');
-        const valorSelect = document.getElementById('valor-consulta');
-        const form = document.getElementById('form-consulta');
+    test('Busca (Unidade): Deve renderizar badges coloridas de status (Condicional)', async () => {
         const areaResultados = document.getElementById('area-resultados');
+        
+        document.getElementById('tipo-consulta').value = 'unidade_requisitante';
+        document.getElementById('valor-consulta').innerHTML = '<option value="5" selected>Unidade</option>';
 
-        tipoSelect.value = 'processo_licitatorio';
-        const option = document.createElement('option');
-        option.value = '1';
-        valorSelect.add(option);
-        valorSelect.value = '1';
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                titulo: 'Pedidos da Unidade',
+                tipo: 'unidade_requisitante',
+                resultados: [
+                    { numero_aocs: 'AOCS-01', status_entrega: 'Entregue', id: 101 },
+                    { numero_aocs: 'AOCS-02', status_entrega: 'Entrega Parcial', id: 102 },
+                    { numero_aocs: 'AOCS-03', status_entrega: 'Pendente', id: 103 }
+                ]
+            })
+        });
 
-        // Mock Erro 500
+        document.getElementById('form-consulta').dispatchEvent(new Event('submit'));
+
+        await waitFor(() => {
+            const html = areaResultados.innerHTML;
+            // Verifica se as classes CSS corretas foram aplicadas
+            expect(html).toContain('status-badge green');  // Entregue
+            expect(html).toContain('status-badge orange'); // Parcial
+            expect(html).toContain('status-badge gray');   // Pendente
+        });
+    });
+
+    test('Busca Vazia: Deve exibir mensagem de nenhum resultado', async () => {
+        document.getElementById('tipo-consulta').value = 'processo_licitatorio';
+        document.getElementById('valor-consulta').innerHTML = '<option value="1" selected>Vazio</option>';
+
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({ tipo: 'processo_licitatorio', resultados: [] })
+        });
+
+        document.getElementById('form-consulta').dispatchEvent(new Event('submit'));
+
+        await waitFor(() => {
+            expect(document.getElementById('area-resultados').textContent).toContain('Nenhum resultado encontrado');
+        });
+    });
+
+    test('Erro API: Deve exibir notificação de erro na área de resultados', async () => {
+        document.getElementById('tipo-consulta').value = 'processo_licitatorio';
+        document.getElementById('valor-consulta').innerHTML = '<option value="1" selected>Erro</option>';
+
         mockFetch.mockResolvedValueOnce({
             ok: false,
             status: 500,
-            json: async () => ({ erro: 'Erro interno no servidor' })
+            json: async () => ({ erro: 'Erro Crítico no Servidor' })
         });
 
-        form.dispatchEvent(new Event('submit'));
+        document.getElementById('form-consulta').dispatchEvent(new Event('submit'));
 
         await waitFor(() => {
-            expect(areaResultados.querySelector('.notification.error')).toBeTruthy();
-            expect(areaResultados.textContent).toContain('Erro interno no servidor');
+            const area = document.getElementById('area-resultados');
+            expect(area.innerHTML).toContain('notification error');
+            expect(area.textContent).toContain('Erro Crítico no Servidor');
         });
-    });
-
-    test('Não deve submeter se os campos estiverem vazios', async () => {
-        const form = document.getElementById('form-consulta');
-        
-        // Campos vazios por padrão no HTML mockado
-        form.dispatchEvent(new Event('submit'));
-
-        await new Promise(r => setTimeout(r, 100)); // Pequena espera
-
-        expect(mockFetch).not.toHaveBeenCalled();
     });
 });

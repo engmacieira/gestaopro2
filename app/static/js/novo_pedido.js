@@ -321,6 +321,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const idContrato = parseInt(input.dataset.idContrato);
             const numeroAOCS = input.value.trim();
 
+            // --- BLINDAGEM: Verifica se o contrato existe no agrupamento ---
+            const itensDoContrato = contratosAgrupados[idContrato];
+            if (!itensDoContrato) {
+                // Log de erro silencioso para o dev, sem travar o loop
+                console.error(`Erro de Consistência: Contrato ID ${idContrato} sem itens no carrinho.`);
+                continue; 
+            }
+            // ---------------------------------------------------------------
+
             if (!numeroAOCS) {
                 input.style.borderColor = 'red'; 
                 erroValidacaoInput = true;
@@ -346,7 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(aocsResult => {
                 const id_aocs_criada = aocsResult.id;
-                const pedidoPromises = contratosAgrupados[idContrato].map(item =>
+                
+                const pedidoPromises = itensDoContrato.map(item =>
                     fetch(`/api/pedidos?id_aocs=${id_aocs_criada}`, { 
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

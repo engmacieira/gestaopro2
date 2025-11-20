@@ -5,6 +5,7 @@
   "main": "app/main.py",
   "scripts": {
     "test:frontend": "jest tests/frontend",
+    "test:cov": "jest tests/frontend --coverage",
     "test": "echo \"Erro: nenhum teste especificado, use 'npm run test:frontend'\" && exit 1"
   },
   "directories": {

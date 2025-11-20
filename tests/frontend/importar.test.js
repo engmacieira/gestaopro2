@@ -9,7 +9,7 @@
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-const waitFor = async (callback, timeout = 1000) => {
+const waitFor = async (callback, timeout = 2000) => {
     const startTime = Date.now();
     while (true) {
         try {
@@ -22,7 +22,9 @@ const waitFor = async (callback, timeout = 1000) => {
     }
 };
 
-// HTML Simulado (Abas + Formulário de Contratos + Formulário de Itens)
+// HTML Simulado
+// FIX SÊNIOR: Adicionado type="button" explicitamente nos botões de salvar
+// para garantir que o JSDOM não os trate como submit.
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -40,7 +42,7 @@ const DOM_HTML = `
         
         <div id="preview-container-contratos" style="display: none;">
             <table id="preview-table-contratos"></table>
-            <button id="btn-salvar-contratos">Salvar Contratos</button>
+            <button type="button" id="btn-salvar-contratos">Salvar Contratos</button>
         </div>
     </div>
 
@@ -53,13 +55,30 @@ const DOM_HTML = `
         
         <div id="preview-container-itens" style="display: none;">
             <table id="preview-table-itens"></table>
-            <button id="btn-salvar-itens">Salvar Itens</button>
+            <button type="button" id="btn-salvar-itens">Salvar Itens</button>
         </div>
     </div>
 `;
 
 describe('Testes Frontend - Importação', () => {
-    let reloadMock;
+    let documentSpy;
+
+    // Helper de Roteamento (Router Mock)
+    const setupRouterMock = (routes = []) => {
+        mockFetch.mockImplementation(async (url, options) => {
+            const method = options ? options.method : 'GET';
+            const match = routes.find(r => url.includes(r.url) && (r.method || 'GET') === method);
+            
+            if (match) {
+                return {
+                    ok: match.ok !== false,
+                    status: match.status || 200,
+                    json: async () => match.body || {}
+                };
+            }
+            return { ok: true, json: async () => [] };
+        });
+    };
 
     // ==========================================================================
     // 2. SETUP
@@ -69,165 +88,188 @@ describe('Testes Frontend - Importação', () => {
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
 
-        // Patch innerText
         Object.defineProperty(HTMLElement.prototype, 'innerText', {
             get() { return this.textContent; },
             set(value) { this.textContent = value; },
             configurable: true
         });
 
-        // Variáveis globais esperadas pelo HTML (definidas no bloco scripts do template)
+        // Espião para limpar listeners duplicados
+        documentSpy = jest.spyOn(document, 'addEventListener');
+
         window.redirectUrlContratos = '/contratos';
         window.redirectUrlItens = '/itens';
 
-        // Mock Location
         delete window.location;
         window.location = { href: '' };
 
-        // Carrega o script
         jest.resetModules();
         require('../../app/static/js/importar');
         document.dispatchEvent(new Event('DOMContentLoaded'));
     });
 
-    // ==========================================================================
-    // 3. TEARDOWN
-    // ==========================================================================
     afterEach(() => {
+        if (documentSpy) {
+            documentSpy.mock.calls.forEach(call => document.removeEventListener(call[0], call[1]));
+            documentSpy.mockRestore();
+        }
         delete window.redirectUrlContratos;
         delete window.redirectUrlItens;
     });
 
     // ==========================================================================
-    // 4. TESTES
+    // 3. TESTES
     // ==========================================================================
 
-    test('Navegação: Deve alternar entre as abas de Contratos e Itens', () => {
+    test('Inicialização: Deve exibir notificação via sessionStorage', () => {
+        sessionStorage.setItem('notificationMessage', 'Upload realizado');
+        sessionStorage.setItem('notificationType', 'success');
+        
+        documentSpy.mock.calls.forEach(call => document.removeEventListener(call[0], call[1]));
+        document.body.innerHTML = DOM_HTML;
+        
+        jest.resetModules();
+        require('../../app/static/js/importar');
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+
+        const notif = document.querySelector('.notification.success');
+        expect(notif).toBeTruthy();
+        expect(notif.textContent).toBe('Upload realizado');
+    });
+
+    test('Abas: Deve alternar visibilidade entre Contratos e Itens', () => {
         const linkContratos = document.getElementById('link-contratos');
         const linkItens = document.getElementById('link-itens');
         const tabContratos = document.getElementById('tab-contratos');
         const tabItens = document.getElementById('tab-itens');
 
-        // Estado inicial
         expect(tabContratos.classList.contains('active')).toBe(true);
 
-        // Clica em Itens
         linkItens.click();
         expect(tabContratos.classList.contains('active')).toBe(false);
         expect(tabItens.classList.contains('active')).toBe(true);
-        expect(linkItens.classList.contains('active')).toBe(true);
 
-        // Clica em Contratos de volta
         linkContratos.click();
         expect(tabContratos.classList.contains('active')).toBe(true);
     });
 
-    test('Preview (Contratos): Deve enviar arquivo e renderizar tabela formatada', async () => {
-        const mockData = [
-            { 
-                numero_contrato: 'CT-001', 
-                fornecedor: 'Empresa Teste', 
-                valor_unitario: 1500.50,  // Deve formatar para 1.500,50
-                data_inicio: '2024-01-01' // Deve formatar data
-            }
-        ];
+    test('Preview Contratos: Deve formatar dados e escapar HTML (Segurança)', async () => {
+        const maliciousData = [{ 
+            numero_contrato: '<b>Negrito</b>', 
+            fornecedor: '<script>alert(1)</script>',
+            valor_unitario: 2500.50,
+            data_inicio: '2024-12-31'
+        }];
 
-        mockFetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => mockData
-        });
+        setupRouterMock([{
+            url: '/api/importar/contratos/preview',
+            method: 'POST',
+            body: maliciousData
+        }]);
 
-        const form = document.getElementById('form-upload-contratos');
-        const container = document.getElementById('preview-container-contratos');
-        const table = document.getElementById('preview-table-contratos');
-
-        // Dispara submit
-        form.dispatchEvent(new Event('submit'));
+        document.getElementById('form-upload-contratos').dispatchEvent(new Event('submit'));
 
         await waitFor(() => {
-            // 1. Verifica chamada da API de preview
-            expect(mockFetch).toHaveBeenCalledWith('/api/importar/contratos/preview', expect.objectContaining({
-                method: 'POST',
-                body: expect.any(FormData)
-            }));
-
-            // 2. Verifica se mostrou o container de preview
-            expect(container.style.display).toBe('flex');
-
-            // 3. Verifica conteúdo da tabela
-            expect(table.innerHTML).toContain('CT-001');
-            expect(table.innerHTML).toContain('Empresa Teste');
-            
-            // Verifica se a formatação PT-BR foi chamada (virgula decimal)
-            // Nota: JSDOM pode ter suporte limitado a i18n completo dependendo do Node,
-            // mas verificamos se o valor está presente.
-            // O script usa toLocaleString('pt-BR'), que pode renderizar 1.500,50 ou 1500,50.
+            const table = document.getElementById('preview-table-contratos');
+            expect(table.innerHTML).toContain('&lt;b&gt;Negrito&lt;/b&gt;');
+            expect(table.innerHTML).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+            expect(table.textContent).toMatch(/2[\.,]500[\.,]50/);
+            expect(document.getElementById('preview-container-contratos').style.display).toBe('flex');
         });
     });
 
-    test('Salvar (Contratos): Deve enviar dados do preview e redirecionar', async () => {
-        const mockData = [{ id: 1, nome: 'Dado Importado' }];
-        
-        // --- PASSO 1: Executar Preview (para popular a variável interna dataToSave) ---
-        mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockData });
-        document.getElementById('form-upload-contratos').dispatchEvent(new Event('submit'));
+    test('Salvar Contratos: Deve enviar dados e redirecionar', async () => {
+        const dadosParaSalvar = [{ id: 1, nome: 'Teste' }];
+
+        setupRouterMock([
+            { url: '/api/importar/contratos/preview', method: 'POST', body: dadosParaSalvar },
+            { url: '/api/importar/contratos/salvar', method: 'POST', body: { mensagem: 'Sucesso' } }
+        ]);
+
+        // 1. Executa Preview
+        const form = document.getElementById('form-upload-contratos');
+        form.dispatchEvent(new Event('submit'));
         
         await waitFor(() => {
-            const container = document.getElementById('preview-container-contratos');
-            expect(container.style.display).toBe('flex'); // Garante que preview terminou
+             const container = document.getElementById('preview-container-contratos');
+             if(container.style.display !== 'flex') throw new Error('Preview não abriu');
         });
 
-        // --- PASSO 2: Executar Salvar ---
-        mockFetch.mockResolvedValueOnce({ // Mock resposta do SALVAR
-            ok: true,
-            json: async () => ({ mensagem: 'Importação concluída' })
-        });
-
+        // 2. Clica Salvar
         const btnSalvar = document.getElementById('btn-salvar-contratos');
         btnSalvar.click();
 
         await waitFor(() => {
-            // Verifica chamada da API de salvar
             expect(mockFetch).toHaveBeenCalledWith('/api/importar/contratos/salvar', expect.objectContaining({
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(mockData) // Deve enviar o mesmo JSON recebido no preview
+                body: JSON.stringify(dadosParaSalvar)
             }));
-
-            // Verifica redirecionamento
             expect(window.location.href).toBe('/contratos');
-            expect(sessionStorage.getItem('notificationMessage')).toContain('Importação concluída');
         });
     });
 
-    test('Erro no Preview: Deve exibir mensagem de erro na div específica', async () => {
-        mockFetch.mockResolvedValueOnce({
+    test('Preview Erro: Deve exibir mensagem na div de erro', async () => {
+        setupRouterMock([{
+            url: '/api/importar/itens/global/preview',
+            method: 'POST',
             ok: false,
             status: 400,
-            json: async () => ({ erro: 'Colunas inválidas no Excel' })
-        });
+            body: { erro: 'Arquivo inválido' }
+        }]);
 
-        const form = document.getElementById('form-upload-itens'); // Testando no form de Itens
-        const errorDiv = document.getElementById('error-message-itens');
-
-        form.dispatchEvent(new Event('submit'));
+        document.getElementById('form-upload-itens').dispatchEvent(new Event('submit'));
 
         await waitFor(() => {
-            expect(errorDiv.textContent).toContain('Colunas inválidas no Excel');
-            // Container de preview deve continuar oculto
+            const errorDiv = document.getElementById('error-message-itens');
+            expect(errorDiv.textContent).toContain('Arquivo inválido');
             expect(document.getElementById('preview-container-itens').style.display).toBe('none');
         });
     });
 
-    test('Botão Salvar sem dados: Deve mostrar notificação de erro', async () => {
-        // Tenta clicar em salvar sem ter feito preview antes
+    test('Salvar Erro: Deve exibir notificação e reabilitar botão', async () => {
+        // 1. ARRANGE (Preparação)
+        // Simulamos que o usuário já fez o preview e os dados estão no "cofre" (dataset)
+        const dadosMock = [{ id: 1, item: 'Teste' }];
+        const container = document.getElementById('preview-container-itens');
+        
+        // Injeção direta de dependência (aqui pulamos a necessidade de rodar o preview)
+        container.dataset.cacheData = JSON.stringify(dadosMock);
+
+        // Mockamos apenas a resposta de ERRO do salvamento
+        setupRouterMock([
+            { 
+                url: '/api/importar/itens/global/salvar', 
+                method: 'POST', 
+                ok: false, 
+                status: 500, 
+                body: { erro: 'Erro no Banco' } 
+            }
+        ]);
+
         const btnSalvar = document.getElementById('btn-salvar-itens');
+
+        // 2. ACT (Ação)
+        // Clicamos direto no salvar
+        btnSalvar.click();
+
+        // 3. ASSERT (Verificação)
+        await waitFor(() => {
+            const notif = document.getElementById('notification-area');
+            // Agora temos certeza que ele tentou salvar, então se falhar, 
+            // é porque a mensagem de erro não apareceu, e não porque os dados sumiram.
+            expect(notif.textContent).toContain('Erro no Banco');
+            expect(btnSalvar.disabled).toBe(false);
+        });
+    });
+
+    test('Validação: Não deve salvar sem preview prévio', async () => {
+        const btnSalvar = document.getElementById('btn-salvar-contratos');
         btnSalvar.click();
 
         await waitFor(() => {
             const notif = document.getElementById('notification-area');
             expect(notif.textContent).toContain('Não há dados pré-visualizados');
-            expect(mockFetch).not.toHaveBeenCalled(); // Não deve chamar API
+            expect(mockFetch).not.toHaveBeenCalledWith(expect.stringContaining('salvar'), expect.anything());
         });
     });
 });

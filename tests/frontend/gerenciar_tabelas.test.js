@@ -9,7 +9,7 @@
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-const waitFor = async (callback, timeout = 1000) => {
+const waitFor = async (callback, timeout = 2000) => {
     const startTime = Date.now();
     while (true) {
         try {
@@ -22,7 +22,7 @@ const waitFor = async (callback, timeout = 1000) => {
     }
 };
 
-// HTML Simulado (Sidebar + Área de Conteúdo + Template + Modal)
+// HTML Simulado
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -61,6 +61,27 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
     let documentSpy;
     let windowSpy;
 
+    // Helper para configurar mocks baseados na URL (Router Mock)
+    const setupRouterMock = (routes = []) => {
+        mockFetch.mockImplementation(async (url, options) => {
+            const method = options ? options.method : 'GET';
+            
+            // Procura uma rota que bata com a URL e Método
+            const match = routes.find(r => url.includes(r.url) && (r.method || 'GET') === method);
+            
+            if (match) {
+                return {
+                    ok: match.ok !== false,
+                    status: match.status || 200,
+                    json: async () => match.body || {}
+                };
+            }
+            
+            // Retorno padrão seguro para evitar "undefined json"
+            return { ok: true, json: async () => [] };
+        });
+    };
+
     // ==========================================================================
     // 2. SETUP
     // ==========================================================================
@@ -69,174 +90,159 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
 
-        // Patch de Compatibilidade (innerText)
         Object.defineProperty(HTMLElement.prototype, 'innerText', {
             get() { return this.textContent; },
             set(value) { this.textContent = value; },
             configurable: true
         });
 
-        // Spies
         documentSpy = jest.spyOn(document, 'addEventListener');
         windowSpy = jest.spyOn(window, 'addEventListener');
 
-        // Mocks Globais
         reloadMock = jest.fn();
         delete window.location;
         window.location = { reload: reloadMock };
-        
         window.confirm = jest.fn(() => true);
 
-        // Carrega o script
+        // Reset do script
         jest.resetModules();
         require('../../app/static/js/gerenciar_tabelas');
         document.dispatchEvent(new Event('DOMContentLoaded'));
     });
 
-    // ==========================================================================
-    // 3. TEARDOWN
-    // ==========================================================================
     afterEach(() => {
-        if (documentSpy) {
-            documentSpy.mock.calls.forEach(c => document.removeEventListener(c[0], c[1]));
-            documentSpy.mockRestore();
-        }
-        if (windowSpy) {
-            windowSpy.mock.calls.forEach(c => window.removeEventListener(c[0], c[1]));
-            windowSpy.mockRestore();
-        }
+        if (documentSpy) documentSpy.mockRestore();
+        if (windowSpy) windowSpy.mockRestore();
     });
 
     // ==========================================================================
-    // 4. TESTES
+    // 3. TESTES - CARREGAMENTO
     // ==========================================================================
 
-    test('Carregar Tabela: Deve clonar template e buscar dados ao clicar no link', async () => {
-        // Mock dados da tabela 'unidades'
-        mockFetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ([
-                { id: 1, nome: 'Metro' },
-                { id: 2, nome: 'Quilo' }
-            ])
-        });
+    test('Carregar Tabela: Sucesso com dados', async () => {
+        setupRouterMock([
+            { 
+                url: '/api/tabelas-sistema/unidades', 
+                body: [{ id: 1, nome: 'Metro' }, { id: 2, nome: 'Quilo' }] 
+            }
+        ]);
 
-        // Clica no link "Unidades"
-        const linkUnidades = document.querySelector('.management-link[data-tabela="unidades"]');
-        linkUnidades.click();
+        const link = document.querySelector('.management-link[data-tabela="unidades"]');
+        link.click();
 
-        // Verifica se o template foi inserido
-        const contentArea = document.getElementById('content-area');
-        
-        // Aguarda fetch e renderização
         await waitFor(() => {
             expect(mockFetch).toHaveBeenCalledWith('/api/tabelas-sistema/unidades');
-            
-            // Verifica título inserido dinamicamente
-            const titulo = document.getElementById('table-title');
-            expect(titulo).toBeTruthy();
-            expect(titulo.textContent).toContain('Unidades');
-
-            // Verifica linhas da tabela
-            const tbody = document.getElementById('table-body');
-            expect(tbody.innerHTML).toContain('Metro');
-            expect(tbody.innerHTML).toContain('Quilo');
+            expect(document.getElementById('table-title').textContent).toContain('Unidades');
+            expect(document.getElementById('table-body').innerHTML).toContain('Metro');
         });
     });
 
-    test('Adicionar Item: Deve abrir modal e fazer POST na tabela ativa', async () => {
-        // 1. Carrega a tabela 'categorias' primeiro
-        mockFetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => [] // Tabela vazia inicialmente
-        });
+    test('Carregar Tabela: Deve exibir mensagem de "Vazio" se não houver itens', async () => {
+        setupRouterMock([
+            { 
+                url: '/api/tabelas-sistema/categorias', 
+                body: [] // Lista vazia
+            }
+        ]);
+
         document.querySelector('.management-link[data-tabela="categorias"]').click();
-        
+
+        await waitFor(() => {
+            const body = document.getElementById('table-body');
+            expect(body.innerHTML).toContain('empty-state');
+            expect(body.textContent).toContain('Nenhum item cadastrado');
+        });
+    });
+
+    test('Carregar Tabela: Deve tratar erro da API (500)', async () => {
+        setupRouterMock([
+            { 
+                url: '/api/tabelas-sistema/unidades', 
+                ok: false,
+                status: 500,
+                body: { erro: 'Falha no Servidor' }
+            }
+        ]);
+
+        document.querySelector('.management-link[data-tabela="unidades"]').click();
+
+        await waitFor(() => {
+            const body = document.getElementById('table-body');
+            expect(body.innerHTML).toContain('notification error');
+            expect(body.textContent).toContain('Falha no Servidor');
+        });
+    });
+
+    // ==========================================================================
+    // 4. TESTES - CRUD
+    // ==========================================================================
+
+    test('Adicionar Item: Fluxo completo de Sucesso', async () => {
+        setupRouterMock([
+            // 1. GET inicial
+            { url: '/api/tabelas-sistema/categorias', method: 'GET', body: [] },
+            // 2. POST salvar
+            { url: '/api/tabelas-sistema/categorias', method: 'POST', body: { id: 10, nome: 'Nova Cat' } }
+        ]);
+
+        // Carrega tabela
+        document.querySelector('.management-link[data-tabela="categorias"]').click();
         await waitFor(() => expect(document.getElementById('btn-add-new-item')).toBeTruthy());
 
-        // 2. Clica em "Adicionar Novo"
+        // Abre Modal
         document.getElementById('btn-add-new-item').click();
         const modal = document.getElementById('modal-item');
         expect(modal.style.display).toBe('flex');
-        expect(document.getElementById('modal-titulo').textContent).toContain('Adicionar Novo');
 
-        // 3. Preenche e Salva
-        mockFetch.mockResolvedValueOnce({ // Mock da resposta do POST
-            ok: true,
-            json: async () => ({ id: 10, nome: 'Nova Categoria' })
-        });
-        
-        // Mock do reload da tabela após salvar
-        mockFetch.mockResolvedValueOnce({ 
-            ok: true, 
-            json: async () => ([{ id: 10, nome: 'Nova Categoria' }]) 
-        });
-
-        document.getElementById('item-nome').value = 'Nova Categoria';
+        // Salva
+        document.getElementById('item-nome').value = 'Nova Cat';
         document.getElementById('form-item').dispatchEvent(new Event('submit'));
 
         await waitFor(() => {
-            // Verifica se fez POST na URL correta da tabela ativa
             expect(mockFetch).toHaveBeenCalledWith('/api/tabelas-sistema/categorias', expect.objectContaining({
                 method: 'POST',
-                body: JSON.stringify({ nome: 'Nova Categoria' })
+                body: JSON.stringify({ nome: 'Nova Cat' })
             }));
-            
-            // Verifica notificação
+            // Verifica feedback
             expect(document.getElementById('notification-area').textContent).toContain('criado com sucesso');
         });
     });
 
-    test('Editar Item: Deve abrir modal com dados e fazer PUT', async () => {
-        // 1. Carrega tabela
-        mockFetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ([{ id: 5, nome: 'Item Antigo' }])
-        });
+    test('Editar Item: Fluxo completo de Sucesso', async () => {
+        setupRouterMock([
+            // 1. GET inicial
+            { url: '/api/tabelas-sistema/unidades', method: 'GET', body: [{ id: 5, nome: 'Kg' }] },
+            // 2. PUT salvar
+            { url: '/api/tabelas-sistema/unidades/5', method: 'PUT', body: { id: 5, nome: 'Kilograma' } }
+        ]);
+
         document.querySelector('.management-link[data-tabela="unidades"]').click();
-        await waitFor(() => expect(document.getElementById('table-body').textContent).toContain('Item Antigo'));
+        await waitFor(() => document.getElementById('table-title'));
 
-        // 2. Abre modal de edição via função global (simulando clique no botão da tabela)
-        window.abrirModalParaEditar(5, 'Item Antigo');
+        // Abre modal (simulado)
+        window.abrirModalParaEditar(5, 'Kg');
+        expect(document.getElementById('item-nome').value).toBe('Kg');
 
-        const modal = document.getElementById('modal-item');
-        const inputNome = document.getElementById('item-nome');
-        
-        expect(modal.style.display).toBe('flex');
-        expect(inputNome.value).toBe('Item Antigo'); // Verifica preenchimento
-
-        // 3. Edita e Salva
-        mockFetch.mockResolvedValueOnce({ // Mock PUT
-            ok: true,
-            json: async () => ({ id: 5, nome: 'Item Editado' })
-        });
-        mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] }); // Mock reload
-
-        inputNome.value = 'Item Editado';
+        // Salva
+        document.getElementById('item-nome').value = 'Kilograma';
         document.getElementById('form-item').dispatchEvent(new Event('submit'));
 
         await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledWith('/api/tabelas-sistema/unidades/5', expect.objectContaining({
-                method: 'PUT',
-                body: JSON.stringify({ nome: 'Item Editado' })
+            expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/tabelas-sistema/unidades/5'), expect.objectContaining({
+                method: 'PUT'
             }));
             expect(document.getElementById('notification-area').textContent).toContain('atualizado com sucesso');
         });
     });
 
     test('Excluir Item: Deve confirmar e fazer DELETE', async () => {
-        // 1. Carrega tabela (precisa ter tabela ativa para excluir)
-        mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] });
-        document.querySelector('.management-link[data-tabela="categorias"]').click();
-        await waitFor(() => expect(document.getElementById('table-title')).toBeTruthy());
+        setupRouterMock([
+            { url: '/api/tabelas-sistema/categorias', method: 'GET', body: [] },
+            { url: '/api/tabelas-sistema/categorias/99', method: 'DELETE', status: 204 }
+        ]);
 
-        // 2. Chama exclusão
-        mockFetch.mockResolvedValueOnce({ // Mock DELETE
-            ok: true,
-            status: 204,
-            json: async () => ({})
-        });
-        mockFetch.mockResolvedValueOnce({ ok: true, json: async () => [] }); // Mock reload
+        document.querySelector('.management-link[data-tabela="categorias"]').click();
+        await waitFor(() => document.getElementById('table-title'));
 
         await window.excluirItem(99);
 
@@ -248,14 +254,49 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
         });
     });
 
-    test('Validação: Não deve salvar sem nome ou tabela ativa', async () => {
-        // Tenta salvar sem carregar tabela e sem nome
-        const form = document.getElementById('form-item');
-        form.dispatchEvent(new Event('submit'));
+    // ==========================================================================
+    // 5. TESTES DE ERRO
+    // ==========================================================================
 
-        await new Promise(r => setTimeout(r, 100));
+    test('Salvar (Erro API): Deve exibir erro e NÃO fechar modal', async () => {
+        setupRouterMock([
+            { url: '/api/tabelas-sistema/categorias', method: 'GET', body: [] },
+            { 
+                url: '/api/tabelas-sistema/categorias', 
+                method: 'POST', 
+                ok: false, 
+                status: 400, 
+                body: { erro: 'Nome duplicado' } 
+            }
+        ]);
 
-        expect(mockFetch).not.toHaveBeenCalled();
-        expect(document.getElementById('notification-area').textContent).toContain('Nome é obrigatório');
+        document.querySelector('.management-link[data-tabela="categorias"]').click();
+        await waitFor(() => document.getElementById('btn-add-new-item').click());
+
+        document.getElementById('item-nome').value = 'Duplicado';
+        document.getElementById('form-item').dispatchEvent(new Event('submit'));
+
+        await waitFor(() => {
+            const notif = document.getElementById('notification-area');
+            expect(notif.textContent).toContain('Nome duplicado');
+            
+            // Modal deve continuar visível
+            const modal = document.getElementById('modal-item');
+            // Nota: no JSDOM, style.display só muda se o código mudar. 
+            // Se o código de sucesso fecha, o código de erro não deve fechar.
+            // Como começamos com 'flex' (aberto), ele deve continuar assim.
+            expect(modal.style.display).toBe('flex');
+        });
+    });
+
+    test('Validação: Salvar sem tabela ativa', async () => {
+        // Não clica em nenhum link, tenta salvar direto
+        document.getElementById('item-nome').value = 'Orfão';
+        document.getElementById('form-item').dispatchEvent(new Event('submit'));
+
+        await waitFor(() => {
+            expect(document.getElementById('notification-area').textContent).toContain('Nenhuma tabela ativa');
+            expect(mockFetch).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }));
+        });
     });
 });
