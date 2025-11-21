@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     
     services:
-      # Levanta o banco Postgres exclusivo para o teste
       postgres:
         image: postgres:15
         env:
+          # Configuração do banco para o CI (igual ao seu antigo que funcionava)
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ci_password_123 # Senha fixa para o CI
+          POSTGRES_PASSWORD: ci_password_123 
           POSTGRES_DB: gestaopro_test
         ports:
           - 5432:5432
@@ -41,8 +41,7 @@ jobs:
         cache: 'pip'
 
     - name: Criar arquivo .env.test
-      # Voltamos à abordagem simples: chaves fixas para o ambiente de teste.
-      # Isso elimina o erro do linter e funciona perfeitamente para testes unitários.
+      # Cria o arquivo .env localmente na máquina do CI com os dados do serviço acima
       run: |
         echo "DATABASE_URL=postgresql://postgres:ci_password_123@localhost:5432/gestaopro_test" > .env.test
         echo "SECRET_KEY=chave_secreta_exclusiva_para_testes_ci" >> .env.test
@@ -57,9 +56,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Rodar Testes (Pytest)
+    # Opcional: Se seus testes precisarem de ferramentas de banco extra
+    - name: Instalar Cliente PostgreSQL
       run: |
-        python -m pytest --cov=app
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+
+    - name: Rodar Testes (Pytest)
+      # CORREÇÃO AQUI:
+      # 1. Adicionamos PYTHONPATH para ele enxergar a pasta 'app'
+      # 2. Usamos 'python -m pytest' que é mais robusto para imports
+      env:
+        PYTHONPATH: .
+      run: |
+        python -m pytest -v
 
   # ------------------------------------------------------------------
   # JOB 2: FRONTEND (Node.js/Jest)
@@ -79,7 +89,6 @@ jobs:
         cache: 'npm'
 
     - name: Instalar Dependências Frontend
-      # 'npm ci' garante que usamos exatamente as versões do package-lock.json
       run: npm ci
 
     - name: Rodar Testes do Frontend
