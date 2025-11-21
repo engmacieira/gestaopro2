@@ -76,6 +76,8 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
     // ==========================================================================
     beforeEach(() => {
         jest.clearAllMocks();
+        // Garante Timers Reais por padrão
+        jest.useRealTimers(); 
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
 
@@ -106,7 +108,7 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
     });
 
     // ==========================================================================
-    // 3. TESTES - CRIAÇÃO (POST)
+    // 3. SEUS TESTES ORIGINAIS (MANTIDOS INTACTOS)
     // ==========================================================================
 
     test('Interface: Botão Adicionar deve mostrar campo de senha', () => {
@@ -159,10 +161,6 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
         });
     });
 
-    // ==========================================================================
-    // 4. TESTES - EDIÇÃO (PUT)
-    // ==========================================================================
-
     test('Editar Usuário: Fluxo Completo (Carregar -> Esconder Senha -> Salvar Sem Senha)', async () => {
         setupRouterMock([
             { 
@@ -177,15 +175,12 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
             }
         ]);
 
-        // 1. Abre Modal de Edição
         await window.abrirModalParaEditar(5);
 
-        // Verifica se carregou dados
         const passwordGroup = document.getElementById('password-group');
         expect(passwordGroup.style.display).toBe('none');
         expect(document.getElementById('user-nome').value).toBe('usuario_antigo');
 
-        // 2. Altera e Salva
         document.getElementById('user-nome').value = 'usuario_novo';
         document.getElementById('user-senha').value = 'senha_que_nao_deve_ir';
         
@@ -196,13 +191,11 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
                 method: 'PUT'
             }));
             
-            // CORREÇÃO AQUI: Verifica se call[1] existe antes de checar o método
             const call = mockFetch.mock.calls.find(call => call[1] && call[1].method === 'PUT');
-            
-            expect(call).toBeDefined(); // Garante que achou a chamada
+            expect(call).toBeDefined(); 
             const body = JSON.parse(call[1].body);
             expect(body.username).toBe('usuario_novo');
-            expect(body.password).toBeUndefined(); // PROVA DA BLINDAGEM
+            expect(body.password).toBeUndefined(); 
         });
     });
 
@@ -223,10 +216,6 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
             expect(document.getElementById('modal-user').style.display).not.toBe('flex');
         });
     });
-
-    // ==========================================================================
-    // 5. TESTES - AÇÕES ESPECIAIS
-    // ==========================================================================
 
     test('Resetar Senha: Deve exibir nova senha no Alert', async () => {
         setupRouterMock([{
@@ -264,6 +253,131 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
                 })
             );
             expect(sessionStorage.getItem('notificationMessage')).toContain('inativado com sucesso');
+        });
+    });
+
+    // ==========================================================================
+    // 4. NOVOS TESTES (COBERTURA FALTANTE)
+    // ==========================================================================
+
+    test('Notificação: Deve desaparecer após 5s (Mock Manual do setTimeout)', async () => {
+        // Cobertura linhas 23-25
+        const originalSetTimeout = global.setTimeout;
+        let callbackRemocao = null;
+        
+        const mockSetTimeout = jest.fn((cb, delay) => {
+            if (delay === 5000) callbackRemocao = cb;
+            return 123;
+        });
+        global.setTimeout = mockSetTimeout;
+        window.setTimeout = mockSetTimeout;
+
+        try {
+            // Gera erro para chamar showNotification
+            document.getElementById('btn-add-user').click();
+            document.getElementById('user-nome').value = 'test';
+            document.getElementById('user-senha').value = '123'; // Inválido
+            document.getElementById('form-user').dispatchEvent(new Event('submit'));
+
+            await waitFor(() => {
+                expect(document.getElementById('notification-area').children.length).toBeGreaterThan(0);
+            });
+
+            expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
+
+            if (callbackRemocao) {
+                const notif = document.querySelector('.notification');
+                callbackRemocao(); // Executa o timer
+                expect(notif.style.opacity).toBe('0');
+                notif.dispatchEvent(new Event('transitionend')); // Cobertura do addEventListener
+                expect(document.getElementById('notification-area').children.length).toBe(0);
+            }
+        } finally {
+            global.setTimeout = originalSetTimeout;
+            window.setTimeout = originalSetTimeout;
+        }
+    });
+
+    test('Inicialização: Deve exibir msg da SessionStorage se existir', async () => {
+        // Cobertura linhas 38-40
+        // Precisamos recarregar o script "do zero" com a session preenchida
+        jest.resetModules();
+        sessionStorage.setItem('notificationMessage', 'Mensagem da Sessão');
+        sessionStorage.setItem('notificationType', 'warning');
+        
+        require('../../app/static/js/gerenciar_usuarios');
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+
+        await waitFor(() => {
+            const notif = document.getElementById('notification-area');
+            expect(notif.textContent).toContain('Mensagem da Sessão');
+            expect(notif.querySelector('.warning')).toBeTruthy();
+            // Deve limpar após mostrar
+            expect(sessionStorage.getItem('notificationMessage')).toBeNull();
+        });
+    });
+
+    test('Resiliência: Funções globais devem tratar DOM quebrado', async () => {
+        // Cobertura linhas 44-47, 51-58 (guards)
+        jest.resetModules();
+        document.body.innerHTML = '<div>Nada aqui</div>'; // DOM sem modal
+        require('../../app/static/js/gerenciar_usuarios');
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+
+        // Chama função global - não deve quebrar
+        await window.abrirModalParaEditar(1);
+        
+        // Se chegou aqui sem erro, passou. Verifica que nada aconteceu.
+        expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    test('Toggle Status: Cancelar no confirm', async () => {
+        // Cobertura linha 104
+        window.confirm.mockReturnValueOnce(false);
+        await window.toggleUserStatus(1, true);
+        expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    test('Resetar Senha: Erro na API (Catch Block)', async () => {
+        // Cobertura linha 119
+        setupRouterMock([{
+            url: '/reset-password', method: 'POST',
+            ok: false, status: 500, body: { detail: 'Erro Crítico' }
+        }]);
+
+        await window.resetarSenha(10);
+
+        await waitFor(() => {
+            const notif = document.getElementById('notification-area');
+            expect(notif.textContent).toContain('Erro ao redefinir senha');
+        });
+    });
+
+    test('Click Overlay: Deve fechar modal', () => {
+        // Cobertura linha 136-137
+        const modal = document.getElementById('modal-user');
+        modal.style.display = 'flex';
+        
+        // Clica no overlay
+        modal.click();
+        
+        expect(modal.style.display).toBe('none');
+    });
+
+    test('Form Submit: Erro Genérico (Catch Block)', async () => {
+        // Cobertura linha 181
+        document.getElementById('btn-add-user').click();
+        document.getElementById('user-nome').value = 'admin';
+        document.getElementById('user-senha').value = '12345678';
+
+        // Mock de erro de rede
+        mockFetch.mockRejectedValue(new Error('Rede Indisponível'));
+
+        document.getElementById('form-user').dispatchEvent(new Event('submit'));
+
+        await waitFor(() => {
+            const notif = document.getElementById('notification-area');
+            expect(notif.textContent).toContain('Rede Indisponível');
         });
     });
 });

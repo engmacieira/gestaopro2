@@ -9,7 +9,7 @@
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// Função auxiliar para esperar elementos aparecerem na tela (assincronismo)
+// Função auxiliar para espera assíncrona
 const waitFor = async (callback, timeout = 2000) => {
     const startTime = Date.now();
     while (true) {
@@ -23,7 +23,7 @@ const waitFor = async (callback, timeout = 2000) => {
     }
 };
 
-// HTML Simulado (Representa a estrutura da sua página real)
+// HTML Simulado
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -54,11 +54,11 @@ const DOM_HTML = `
         <form id="form-finalizar-pedido">
             <div id="aocs-por-contrato-container"></div>
             
-            <input id="aocs-unidade" value="Unidade Teste">
-            <input id="aocs-justificativa" value="Justificativa Teste">
-            <input id="aocs-orcamento" value="Verba X">
-            <input id="aocs-local-entrega" value="Local Y">
-            <input id="aocs-responsavel" value="Fulano">
+            <input id="aocs-unidade" value="Unidade Teste" required>
+            <input id="aocs-justificativa" value="Justificativa Teste" required>
+            <input id="aocs-orcamento" value="Verba X" required>
+            <input id="aocs-local-entrega" value="Local Y" required>
+            <input id="aocs-responsavel" value="Fulano" required>
 
             <button type="button" id="btn-cancelar-modal">Cancelar</button>
             <button type="button" id="btn-enviar-pedido">Confirmar e Enviar</button>
@@ -69,15 +69,13 @@ const DOM_HTML = `
 
 describe('Testes Frontend - Novo Pedido', () => {
     
-    // DADOS MOCKADOS: O Segredo está aqui.
-    // id_contrato deve existir e bater com o esperado no JS.
     const itensMock = [
         {
             id: 101,
             numero_item: 1,
             descricao: { descricao: "Cimento CP-II" },
             numero_contrato: "123/2024",
-            id_contrato: 55, // <--- ATENÇÃO: snake_case, igual ao Python
+            id_contrato: 55,
             saldo: 100.00,
             valor_unitario: 50.00
         },
@@ -86,7 +84,7 @@ describe('Testes Frontend - Novo Pedido', () => {
             numero_item: 2,
             descricao: { descricao: "Areia Lavada" },
             numero_contrato: "124/2024",
-            id_contrato: 56, // <--- ATENÇÃO: snake_case
+            id_contrato: 56,
             saldo: 50.00,
             valor_unitario: 100.00
         }
@@ -97,26 +95,23 @@ describe('Testes Frontend - Novo Pedido', () => {
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
 
-        // Mock para propriedade innerText (compatibilidade JSDOM)
         Object.defineProperty(HTMLElement.prototype, 'innerText', {
             get() { return this.textContent; },
             set(value) { this.textContent = value; },
             configurable: true
         });
 
-        // Variáveis Globais necessárias
         window.idCategoriaGlobal = 1; 
         window.redirectUrlPedidosGlobal = '/pedidos';
         
-        // Mocks de Window
+        // Mock padrão global
         window.confirm = jest.fn(() => true);
         window.alert = jest.fn();
         delete window.location;
         window.location = { href: '' };
 
-        // Configuração Inicial do Fetch (Padrão: Retornar itens para a tabela)
+        // Configuração Inicial do Fetch
         mockFetch.mockImplementation(async (url) => {
-            // Se for chamada de itens (GET)
             if (url.includes('/itens')) {
                 return {
                     ok: true,
@@ -127,141 +122,257 @@ describe('Testes Frontend - Novo Pedido', () => {
                     })
                 };
             }
-            return { ok: false }; // Default error
+            return { ok: false }; 
         });
 
-        // Recarrega o script JS fresco para cada teste
+        // ==========================================================================
+        // CORREÇÃO DO STACKING DE LISTENERS (A Vacina)
+        // ==========================================================================
+        let domCallback = null;
+        const originalAddEventListener = document.addEventListener;
+        
+        // Intercepta apenas o DOMContentLoaded
+        document.addEventListener = jest.fn((event, callback) => {
+            if (event === 'DOMContentLoaded') {
+                domCallback = callback;
+            } else {
+                originalAddEventListener.call(document, event, callback);
+            }
+        });
+
         jest.resetModules();
         require('../../app/static/js/novo_pedido');
-        document.dispatchEvent(new Event('DOMContentLoaded'));
+        
+        // Restaura o original
+        document.addEventListener = originalAddEventListener;
+
+        // Executa manualmente UMA VEZ
+        if (domCallback) domCallback();
     });
 
     // ==========================================================================
-    // TESTES
+    // TESTES ORIGINAIS
     // ==========================================================================
 
     test('Inicialização: Deve buscar e renderizar itens na tabela', async () => {
-        console.log('TESTE: Inicialização');
         await waitFor(() => {
             const linhas = document.querySelectorAll('#corpo-tabela-itens tr');
-            // Se falhar aqui, o fetch inicial não funcionou
             expect(linhas.length).toBe(2);
             expect(document.body.textContent).toContain('Cimento CP-II');
         });
     });
 
     test('Carrinho: Adicionar item deve atualizar UI e Variável Global', async () => {
-        console.log('TESTE: Carrinho Adicionar');
         await waitFor(() => document.querySelector('.small-input'));
-
-        const input = document.querySelector('.small-input'); // Item 101
-        
-        // Simula usuário digitando "2"
+        const input = document.querySelector('.small-input'); 
         input.value = '2,00';
         input.dispatchEvent(new Event('change'));
 
         await waitFor(() => {
             const carrinhoTotal = document.getElementById('carrinho-total');
-            // 2 * 50.00 = 100.00
-            expect(carrinhoTotal.textContent).toContain('R$ 100,00'); // Espaço non-breaking
-            
+            expect(carrinhoTotal.textContent).toContain('R$ 100,00');
             const btnFinalizar = document.getElementById('btn-finalizar-pedido');
             expect(btnFinalizar.disabled).toBe(false);
         });
     });
 
     test('Validação: Quantidade > Saldo deve ser corrigida', async () => {
-        console.log('TESTE: Validação Saldo');
         await waitFor(() => document.querySelector('.small-input'));
-        const input = document.querySelector('.small-input'); // Saldo é 100
-        
-        // Tenta burlar com 200
+        const input = document.querySelector('.small-input'); 
         input.value = '200,00';
         input.dispatchEvent(new Event('change'));
 
         await waitFor(() => {
-            // JavaScript deve corrigir para 100
             expect(input.value).toBe('100,00');
             const notif = document.getElementById('notification-area');
             expect(notif.textContent).toContain('Saldo insuficiente');
         });
     });
 
-    test('Fluxo Completo: Finalizar pedido com sucesso (AOCS + Pedidos)', async () => {
-        console.log('TESTE: Fluxo Completo - Inicio');
-        
-        // 1. Adicionar item ao carrinho
+    test('Fluxo Completo: Finalizar pedido com sucesso', async () => {
         await waitFor(() => document.querySelector('.small-input'));
         const input = document.querySelector('.small-input');
         input.value = '1,00';
         input.dispatchEvent(new Event('change'));
 
-        // 2. Clicar em Finalizar (Abre Modal)
-        const btnFinalizar = document.getElementById('btn-finalizar-pedido');
-        btnFinalizar.click();
+        document.getElementById('btn-finalizar-pedido').click();
         
         const modal = document.getElementById('modal-finalizar-pedido');
         expect(modal.style.display).toBe('flex');
 
-        // 3. Verificar se o input da AOCS foi gerado (depende do id_contrato estar certo)
-        // O ID do contrato é 55 (conforme itensMock)
         const inputAocs = document.querySelector('#aocs-contrato-55');
-        
-        if (!inputAocs) {
-            console.error('FALHA TESTE: Input de AOCS não encontrado! O agrupamento falhou.');
-            // Isso força a falha do teste com mensagem clara
-            expect(inputAocs).toBeTruthy(); 
-        }
-        
         inputAocs.value = 'AOCS-TESTE-01';
 
-        // 4. Preparar Mock para o Envio (Roteamento de URLs)
         mockFetch.mockImplementation(async (url, options) => {
             const method = options ? options.method : 'GET';
-
-            // Rota 1: Criar AOCS
             if (url === '/api/aocs' && method === 'POST') {
-                console.log('MOCK FETCH: Criando AOCS...');
-                return {
-                    ok: true,
-                    json: async () => ({ id: 999, numero: 'AOCS-TESTE-01' })
-                };
+                return { ok: true, json: async () => ({ id: 999, numero: 'AOCS-TESTE-01' }) };
             }
-            
-            // Rota 2: Criar Itens do Pedido (vinculados à AOCS 999)
             if (url.includes('/api/pedidos') && method === 'POST') {
-                console.log('MOCK FETCH: Criando Item de Pedido...');
-                return {
-                    ok: true,
-                    json: async () => ({ id: 888, status: 'sucesso' })
+                return { ok: true, json: async () => ({ id: 888, status: 'sucesso' }) };
+            }
+            return { ok: true, json: async () => ({ itens: itensMock, total_paginas: 1, pagina_atual: 1 }) };
+        });
+
+        document.getElementById('btn-enviar-pedido').click();
+
+        await waitFor(() => {
+            if (window.location.href !== '/pedidos') throw new Error('Ainda não redirecionou...');
+        });
+        expect(window.location.href).toBe('/pedidos');
+    });
+
+    // ==========================================================================
+    // NOVOS TESTES (CORRIGIDOS E BLINDADOS)
+    // ==========================================================================
+
+    test('Busca: Enter no input dispara fetch com termo', async () => {
+        const input = document.getElementById('campo-busca');
+        input.value = 'cimento';
+        input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
+
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('busca=cimento'));
+        });
+    });
+
+    test('Carrinho: Limpar (Cancelar e Confirmar)', async () => {
+        // 1. Preparação: Adicionar item ao carrinho
+        await waitFor(() => document.querySelector('.small-input'));
+        const input = document.querySelector('.small-input');
+        input.value = '1,00';
+        input.dispatchEvent(new Event('change'));
+        
+        const btnLimpar = document.getElementById('btn-limpar-carrinho');
+        
+        // CORREÇÃO: Cria um mock novo e exclusivo para este teste
+        const mockConfirm = jest.fn();
+        
+        // Força o mock em ambos os escopos para garantir que o JSDOM o encontre
+        window.confirm = mockConfirm;
+        global.confirm = mockConfirm;
+
+        // Configura a sequência exata: 1º clique (False), 2º clique (True)
+        mockConfirm.mockReturnValueOnce(false).mockReturnValueOnce(true);
+
+        // --- Cenário 1: Clicar e Cancelar ---
+        btnLimpar.click();
+        
+        // Verifica se o mock foi chamado 1 vez e se o valor SE MANTEVE (não limpou)
+        expect(mockConfirm).toHaveBeenCalledTimes(1);
+        expect(input.value).toBe('1,00'); 
+
+        // --- Cenário 2: Clicar e Confirmar ---
+        btnLimpar.click();
+        
+        // Agora deve limpar
+        await waitFor(() => {
+            expect(input.value).toBe(''); 
+            const total = document.getElementById('carrinho-total');
+            expect(total.textContent).toContain('0,00');
+        });
+    });
+
+    test('Ordenação: Clique no cabeçalho altera parâmetros', async () => {
+        const thDescricao = document.querySelector('th[data-sort="descricao"]');
+        thDescricao.click(); 
+        await waitFor(() => expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('order=desc')));
+
+        thDescricao.click(); 
+        await waitFor(() => expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('order=asc')));
+    });
+
+    test('Paginação: Clique na página carrega novos itens', async () => {
+        mockFetch.mockResolvedValue({
+            ok: true,
+            json: async () => ({ itens: itensMock, total_paginas: 2, pagina_atual: 1 })
+        });
+
+        // Recarrega para renderizar os links de paginação
+        if(document.querySelector('#campo-busca')) {
+             // Truque para disparar o fetchItens interno sem recarregar tudo
+             document.getElementById('campo-busca').dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
+        }
+
+        // Capturar elemento de forma segura dentro do waitFor
+        let linkPag2;
+        await waitFor(() => {
+            linkPag2 = document.querySelector('.page-link[data-page="2"]');
+            expect(linkPag2).toBeTruthy();
+        });
+        
+        linkPag2.click();
+
+        await waitFor(() => {
+            expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('page=2'));
+        });
+    });
+
+    test('Modal UI: Fechar via botões e overlay', async () => {
+        await waitFor(() => document.querySelector('.small-input'));
+        const input = document.querySelector('.small-input');
+        input.value = '1,00';
+        input.dispatchEvent(new Event('change'));
+        document.getElementById('btn-finalizar-pedido').click();
+
+        const modal = document.getElementById('modal-finalizar-pedido');
+        expect(modal.style.display).toBe('flex');
+
+        document.getElementById('btn-fechar-modal').click();
+        expect(modal.style.display).toBe('none');
+
+        document.getElementById('btn-finalizar-pedido').click();
+        document.getElementById('btn-cancelar-modal').click();
+        expect(modal.style.display).toBe('none');
+
+        document.getElementById('btn-finalizar-pedido').click();
+        modal.click();
+        expect(modal.style.display).toBe('none');
+    });
+
+    test('Finalizar: Erro de Validação (AOCS Vazio)', async () => {
+        await waitFor(() => document.querySelector('.small-input'));
+        const input = document.querySelector('.small-input');
+        input.value = '1,00';
+        input.dispatchEvent(new Event('change'));
+        document.getElementById('btn-finalizar-pedido').click();
+
+        const inputAocs = document.querySelector('.aocs-input');
+        inputAocs.value = ''; 
+
+        document.getElementById('btn-enviar-pedido').click();
+
+        await waitFor(() => {
+            const notif = document.getElementById('notification-area');
+            // Aceita a mensagem padrão do navegador que aparece primeiro
+            expect(notif.textContent).toMatch(/Por favor, preencha|Preencha o número/);
+        });
+    });
+
+    test('Finalizar: Erro de API ao Enviar', async () => {
+        await waitFor(() => document.querySelector('.small-input'));
+        const input = document.querySelector('.small-input');
+        input.value = '1,00';
+        input.dispatchEvent(new Event('change'));
+        document.getElementById('btn-finalizar-pedido').click();
+        document.querySelector('.aocs-input').value = 'AOCS-ERRO';
+
+        mockFetch.mockImplementation(async (url, opts) => {
+            if (url === '/api/aocs' && opts.method === 'POST') {
+                return { 
+                    ok: false, status: 500,
+                    json: async () => ({ erro: 'Erro Interno no Banco' })
                 };
             }
-
-            // Default: Retorna lista de itens (para background fetchs)
-            return {
-                ok: true,
-                json: async () => ({ 
-                    itens: itensMock, 
-                    total_paginas: 1, 
-                    pagina_atual: 1 
-                })
-            };
+            return { ok: true, json: async () => ({ itens: itensMock }) };
         });
 
-        // 5. Enviar
-        const btnEnviar = document.getElementById('btn-enviar-pedido');
-        btnEnviar.click();
+        document.getElementById('btn-enviar-pedido').click();
 
-        // 6. Aguardar redirecionamento
         await waitFor(() => {
-            // Verifica se o redirecionamento ocorreu
-            if (window.location.href !== '/pedidos') {
-                // Se não redirecionou, o waitFor vai dar timeout, mas o console vai mostrar os logs do JS
-                throw new Error('Ainda não redirecionou...');
-            }
+            const notif = document.getElementById('notification-area');
+            expect(notif.textContent).toContain('Erro ao enviar pedido');
+            expect(notif.textContent).toContain('Erro Interno no Banco');
         });
-
-        expect(window.location.href).toBe('/pedidos');
-        console.log('TESTE: Fluxo Completo - Sucesso');
     });
 });
