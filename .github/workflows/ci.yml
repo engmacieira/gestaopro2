@@ -59,7 +59,7 @@ jobs:
 
     - name: Rodar Testes (Pytest)
       run: |
-        pytest -v
+        python -m pytest --cov=app
 
   # ------------------------------------------------------------------
   # JOB 2: FRONTEND (Node.js/Jest)
