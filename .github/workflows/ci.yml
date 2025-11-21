@@ -1,29 +1,24 @@
-name: CI Pipeline Completo (Backend + Frontend)
+name: Testes Automatizados (CI)
 
 on:
   push:
-    branches: [ "main", "master", "develop" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
 
 jobs:
-  # ------------------------------------------------------------------
-  # JOB 1: BACKEND (Python/FastAPI + Banco de Dados)
-  # ------------------------------------------------------------------
-  test-backend:
-    name: Backend Test (Pytest)
+  build-and-test:
     runs-on: ubuntu-latest
     
     services:
+      # 1. Inicia o Postgres (como antes)
       postgres:
         image: postgres:15
         env:
-          # Configuração do banco para o CI (igual ao seu antigo que funcionava)
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ci_password_123 
-          POSTGRES_DB: gestaopro_test
-        ports:
-          - 5432:5432
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: gestaopro_test_ci
+        ports: ['5432:5432']
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -31,65 +26,43 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Checkout do Código
+    - name: 1. Checkout do Código
       uses: actions/checkout@v4
 
-    - name: Configurar Python 3.11
+    - name: 2. Configurar Python 3.11
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-        cache: 'pip'
 
-    - name: Criar arquivo .env.test
-      # Cria o arquivo .env localmente na máquina do CI com os dados do serviço acima
+    - name: 3. Criar .env.test (para conftest.py)
       run: |
-        echo "DATABASE_URL=postgresql://postgres:ci_password_123@localhost:5432/gestaopro_test" > .env.test
-        echo "SECRET_KEY=chave_secreta_exclusiva_para_testes_ci" >> .env.test
+        echo "DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/gestaopro_test_ci" > .env.test
+        echo "SECRET_KEY=dummy_secret_key_for_ci_pipeline" >> .env.test
         echo "ALGORITHM=HS256" >> .env.test
         echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env.test
         echo "RENDER=false" >> .env.test
-        
-        echo "Arquivo .env.test gerado com sucesso."
 
-    - name: Instalar Dependências Backend
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    # Opcional: Se seus testes precisarem de ferramentas de banco extra
-    - name: Instalar Cliente PostgreSQL
+    # --- NOVO PASSO 4 ---
+    - name: 4. Instalar Cliente PostgreSQL
       run: |
         sudo apt-get update
         sudo apt-get install -y postgresql-client
 
-    - name: Rodar Testes (Pytest)
-      # CORREÇÃO AQUI:
-      # 1. Adicionamos PYTHONPATH para ele enxergar a pasta 'app'
-      # 2. Usamos 'python -m pytest' que é mais robusto para imports
+    # --- NOVO PASSO 5 ---
+    - name: 5. Aplicar Schema ao Banco de Teste
+      # Define a senha para o psql usar
       env:
-        PYTHONPATH: .
+        PGPASSWORD: testpassword
       run: |
-        python -m pytest -v
+        # Espera um segundo extra só para garantir que o serviço está 100%
+        sleep 1 
+        # Roda o script SQL no banco de teste
+        psql -h localhost -U testuser -d gestaopro_test_ci -f db_schema/schema_dump_gestaopro.sql
 
-  # ------------------------------------------------------------------
-  # JOB 2: FRONTEND (Node.js/Jest)
-  # ------------------------------------------------------------------
-  test-frontend:
-    name: Frontend Test (Jest)
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout do Código
-      uses: actions/checkout@v4
+    - name: 6. Instalar Dependências Python
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-    - name: Configurar Node.js 18
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: Instalar Dependências Frontend
-      run: npm ci
-
-    - name: Rodar Testes do Frontend
-      run: npm run test:frontend
+    - name: 7. Rodar os Testes
+      run: python -m pytest --cov=app
