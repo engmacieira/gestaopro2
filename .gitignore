@@ -25,5 +25,5 @@ uploads/
 .idea/ # Pycharm/IntelliJ
 .vscode/ # Visual Studio Code
 
-.txt
+*.txt
 requirements.txt!
