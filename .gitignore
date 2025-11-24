@@ -1,29 +1,56 @@
+############################
+# LOGS, TEMPORÁRIOS E COBERTURA
+############################
 *.log
 *.coverage
 .pytest_cache/
-htmlcov/ # Cobertura de testes HTML
+htmlcov/       # Cobertura padrão do Pytest
+coverage/      # Pasta de coverage adicional solicitada
 
+############################
+# DOCUMENTOS E ARQUIVOS DE DADOS
+############################
+# Regra de Exceção para .txt
+*.txt              # 1. Ignora TODOS os arquivos .txt
+!requirements.txt  # 2. Mas NÃO ignora (mantém) o requirements.txt
+
+# Ignorar Excel
+*.xlsx
+
+############################
+# DEPENDÊNCIAS E AMBIENTES
+############################
+# Ambientes Virtuais (Python)
 venv/
 .venv/
-coverage/
 
+# Dependências (Node/Frontend)
 node_modules/
 
+############################
+# ARQUIVOS GERADOS PELO PYTHON
+############################
+# Bytecode
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
+############################
+# DADOS SENSÍVEIS E DE AMBIENTE
+############################
+# Senhas e Variáveis de Ambiente (Obrigatório por segurança)
 .env
 .env.test
 
+# Arquivos de backup, dumps e assets grandes
 *.dump
 *.zip
 .uploads/
 uploads/
 
-.idea/ # Pycharm/IntelliJ
+############################
+# ARQUIVOS DE FERRAMENTAS / IDEs
+############################
+.idea/   # Pycharm/IntelliJ
 .vscode/ # Visual Studio Code
-
-*.txt
-requirements.txt!
