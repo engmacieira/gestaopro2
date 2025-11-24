@@ -260,6 +260,17 @@ async def contratos_ui(
         proc_repo = ProcessoLicitatorioRepository(db_conn)
         for c in contratos_paginados:
              proc = proc_repo.get_by_id(c.id_processo_licitatorio) 
+             
+             dt_fim_normalizada = c.data_fim
+             if isinstance(dt_fim_normalizada, datetime):
+                 dt_fim_normalizada = dt_fim_normalizada.date()
+             elif isinstance(dt_fim_normalizada, str):
+                 # Proteção extra caso venha como string do banco legado
+                 try:
+                     dt_fim_normalizada = datetime.strptime(dt_fim_normalizada, '%Y-%m-%d').date()
+                 except:
+                     dt_fim_normalizada = None
+                     
              contratos_view.append({
                  'id': c.id,
                  'numero_contrato': c.numero_contrato,
@@ -275,6 +286,7 @@ async def contratos_ui(
     query_params = dict(request.query_params)
 
     context = {
+        "request": request,
         "current_user": current_user,
         "contratos": contratos_view,
         "pagina_atual": page,
