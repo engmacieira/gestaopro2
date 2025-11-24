@@ -16,6 +16,7 @@ from app.models.user_model import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user_schema import UserCreateRequest
 
+from playwright.sync_api import Page, expect
 
 @pytest.fixture(scope="session")
 def db_conn_test():
@@ -119,3 +120,15 @@ def user_auth_headers(db_session):
     access_token = create_access_token(user) 
     
     return {"Authorization": f"Bearer {access_token}"}
+
+@pytest.fixture(scope="function")
+def autenticado(page: Page):
+    page.goto("http://localhost:8000/login") 
+    
+    page.fill("input[name='username']", "admin")
+    page.fill("input[name='password']", "Azulceleste#123")
+    
+    page.click("button:has-text('Entrar')")
+    expect(page).to_have_url("/home") 
+    
+    return page
