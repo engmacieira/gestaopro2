@@ -1,45 +1,29 @@
-############################
-# LOGS, TEMPORÁRIOS E COBERTURA
-############################
 *.log
 *.coverage
 .pytest_cache/
 htmlcov/ # Cobertura de testes HTML
 
-############################
-# DEPENDÊNCIAS E AMBIENTES
-############################
-# Ambientes Virtuais (Python)
 venv/
 .venv/
+coverage/
 
-# Dependências (Node/Frontend)
 node_modules/
 
-############################
-# ARQUIVOS GERADOS PELO PYTHON
-############################
-# Bytecode
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-############################
-# DADOS SENSÍVEIS E DE AMBIENTE
-############################
-# Senhas e Variáveis de Ambiente (Obrigatório)
 .env
 .env.test
 
-# Arquivos de backup, dumps e assets grandes
 *.dump
 *.zip
 .uploads/
 uploads/
 
-############################
-# ARQUIVOS DE FERRAMENTAS / IDEs
-############################
 .idea/ # Pycharm/IntelliJ
 .vscode/ # Visual Studio Code
+
+.txt
+requirements.txt!
