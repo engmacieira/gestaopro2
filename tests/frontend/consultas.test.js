@@ -2,10 +2,6 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
@@ -22,7 +18,6 @@ const waitFor = async (callback, timeout = 1000) => {
     }
 };
 
-// HTML Base simulando a estrutura da página
 const DOM_HTML = `
     <div class="card full-width">
         <form id="form-consulta">
@@ -53,26 +48,20 @@ describe('Testes Frontend - Consultas', () => {
     let documentSpy;
     let consoleSpy;
     
-    // ==========================================================================
-    // 2. SETUP
-    // ==========================================================================
     beforeEach(() => {
         jest.clearAllMocks();
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
 
-        // Patch de compatibilidade innerText
         Object.defineProperty(HTMLElement.prototype, 'innerText', {
             get() { return this.textContent; },
             set(value) { this.textContent = value; },
             configurable: true
         });
 
-        // Mock da Variável Global configEntidades (Essencial para o script rodar)
         window.configEntidades = {
             'processo_licitatorio': { label: 'Selecionar Processo' },
             'unidade_requisitante': { label: 'Selecionar Unidade' }
-            // 'tipo_sem_config' não está aqui de propósito para testar falha
         };
 
         documentSpy = jest.spyOn(document, 'addEventListener');
@@ -89,12 +78,7 @@ describe('Testes Frontend - Consultas', () => {
         delete window.configEntidades;
     });
 
-    // ==========================================================================
-    // 3. TESTES DE INTERAÇÃO COM SELECT (Event Change)
-    // ==========================================================================
-
     test('Select Tipo: Deve carregar opções e mostrar container corretamente', async () => {
-        // Mock da resposta da API para preencher o segundo select
         mockFetch.mockResolvedValueOnce({
             ok: true,
             json: async () => ([
@@ -107,19 +91,18 @@ describe('Testes Frontend - Consultas', () => {
         const valorContainer = document.getElementById('container-valor-consulta');
         const valorSelect = document.getElementById('valor-consulta');
 
-        // Seleciona 'processo_licitatorio'
         tipoSelect.value = 'processo_licitatorio';
         tipoSelect.dispatchEvent(new Event('change'));
 
         expect(valorContainer.style.display).toBe('block');
         expect(document.getElementById('label-valor-consulta').textContent).toBe('Selecionar Processo');
-        expect(valorSelect.disabled).toBe(true); // Deve travar enquanto carrega
+        expect(valorSelect.disabled).toBe(true); 
 
         await waitFor(() => {
             expect(mockFetch).toHaveBeenCalledWith('/api/consultas/entidades/processo_licitatorio');
             expect(valorSelect.options.length).toBeGreaterThan(1); 
             expect(valorSelect.options[1].text).toBe('Opção A');
-            expect(valorSelect.disabled).toBe(false); // Destravou
+            expect(valorSelect.disabled).toBe(false); 
         });
     });
 
@@ -137,7 +120,7 @@ describe('Testes Frontend - Consultas', () => {
 
         await waitFor(() => {
             expect(valorSelect.innerHTML).toContain('Erro ao carregar');
-            expect(consoleSpy).toHaveBeenCalled(); // Verifica se logou o erro
+            expect(consoleSpy).toHaveBeenCalled(); 
         });
     });
 
@@ -145,7 +128,6 @@ describe('Testes Frontend - Consultas', () => {
         const tipoSelect = document.getElementById('tipo-consulta');
         const valorContainer = document.getElementById('container-valor-consulta');
 
-        // Seleciona um tipo que não está no window.configEntidades
         tipoSelect.value = 'tipo_sem_config';
         tipoSelect.dispatchEvent(new Event('change'));
 
@@ -153,16 +135,10 @@ describe('Testes Frontend - Consultas', () => {
         expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Configuração não encontrada'));
     });
 
-    // ==========================================================================
-    // 4. TESTES DE BUSCA E RENDERIZAÇÃO (Event Submit)
-    // ==========================================================================
-
     test('Busca (Processo): Deve renderizar tabela com link e boolean formatado', async () => {
         const areaResultados = document.getElementById('area-resultados');
         
-        // Prepara o estado do formulário
         document.getElementById('tipo-consulta').value = 'processo_licitatorio';
-        // Adiciona opção manual para poder selecionar
         const sel = document.getElementById('valor-consulta');
         sel.innerHTML = '<option value="10" selected>Teste</option>';
 
@@ -189,11 +165,8 @@ describe('Testes Frontend - Consultas', () => {
             const table = areaResultados.querySelector('table');
             expect(table).toBeTruthy();
             
-            // Testa Link
             expect(table.innerHTML).toContain('href="/contrato/99"');
-            // Testa Valor da Coluna
             expect(table.textContent).toContain('123/2024');
-            // Testa Formatação de Boolean (Ativo = true -> Badge Verde)
             expect(table.innerHTML).toContain('status-badge green');
             expect(table.textContent).toContain('Ativo');
         });
@@ -222,10 +195,9 @@ describe('Testes Frontend - Consultas', () => {
 
         await waitFor(() => {
             const html = areaResultados.innerHTML;
-            // Verifica se as classes CSS corretas foram aplicadas
-            expect(html).toContain('status-badge green');  // Entregue
-            expect(html).toContain('status-badge orange'); // Parcial
-            expect(html).toContain('status-badge gray');   // Pendente
+            expect(html).toContain('status-badge green');  
+            expect(html).toContain('status-badge orange'); 
+            expect(html).toContain('status-badge gray');   
         });
     });
 

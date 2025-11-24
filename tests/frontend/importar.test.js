@@ -2,10 +2,6 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
@@ -22,9 +18,6 @@ const waitFor = async (callback, timeout = 2000) => {
     }
 };
 
-// HTML Simulado
-// FIX SÊNIOR: Adicionado type="button" explicitamente nos botões de salvar
-// para garantir que o JSDOM não os trate como submit.
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -63,7 +56,6 @@ const DOM_HTML = `
 describe('Testes Frontend - Importação', () => {
     let documentSpy;
 
-    // Helper de Roteamento (Router Mock)
     const setupRouterMock = (routes = []) => {
         mockFetch.mockImplementation(async (url, options) => {
             const method = options ? options.method : 'GET';
@@ -80,9 +72,6 @@ describe('Testes Frontend - Importação', () => {
         });
     };
 
-    // ==========================================================================
-    // 2. SETUP
-    // ==========================================================================
     beforeEach(() => {
         jest.clearAllMocks();
         document.body.innerHTML = DOM_HTML;
@@ -94,7 +83,6 @@ describe('Testes Frontend - Importação', () => {
             configurable: true
         });
 
-        // Espião para limpar listeners duplicados
         documentSpy = jest.spyOn(document, 'addEventListener');
 
         window.redirectUrlContratos = '/contratos';
@@ -116,10 +104,6 @@ describe('Testes Frontend - Importação', () => {
         delete window.redirectUrlContratos;
         delete window.redirectUrlItens;
     });
-
-    // ==========================================================================
-    // 3. TESTES
-    // ==========================================================================
 
     test('Inicialização: Deve exibir notificação via sessionStorage', () => {
         sessionStorage.setItem('notificationMessage', 'Upload realizado');
@@ -186,7 +170,6 @@ describe('Testes Frontend - Importação', () => {
             { url: '/api/importar/contratos/salvar', method: 'POST', body: { mensagem: 'Sucesso' } }
         ]);
 
-        // 1. Executa Preview
         const form = document.getElementById('form-upload-contratos');
         form.dispatchEvent(new Event('submit'));
         
@@ -195,7 +178,6 @@ describe('Testes Frontend - Importação', () => {
              if(container.style.display !== 'flex') throw new Error('Preview não abriu');
         });
 
-        // 2. Clica Salvar
         const btnSalvar = document.getElementById('btn-salvar-contratos');
         btnSalvar.click();
 
@@ -227,15 +209,11 @@ describe('Testes Frontend - Importação', () => {
     });
 
     test('Salvar Erro: Deve exibir notificação e reabilitar botão', async () => {
-        // 1. ARRANGE (Preparação)
-        // Simulamos que o usuário já fez o preview e os dados estão no "cofre" (dataset)
         const dadosMock = [{ id: 1, item: 'Teste' }];
         const container = document.getElementById('preview-container-itens');
         
-        // Injeção direta de dependência (aqui pulamos a necessidade de rodar o preview)
         container.dataset.cacheData = JSON.stringify(dadosMock);
 
-        // Mockamos apenas a resposta de ERRO do salvamento
         setupRouterMock([
             { 
                 url: '/api/importar/itens/global/salvar', 
@@ -248,15 +226,10 @@ describe('Testes Frontend - Importação', () => {
 
         const btnSalvar = document.getElementById('btn-salvar-itens');
 
-        // 2. ACT (Ação)
-        // Clicamos direto no salvar
         btnSalvar.click();
 
-        // 3. ASSERT (Verificação)
         await waitFor(() => {
             const notif = document.getElementById('notification-area');
-            // Agora temos certeza que ele tentou salvar, então se falhar, 
-            // é porque a mensagem de erro não apareceu, e não porque os dados sumiram.
             expect(notif.textContent).toContain('Erro no Banco');
             expect(btnSalvar.disabled).toBe(false);
         });

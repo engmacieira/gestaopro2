@@ -2,10 +2,6 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
@@ -22,7 +18,6 @@ const waitFor = async (callback, timeout = 2000) => {
     }
 };
 
-// HTML Simulado
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -61,12 +56,10 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
     let documentSpy;
     let windowSpy;
 
-    // Helper para configurar mocks baseados na URL (Router Mock)
     const setupRouterMock = (routes = []) => {
         mockFetch.mockImplementation(async (url, options) => {
             const method = options ? options.method : 'GET';
             
-            // Procura uma rota que bata com a URL e Método
             const match = routes.find(r => url.includes(r.url) && (r.method || 'GET') === method);
             
             if (match) {
@@ -77,14 +70,10 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
                 };
             }
             
-            // Retorno padrão seguro para evitar "undefined json"
             return { ok: true, json: async () => [] };
         });
     };
 
-    // ==========================================================================
-    // 2. SETUP
-    // ==========================================================================
     beforeEach(() => {
         jest.clearAllMocks();
         document.body.innerHTML = DOM_HTML;
@@ -104,7 +93,6 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
         window.location = { reload: reloadMock };
         window.confirm = jest.fn(() => true);
 
-        // Reset do script
         jest.resetModules();
         require('../../app/static/js/gerenciar_tabelas');
         document.dispatchEvent(new Event('DOMContentLoaded'));
@@ -114,10 +102,6 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
         if (documentSpy) documentSpy.mockRestore();
         if (windowSpy) windowSpy.mockRestore();
     });
-
-    // ==========================================================================
-    // 3. TESTES - CARREGAMENTO
-    // ==========================================================================
 
     test('Carregar Tabela: Sucesso com dados', async () => {
         setupRouterMock([
@@ -141,7 +125,7 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
         setupRouterMock([
             { 
                 url: '/api/tabelas-sistema/categorias', 
-                body: [] // Lista vazia
+                body: [] 
             }
         ]);
 
@@ -173,28 +157,19 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
         });
     });
 
-    // ==========================================================================
-    // 4. TESTES - CRUD
-    // ==========================================================================
-
     test('Adicionar Item: Fluxo completo de Sucesso', async () => {
         setupRouterMock([
-            // 1. GET inicial
             { url: '/api/tabelas-sistema/categorias', method: 'GET', body: [] },
-            // 2. POST salvar
             { url: '/api/tabelas-sistema/categorias', method: 'POST', body: { id: 10, nome: 'Nova Cat' } }
         ]);
 
-        // Carrega tabela
         document.querySelector('.management-link[data-tabela="categorias"]').click();
         await waitFor(() => expect(document.getElementById('btn-add-new-item')).toBeTruthy());
 
-        // Abre Modal
         document.getElementById('btn-add-new-item').click();
         const modal = document.getElementById('modal-item');
         expect(modal.style.display).toBe('flex');
 
-        // Salva
         document.getElementById('item-nome').value = 'Nova Cat';
         document.getElementById('form-item').dispatchEvent(new Event('submit'));
 
@@ -203,27 +178,22 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
                 method: 'POST',
                 body: JSON.stringify({ nome: 'Nova Cat' })
             }));
-            // Verifica feedback
             expect(document.getElementById('notification-area').textContent).toContain('criado com sucesso');
         });
     });
 
     test('Editar Item: Fluxo completo de Sucesso', async () => {
         setupRouterMock([
-            // 1. GET inicial
             { url: '/api/tabelas-sistema/unidades', method: 'GET', body: [{ id: 5, nome: 'Kg' }] },
-            // 2. PUT salvar
             { url: '/api/tabelas-sistema/unidades/5', method: 'PUT', body: { id: 5, nome: 'Kilograma' } }
         ]);
 
         document.querySelector('.management-link[data-tabela="unidades"]').click();
         await waitFor(() => document.getElementById('table-title'));
 
-        // Abre modal (simulado)
         window.abrirModalParaEditar(5, 'Kg');
         expect(document.getElementById('item-nome').value).toBe('Kg');
 
-        // Salva
         document.getElementById('item-nome').value = 'Kilograma';
         document.getElementById('form-item').dispatchEvent(new Event('submit'));
 
@@ -254,10 +224,6 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
         });
     });
 
-    // ==========================================================================
-    // 5. TESTES DE ERRO
-    // ==========================================================================
-
     test('Salvar (Erro API): Deve exibir erro e NÃO fechar modal', async () => {
         setupRouterMock([
             { url: '/api/tabelas-sistema/categorias', method: 'GET', body: [] },
@@ -280,17 +246,12 @@ describe('Testes Frontend - Gerenciar Tabelas', () => {
             const notif = document.getElementById('notification-area');
             expect(notif.textContent).toContain('Nome duplicado');
             
-            // Modal deve continuar visível
             const modal = document.getElementById('modal-item');
-            // Nota: no JSDOM, style.display só muda se o código mudar. 
-            // Se o código de sucesso fecha, o código de erro não deve fechar.
-            // Como começamos com 'flex' (aberto), ele deve continuar assim.
             expect(modal.style.display).toBe('flex');
         });
     });
 
     test('Validação: Salvar sem tabela ativa', async () => {
-        // Não clica em nenhum link, tenta salvar direto
         document.getElementById('item-nome').value = 'Orfão';
         document.getElementById('form-item').dispatchEvent(new Event('submit'));
 

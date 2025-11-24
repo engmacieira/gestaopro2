@@ -2,14 +2,9 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// Função de espera robusta (requer Real Timers para funcionar)
 const waitFor = async (callback, timeout = 1000) => {
     const startTime = Date.now();
     while (true) {
@@ -45,18 +40,13 @@ describe('Testes Frontend - Categorias', () => {
     let documentSpy;
     let consoleSpy;
 
-    // ==========================================================================
-    // 2. SETUP
-    // ==========================================================================
     beforeEach(() => {
-        // BLINDAGEM: Garante que começamos com relógio real
         jest.useRealTimers();
         
         jest.clearAllMocks();
         document.body.innerHTML = DOM_HTML_BASE;
         sessionStorage.clear();
 
-        // Patch innerText para JSDOM
         Object.defineProperty(HTMLElement.prototype, 'innerText', {
             get() { return this.textContent; },
             set(value) { this.textContent = value; },
@@ -79,13 +69,8 @@ describe('Testes Frontend - Categorias', () => {
     afterEach(() => {
         consoleSpy.mockRestore();
         if (documentSpy) documentSpy.mockRestore();
-        // BLINDAGEM: Limpa qualquer fake timer que tenha ficado
         jest.useRealTimers();
     });
-
-    // ==========================================================================
-    // 3. TESTES DE INICIALIZAÇÃO E UI
-    // ==========================================================================
 
     test('Inicialização: Deve exibir notificação se houver mensagem no sessionStorage', () => {
         sessionStorage.setItem('notificationMessage', 'Teste de Sessão');
@@ -132,10 +117,6 @@ describe('Testes Frontend - Categorias', () => {
         modal.click(); 
         expect(modal.style.display).toBe('none');
     });
-
-    // ==========================================================================
-    // 4. TESTES DE CRUD (Sucesso e Erro)
-    // ==========================================================================
 
     test('Salvar (Erro 500): Deve exibir erro e reabilitar botão', async () => {
         mockFetch.mockResolvedValueOnce({
@@ -235,12 +216,7 @@ describe('Testes Frontend - Categorias', () => {
         });
     });
 
-    // ==========================================================================
-    // 5. TESTE DE NOTIFICAÇÃO (USO DE FAKE TIMERS ISOLADO)
-    // ==========================================================================
-
     test('Notificação: Deve desaparecer automaticamente após 5 segundos', () => {
-        // Ativa fake timers APENAS aqui
         jest.useFakeTimers();
 
         const input = document.getElementById('nome-categoria');
@@ -250,10 +226,8 @@ describe('Testes Frontend - Categorias', () => {
         let notif = document.querySelector('.notification.error');
         expect(notif).toBeTruthy();
 
-        // Avança o tempo
         jest.advanceTimersByTime(5000);
 
-        // Simula o fim da transição CSS
         notif.dispatchEvent(new Event('transitionend'));
 
         notif = document.querySelector('.notification.error');

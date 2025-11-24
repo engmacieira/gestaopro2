@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1763688065315" clover="3.2.0">
-  <project timestamp="1763688065315" name="All files">
+<coverage generated="1763991341958" clover="3.2.0">
+  <project timestamp="1763991341958" name="All files">
     <metrics statements="1370" coveredstatements="1224" conditionals="863" coveredconditionals="551" methods="184" coveredmethods="162" elements="2417" coveredelements="1937" complexity="0" loc="1370" ncloc="1370" packages="1" files="11" classes="11"/>
     <file name="categorias.js" path="E:\Projetos VSCODE\Refatoracao\app\static\js\categorias.js">
       <metrics statements="98" coveredstatements="89" conditionals="54" coveredconditionals="33" methods="12" coveredmethods="12"/>

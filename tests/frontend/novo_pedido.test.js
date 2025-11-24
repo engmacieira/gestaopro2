@@ -2,14 +2,9 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// Função auxiliar para espera assíncrona
 const waitFor = async (callback, timeout = 2000) => {
     const startTime = Date.now();
     while (true) {
@@ -23,7 +18,6 @@ const waitFor = async (callback, timeout = 2000) => {
     }
 };
 
-// HTML Simulado
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -104,13 +98,11 @@ describe('Testes Frontend - Novo Pedido', () => {
         window.idCategoriaGlobal = 1; 
         window.redirectUrlPedidosGlobal = '/pedidos';
         
-        // Mock padrão global
         window.confirm = jest.fn(() => true);
         window.alert = jest.fn();
         delete window.location;
         window.location = { href: '' };
 
-        // Configuração Inicial do Fetch
         mockFetch.mockImplementation(async (url) => {
             if (url.includes('/itens')) {
                 return {
@@ -125,13 +117,9 @@ describe('Testes Frontend - Novo Pedido', () => {
             return { ok: false }; 
         });
 
-        // ==========================================================================
-        // CORREÇÃO DO STACKING DE LISTENERS (A Vacina)
-        // ==========================================================================
         let domCallback = null;
         const originalAddEventListener = document.addEventListener;
         
-        // Intercepta apenas o DOMContentLoaded
         document.addEventListener = jest.fn((event, callback) => {
             if (event === 'DOMContentLoaded') {
                 domCallback = callback;
@@ -143,16 +131,10 @@ describe('Testes Frontend - Novo Pedido', () => {
         jest.resetModules();
         require('../../app/static/js/novo_pedido');
         
-        // Restaura o original
         document.addEventListener = originalAddEventListener;
 
-        // Executa manualmente UMA VEZ
         if (domCallback) domCallback();
     });
-
-    // ==========================================================================
-    // TESTES ORIGINAIS
-    // ==========================================================================
 
     test('Inicialização: Deve buscar e renderizar itens na tabela', async () => {
         await waitFor(() => {
@@ -222,10 +204,6 @@ describe('Testes Frontend - Novo Pedido', () => {
         expect(window.location.href).toBe('/pedidos');
     });
 
-    // ==========================================================================
-    // NOVOS TESTES (CORRIGIDOS E BLINDADOS)
-    // ==========================================================================
-
     test('Busca: Enter no input dispara fetch com termo', async () => {
         const input = document.getElementById('campo-busca');
         input.value = 'cimento';
@@ -237,7 +215,6 @@ describe('Testes Frontend - Novo Pedido', () => {
     });
 
     test('Carrinho: Limpar (Cancelar e Confirmar)', async () => {
-        // 1. Preparação: Adicionar item ao carrinho
         await waitFor(() => document.querySelector('.small-input'));
         const input = document.querySelector('.small-input');
         input.value = '1,00';
@@ -245,27 +222,20 @@ describe('Testes Frontend - Novo Pedido', () => {
         
         const btnLimpar = document.getElementById('btn-limpar-carrinho');
         
-        // CORREÇÃO: Cria um mock novo e exclusivo para este teste
         const mockConfirm = jest.fn();
         
-        // Força o mock em ambos os escopos para garantir que o JSDOM o encontre
         window.confirm = mockConfirm;
         global.confirm = mockConfirm;
 
-        // Configura a sequência exata: 1º clique (False), 2º clique (True)
         mockConfirm.mockReturnValueOnce(false).mockReturnValueOnce(true);
 
-        // --- Cenário 1: Clicar e Cancelar ---
         btnLimpar.click();
         
-        // Verifica se o mock foi chamado 1 vez e se o valor SE MANTEVE (não limpou)
         expect(mockConfirm).toHaveBeenCalledTimes(1);
         expect(input.value).toBe('1,00'); 
 
-        // --- Cenário 2: Clicar e Confirmar ---
         btnLimpar.click();
         
-        // Agora deve limpar
         await waitFor(() => {
             expect(input.value).toBe(''); 
             const total = document.getElementById('carrinho-total');
@@ -288,13 +258,10 @@ describe('Testes Frontend - Novo Pedido', () => {
             json: async () => ({ itens: itensMock, total_paginas: 2, pagina_atual: 1 })
         });
 
-        // Recarrega para renderizar os links de paginação
         if(document.querySelector('#campo-busca')) {
-             // Truque para disparar o fetchItens interno sem recarregar tudo
              document.getElementById('campo-busca').dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
         }
 
-        // Capturar elemento de forma segura dentro do waitFor
         let linkPag2;
         await waitFor(() => {
             linkPag2 = document.querySelector('.page-link[data-page="2"]');
@@ -344,7 +311,6 @@ describe('Testes Frontend - Novo Pedido', () => {
 
         await waitFor(() => {
             const notif = document.getElementById('notification-area');
-            // Aceita a mensagem padrão do navegador que aparece primeiro
             expect(notif.textContent).toMatch(/Por favor, preencha|Preencha o número/);
         });
     });

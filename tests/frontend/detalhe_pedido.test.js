@@ -2,14 +2,9 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-// Helper para espera assíncrona (Funciona com Real Timers)
 const waitFor = async (callback, timeout = 2000) => {
     const startTime = Date.now();
     while (true) {
@@ -23,7 +18,6 @@ const waitFor = async (callback, timeout = 2000) => {
     }
 };
 
-// HTML Simulado Completo
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -84,7 +78,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
 
-        // Mock de Location
         currentHref = 'http://localhost/pedidos/current';
         delete window.location;
         window.location = { reload: jest.fn() };
@@ -99,12 +92,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
 
         mockFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
 
-        // ==========================================================================
-        // CORREÇÃO DO STACKING DE LISTENERS (Erro das 32 chamadas)
-        // ==========================================================================
-        
-        // Interceptamos o addEventListener para capturar o callback do DOMContentLoaded
-        // e executá-lo manualmente apenas UMA vez, evitando acumular listeners no document.
         let domCallback = null;
         const originalAddEventListener = document.addEventListener;
         
@@ -119,10 +106,8 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         jest.resetModules();
         require('../../app/static/js/detalhe_pedido');
         
-        // Restaura o original imediatamente
         document.addEventListener = originalAddEventListener;
 
-        // Executa a inicialização do script explicitamente para este teste
         if (domCallback) domCallback();
     });
 
@@ -146,17 +131,10 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         });
     };
 
-    // ==========================================================================
-    // 1. RESILIÊNCIA E UI (Corrigido)
-    // ==========================================================================
-
     test('Resiliência: Elementos Ausentes (Ex: Modal deletado)', () => {
-        // 1. Remove elemento ANTES de carregar o script
         const modal = document.getElementById('modal-registrar-entrega');
         modal.remove();
 
-        // 2. Recarrega o script "do zero" para ele perceber que o elemento sumiu
-        // Precisamos repetir a lógica de interceptação aqui
         let localCallback = null;
         const originalAdd = document.addEventListener;
         document.addEventListener = jest.fn((ev, cb) => { if (ev === 'DOMContentLoaded') localCallback = cb; });
@@ -166,7 +144,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         document.addEventListener = originalAdd;
         if (localCallback) localCallback();
 
-        // 3. Agora a variável interna 'modalEntrega' deve ser null
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
         window.abrirModalEntrega(1, 'Teste', 10);
@@ -210,10 +187,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         }
     });
 
-    // ==========================================================================
-    // 2. TESTES DE EDIÇÃO AOCS
-    // ==========================================================================
-
     test('Edição AOCS: Sucesso - Carrega dados e Salva', async () => {
         setupSmartMock([
             { url: '/api/aocs/numero', method: 'GET', body: { id: 10, unidade_requisitante_nome: 'TI' } },
@@ -251,10 +224,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         await waitFor(() => expect(document.getElementById('notification-area').textContent).toContain('AOCS não encontrada'));
     });
 
-    // ==========================================================================
-    // 3. TESTES DE ANEXOS
-    // ==========================================================================
-
     test('Anexos: UI - Mostrar/Esconder input "Novo Tipo"', () => {
         const select = document.getElementById('tipo_documento_select');
         const inputNovo = document.getElementById('tipo_documento_novo');
@@ -287,10 +256,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         document.getElementById('form-anexos').dispatchEvent(new Event('submit'));
         await waitFor(() => expect(window.location.reload).toHaveBeenCalled());
     });
-
-    // ==========================================================================
-    // 4. EXCLUSÃO E OUTROS
-    // ==========================================================================
 
     test('Excluir Anexo: Cancelar e Sucesso', async () => {
         window.confirm.mockReturnValueOnce(false);
@@ -325,10 +290,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         modalE.click();
         expect(modalE.style.display).toBe('none');
     });
-
-    // ==========================================================================
-    // 5. NOVOS CENÁRIOS (Corrigidos)
-    // ==========================================================================
 
     test('Entrega: Caminho Feliz (Registrar Entrega com Sucesso)', async () => {
         window.abrirModalEntrega(50, 'Cimento', 100.00);
@@ -383,7 +344,6 @@ describe('Testes Frontend - Detalhe Pedido', () => {
         inputData.dispatchEvent(new Event('change'));
 
         await waitFor(() => {
-            // Agora deve ser exatamente 2, pois limpamos os listeners duplicados no beforeEach
             expect(mockFetch).toHaveBeenCalledTimes(2);
         });
     });

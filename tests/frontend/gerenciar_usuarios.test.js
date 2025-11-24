@@ -2,10 +2,6 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
@@ -22,7 +18,6 @@ const waitFor = async (callback, timeout = 1000) => {
     }
 };
 
-// HTML Simulado
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -54,7 +49,6 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
     let documentSpy;
     let windowSpy;
 
-    // Helper de Roteamento (Smart Mock)
     const setupRouterMock = (routes = []) => {
         mockFetch.mockImplementation(async (url, options) => {
             const method = options ? options.method : 'GET';
@@ -71,12 +65,8 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
         });
     };
 
-    // ==========================================================================
-    // 2. SETUP
-    // ==========================================================================
     beforeEach(() => {
         jest.clearAllMocks();
-        // Garante Timers Reais por padrão
         jest.useRealTimers(); 
         document.body.innerHTML = DOM_HTML;
         sessionStorage.clear();
@@ -106,10 +96,6 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
         if (documentSpy) documentSpy.mockRestore();
         if (windowSpy) windowSpy.mockRestore();
     });
-
-    // ==========================================================================
-    // 3. SEUS TESTES ORIGINAIS (MANTIDOS INTACTOS)
-    // ==========================================================================
 
     test('Interface: Botão Adicionar deve mostrar campo de senha', () => {
         document.getElementById('btn-add-user').click();
@@ -256,12 +242,7 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
         });
     });
 
-    // ==========================================================================
-    // 4. NOVOS TESTES (COBERTURA FALTANTE)
-    // ==========================================================================
-
     test('Notificação: Deve desaparecer após 5s (Mock Manual do setTimeout)', async () => {
-        // Cobertura linhas 23-25
         const originalSetTimeout = global.setTimeout;
         let callbackRemocao = null;
         
@@ -273,10 +254,9 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
         window.setTimeout = mockSetTimeout;
 
         try {
-            // Gera erro para chamar showNotification
             document.getElementById('btn-add-user').click();
             document.getElementById('user-nome').value = 'test';
-            document.getElementById('user-senha').value = '123'; // Inválido
+            document.getElementById('user-senha').value = '123'; 
             document.getElementById('form-user').dispatchEvent(new Event('submit'));
 
             await waitFor(() => {
@@ -287,9 +267,9 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
 
             if (callbackRemocao) {
                 const notif = document.querySelector('.notification');
-                callbackRemocao(); // Executa o timer
+                callbackRemocao(); 
                 expect(notif.style.opacity).toBe('0');
-                notif.dispatchEvent(new Event('transitionend')); // Cobertura do addEventListener
+                notif.dispatchEvent(new Event('transitionend')); 
                 expect(document.getElementById('notification-area').children.length).toBe(0);
             }
         } finally {
@@ -299,8 +279,6 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
     });
 
     test('Inicialização: Deve exibir msg da SessionStorage se existir', async () => {
-        // Cobertura linhas 38-40
-        // Precisamos recarregar o script "do zero" com a session preenchida
         jest.resetModules();
         sessionStorage.setItem('notificationMessage', 'Mensagem da Sessão');
         sessionStorage.setItem('notificationType', 'warning');
@@ -312,34 +290,28 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
             const notif = document.getElementById('notification-area');
             expect(notif.textContent).toContain('Mensagem da Sessão');
             expect(notif.querySelector('.warning')).toBeTruthy();
-            // Deve limpar após mostrar
             expect(sessionStorage.getItem('notificationMessage')).toBeNull();
         });
     });
 
     test('Resiliência: Funções globais devem tratar DOM quebrado', async () => {
-        // Cobertura linhas 44-47, 51-58 (guards)
         jest.resetModules();
-        document.body.innerHTML = '<div>Nada aqui</div>'; // DOM sem modal
+        document.body.innerHTML = '<div>Nada aqui</div>'; 
         require('../../app/static/js/gerenciar_usuarios');
         document.dispatchEvent(new Event('DOMContentLoaded'));
 
-        // Chama função global - não deve quebrar
         await window.abrirModalParaEditar(1);
         
-        // Se chegou aqui sem erro, passou. Verifica que nada aconteceu.
         expect(mockFetch).not.toHaveBeenCalled();
     });
 
     test('Toggle Status: Cancelar no confirm', async () => {
-        // Cobertura linha 104
         window.confirm.mockReturnValueOnce(false);
         await window.toggleUserStatus(1, true);
         expect(mockFetch).not.toHaveBeenCalled();
     });
 
     test('Resetar Senha: Erro na API (Catch Block)', async () => {
-        // Cobertura linha 119
         setupRouterMock([{
             url: '/reset-password', method: 'POST',
             ok: false, status: 500, body: { detail: 'Erro Crítico' }
@@ -354,23 +326,19 @@ describe('Testes Frontend - Gerenciar Usuários', () => {
     });
 
     test('Click Overlay: Deve fechar modal', () => {
-        // Cobertura linha 136-137
         const modal = document.getElementById('modal-user');
         modal.style.display = 'flex';
         
-        // Clica no overlay
         modal.click();
         
         expect(modal.style.display).toBe('none');
     });
 
     test('Form Submit: Erro Genérico (Catch Block)', async () => {
-        // Cobertura linha 181
         document.getElementById('btn-add-user').click();
         document.getElementById('user-nome').value = 'admin';
         document.getElementById('user-senha').value = '12345678';
 
-        // Mock de erro de rede
         mockFetch.mockRejectedValue(new Error('Rede Indisponível'));
 
         document.getElementById('form-user').dispatchEvent(new Event('submit'));

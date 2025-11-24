@@ -2,10 +2,6 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
@@ -22,7 +18,6 @@ const waitFor = async (callback, timeout = 1000) => {
     }
 };
 
-// HTML Combinado (Base + Form Item + Seção Anexos)
 const DOM_HTML_BASE = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -62,26 +57,20 @@ describe('Testes Frontend - Detalhe Contrato', () => {
     let documentSpy;
     let windowSpy;
 
-    // ==========================================================================
-    // 2. SETUP
-    // ==========================================================================
     beforeEach(() => {
         jest.clearAllMocks();
         document.body.innerHTML = DOM_HTML_BASE;
         sessionStorage.clear();
 
-        // Patch de Compatibilidade
         Object.defineProperty(HTMLElement.prototype, 'innerText', {
             get() { return this.textContent; },
             set(value) { this.textContent = value; },
             configurable: true
         });
 
-        // Spies
         documentSpy = jest.spyOn(document, 'addEventListener');
         windowSpy = jest.spyOn(window, 'addEventListener');
 
-        // Mocks Globais
         reloadMock = jest.fn();
         delete window.location;
         window.location = { reload: reloadMock };
@@ -89,10 +78,8 @@ describe('Testes Frontend - Detalhe Contrato', () => {
         window.confirm = jest.fn(() => true);
         window.nomeContratoGlobal = 'CT-123/2024';
         
-        // Scroll Mock
         Element.prototype.scrollIntoView = jest.fn();
 
-        // Carrega Script
         jest.resetModules();
         require('../../app/static/js/detalhe_contrato');
         document.dispatchEvent(new Event('DOMContentLoaded'));
@@ -103,10 +90,6 @@ describe('Testes Frontend - Detalhe Contrato', () => {
         if (windowSpy) windowSpy.mockRestore();
         delete window.nomeContratoGlobal;
     });
-
-    // ==========================================================================
-    // 3. TESTES - INICIALIZAÇÃO E UI
-    // ==========================================================================
 
     test('Inicialização: Deve exibir notificação do SessionStorage se existir', () => {
         sessionStorage.setItem('notificationMessage', 'Item salvo');
@@ -135,13 +118,8 @@ describe('Testes Frontend - Detalhe Contrato', () => {
         expect(container.style.display).toBe('none');
     });
 
-    // ==========================================================================
-    // 4. TESTES - CRUD DE ITENS
-    // ==========================================================================
-
     test('Salvar Item: Deve enviar dados formatados corretamente (PT-BR -> Float)', async () => {
-        // Preenche formulário com formato brasileiro
-        document.getElementById('quantidade').value = '1.000,50'; // Mil e cinquenta
+        document.getElementById('quantidade').value = '1.000,50'; 
         document.getElementById('valor_unitario').value = '200,00';
         document.getElementById('numero_item').value = '1';
 
@@ -155,7 +133,7 @@ describe('Testes Frontend - Detalhe Contrato', () => {
         await waitFor(() => {
             expect(mockFetch).toHaveBeenCalledWith('/api/itens', expect.objectContaining({
                 method: 'POST',
-                body: expect.stringContaining('"quantidade":"1000.50"') // Verifica conversão
+                body: expect.stringContaining('"quantidade":"1000.50"') 
             }));
             expect(reloadMock).toHaveBeenCalled();
         });
@@ -188,7 +166,6 @@ describe('Testes Frontend - Detalhe Contrato', () => {
         await waitFor(() => {
             const notif = document.querySelector('.notification.error');
             expect(notif.textContent).toContain('Erro no Banco de Dados');
-            // Botão deve ser reabilitado
             expect(document.querySelector('button[type="submit"]').disabled).toBe(false);
         });
     });
@@ -208,7 +185,6 @@ describe('Testes Frontend - Detalhe Contrato', () => {
         await window.abrirFormParaEditarItem(50);
 
         expect(mockFetch).toHaveBeenCalledWith('/api/itens/50');
-        // Verifica formatação de volta para PT-BR no input
         expect(document.getElementById('quantidade').value).toContain('10,50');
         expect(document.getElementById('form-item-titulo').textContent).toBe('Editar Item');
     });
@@ -247,19 +223,13 @@ describe('Testes Frontend - Detalhe Contrato', () => {
         });
     });
 
-    // ==========================================================================
-    // 5. TESTES - ANEXOS
-    // ==========================================================================
-
     test('Upload Anexo: Deve enviar com sucesso', async () => {
         const form = document.getElementById('form-upload-anexo-contrato');
         
-        // Simula seleção de arquivo
         const file = new File(['dummy'], 'teste.pdf', { type: 'application/pdf' });
         const fileInput = document.getElementById('anexo_file');
         Object.defineProperty(fileInput, 'files', { value: [file] });
 
-        // Seleciona tipo
         document.getElementById('tipo_documento_select_anexo').value = 'Contrato';
 
         mockFetch.mockResolvedValueOnce({
@@ -281,16 +251,13 @@ describe('Testes Frontend - Detalhe Contrato', () => {
     test('Upload Anexo: Deve validar "Novo Tipo" vazio', async () => {
         const form = document.getElementById('form-upload-anexo-contrato');
         
-        // Arquivo selecionado
         const file = new File(['dummy'], 't.pdf', { type: 'application/pdf' });
         Object.defineProperty(document.getElementById('anexo_file'), 'files', { value: [file] });
 
-        // Seleciona NOVO mas deixa input vazio
         const select = document.getElementById('tipo_documento_select_anexo');
         select.value = 'NOVO';
-        select.dispatchEvent(new Event('change')); // Dispara lógica de mostrar input
+        select.dispatchEvent(new Event('change')); 
         
-        // Submit
         form.dispatchEvent(new Event('submit'));
         await new Promise(r => setTimeout(r, 100));
 

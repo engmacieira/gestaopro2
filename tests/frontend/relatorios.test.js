@@ -2,16 +2,10 @@
  * @jest-environment jsdom
  */
 
-// ==========================================================================
-// 1. CONFIGURAÇÃO E UTILS
-// ==========================================================================
-
-// Mock do window.open
 const mockOpen = jest.fn();
 delete window.open;
 window.open = mockOpen;
 
-// HTML Simulado
 const DOM_HTML = `
     <div class="main-content">
         <div id="notification-area"></div>
@@ -50,28 +44,20 @@ describe('Testes Frontend - Relatórios', () => {
         jest.clearAllMocks();
         document.body.innerHTML = DOM_HTML;
         
-        // 1. Habilita controle total do tempo (Fake Timers)
         jest.useFakeTimers();
 
-        // 2. Carrega o script
         jest.resetModules();
         require('../../app/static/js/relatorios');
         document.dispatchEvent(new Event('DOMContentLoaded'));
     });
 
     afterEach(() => {
-        // 3. Limpa os timers para não afetar outros testes
         jest.useRealTimers();
     });
-
-    // ==========================================================================
-    // TESTES DE LÓGICA E VALIDAÇÃO
-    // ==========================================================================
 
     test('Validação: Deve exigir seleção de ordenação', () => {
         const btn = document.querySelector('[data-relatorio-btn="relatorio_contratos"]');
         
-        // Clica sem selecionar nada no select
         btn.click();
 
         const notif = document.getElementById('notification-area');
@@ -80,13 +66,11 @@ describe('Testes Frontend - Relatórios', () => {
     });
 
     test('Configuração: Deve tratar erro se o select não existir', () => {
-        // Remove o select propositalmente para simular erro de HTML
         const select = document.getElementById('ordenacao-relatorio_contratos');
         select.remove();
 
         const btn = document.querySelector('[data-relatorio-btn="relatorio_contratos"]');
         
-        // Mock do console.error para não sujar o terminal
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
         btn.click();
@@ -117,7 +101,6 @@ describe('Testes Frontend - Relatórios', () => {
         const select = document.getElementById('ordenacao-relatorio_pedidos');
         select.value = 'status';
 
-        // Chama diretamente a função global (útil para onlick="" no HTML legado)
         window.gerarRelatorio('relatorio_pedidos');
 
         expect(window.open).toHaveBeenCalledWith(
@@ -126,34 +109,24 @@ describe('Testes Frontend - Relatórios', () => {
         );
     });
 
-    // ==========================================================================
-    // TESTE DE COBERTURA DO TIMEOUT (Linhas 17-19)
-    // ==========================================================================
-
     test('Notificação: Deve desaparecer do DOM após 5 segundos', () => {
         const btn = document.querySelector('[data-relatorio-btn="relatorio_contratos"]');
         
-        // 1. Gera uma notificação
-        btn.click(); // Erro de validação gera notificação
+        btn.click(); 
 
         const notifArea = document.getElementById('notification-area');
         const notification = notifArea.querySelector('.notification');
         
-        expect(notification).toBeTruthy(); // Garante que existe
-        expect(notification.style.opacity).toBe(''); // Opacidade inicial vazia ou padrão
+        expect(notification).toBeTruthy(); 
+        expect(notification.style.opacity).toBe(''); 
 
-        // 2. Avança o tempo em 5 segundos (Fake Timers)
         jest.advanceTimersByTime(5000);
 
-        // 3. Verifica se a opacidade foi alterada (Lógica do setTimeout executou)
         expect(notification.style.opacity).toBe('0');
 
-        // 4. Dispara manualmente o evento 'transitionend' (JSDOM não faz isso sozinho)
-        // Isso cobre a arrow function do .addEventListener
         const event = new Event('transitionend');
         notification.dispatchEvent(event);
 
-        // 5. Verifica se o elemento foi removido
         expect(notifArea.children.length).toBe(0);
     });
 });
