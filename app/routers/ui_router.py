@@ -5,17 +5,21 @@ import psycopg2
 from psycopg2.extras import DictCursor
 from datetime import date, datetime, timezone, timedelta
 from decimal import Decimal
+from pydantic import BaseModel
 
 from fastapi import (APIRouter, Depends, Form, HTTPException, Query, Request,
                      Response, status)
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi import Body
 from psycopg2.extensions import connection
 
 from app.core.security import (ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token,
                                get_current_user, require_access_level)
 from app.models.user_model import User
 from app.repositories.user_repository import UserRepository 
+
+from types import SimpleNamespace
 
 from app.core.database import get_db
 from app.repositories.categoria_repository import CategoriaRepository
@@ -34,6 +38,7 @@ from app.repositories.instrumento_repository import InstrumentoRepository
 from app.repositories.modalidade_repository import ModalidadeRepository
 from app.repositories.numero_modalidade_repository import NumeroModalidadeRepository
 from app.repositories.processo_licitatorio_repository import ProcessoLicitatorioRepository
+from app.schemas.ci_pagamento_schema import CiPagamentoCreateRequest
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="", tags=["UI - Páginas Web"])
@@ -54,16 +59,55 @@ ITENS_POR_PAGINA = 10
 
 templates.env.globals['versao_software'] = VERSAO_SOFTWARE
 
+class ItemGenerico(BaseModel):
+    nome: str
+    
 TABELAS_GERENCIAVEIS = {
-    'instrumento-contratual': {'tabela': 'instrumentocontratual', 'coluna': 'nome'},
-    'modalidade': {'tabela': 'modalidade', 'coluna': 'nome'},
-    'numero-modalidade': {'tabela': 'numeromodalidade', 'coluna': 'numero_ano'},
-    'processo-licitatorio': {'tabela': 'processoslicitatorios', 'coluna': 'numero'},
-    'unidade-requisitante': {'tabela': 'unidadesrequisitantes', 'coluna': 'nome'},
-    'local-entrega': {'tabela': 'locaisentrega', 'coluna': 'descricao'},
-    'agente-responsavel': {'tabela': 'agentesresponsaveis', 'coluna': 'nome'},
-    'dotacao': {'tabela': 'dotacao', 'coluna': 'info_orcamentaria'},
-    'tipo-documento': {'tabela': 'tipos_documento', 'coluna': 'nome'}
+    'instrumento-contratual': {
+        'repo': InstrumentoRepository, 
+        'titulo': 'Instrumentos Contratuais',
+        'coluna': 'nome' 
+    },
+    'modalidade': {
+        'repo': ModalidadeRepository, 
+        'titulo': 'Modalidades',
+        'coluna': 'nome'
+    },
+    'numero-modalidade': {
+        'repo': NumeroModalidadeRepository, 
+        'titulo': 'Números de Modalidade',
+        'coluna': 'numero_ano' 
+    },
+    'processo-licitatorio': {
+        'repo': ProcessoLicitatorioRepository, 
+        'titulo': 'Processos Licitatórios',
+        'coluna': 'numero' 
+    },
+    'unidade-requisitante': {
+        'repo': UnidadeRepository, 
+        'titulo': 'Unidades Requisitantes',
+        'coluna': 'nome'
+    },
+    'local-entrega': {
+        'repo': LocalRepository, 
+        'titulo': 'Locais de Entrega',
+        'coluna': 'descricao' 
+    },
+    'agente-responsavel': {
+        'repo': AgenteRepository, 
+        'titulo': 'Agentes Responsáveis',
+        'coluna': 'nome'
+    },
+    'dotacao': {
+        'repo': DotacaoRepository, 
+        'titulo': 'Dotações Orçamentárias',
+        'coluna': 'info_orcamentaria' 
+    },
+    'tipo-documento': {
+        'repo': TipoDocumentoRepository, 
+        'titulo': 'Tipos de Documento',
+        'coluna': 'nome'
+    }
 }
 ENTIDADES_PESQUISAVEIS = { 
     'processo_licitatorio': {'label': 'Contratos por Processo Licitatório', 'tabela_principal': 'processoslicitatorios', 'coluna_texto': 'numero'},
@@ -137,14 +181,19 @@ async def read_root(request: Request):
 @router.get("/home", response_class=HTMLResponse, name="home_ui", dependencies=[Depends(require_access_level(3))])
 async def home_ui(request: Request, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
     indicadores = {"contratos_ativos": 0, "pedidos_mes": 0, "contratos_a_vencer": 0}
-    pedidos_pendentes = []
+    pedidos_pendentes = [] 
     pagina_atual = 1
     total_paginas = 1
+    
     try:
          cursor = db_conn.cursor()
          cursor.execute("SELECT COUNT(id) FROM Contratos WHERE ativo = TRUE")
          indicadores["contratos_ativos"] = cursor.fetchone()[0]
          cursor.close()
+         
+         pedido_repo = PedidoRepository(db_conn)
+         pedidos_pendentes = pedido_repo.get_pendentes_dashboard(limite=10) 
+         
     except Exception as e:
          logger.error(f"Erro ao buscar dados do dashboard: {e}")
 
@@ -265,7 +314,6 @@ async def contratos_ui(
              if isinstance(dt_fim_normalizada, datetime):
                  dt_fim_normalizada = dt_fim_normalizada.date()
              elif isinstance(dt_fim_normalizada, str):
-                 # Proteção extra caso venha como string do banco legado
                  try:
                      dt_fim_normalizada = datetime.strptime(dt_fim_normalizada, '%Y-%m-%d').date()
                  except:
@@ -300,57 +348,111 @@ async def contratos_ui(
     return templates.TemplateResponse(request, "contratos.html", context)
     
 @router.get("/pedidos-ui", response_class=HTMLResponse, name="pedidos_ui", dependencies=[Depends(require_access_level(3))])
-async def pedidos_ui(request: Request, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
-    repo = PedidoRepository(db_conn)
+async def pedidos_ui(
+    request: Request, 
+    page: int = Query(1, alias="page"),
+    busca: str | None = Query(None),
+    sort_by: str = Query('data'), 
+    order: str = Query('desc'),
+    current_user=Depends(get_current_user), 
+    db_conn: connection = Depends(get_db)
+):
+    aocs_repo = AocsRepository(db_conn) 
+    pedido_repo = PedidoRepository(db_conn)
     item_repo = ItemRepository(db_conn)
-    aocs_repo = AocsRepository(db_conn)
+    contrato_repo = ContratoRepository(db_conn)
     
-    termo_busca = request.query_params.get('busca', '')
-    sort_by = request.query_params.get('sort_by', 'data')
-    order = request.query_params.get('order', 'desc')
+    todas_aocs = aocs_repo.get_all()
     
-    todos_pedidos = repo.get_all()
+    aocs_view = []
     
-    pedidos_view = []
-    for p in todos_pedidos:
-        item = item_repo.get_by_id(p.id_item_contrato)
-        aocs = aocs_repo.get_by_id(p.id_aocs)
+    for aocs in todas_aocs:
+        itens_pedidos = pedido_repo.get_by_aocs_id(aocs.id)
         
-        if termo_busca:
-            termo = termo_busca.lower()
-            if not (aocs and termo in aocs.numero_aocs.lower()) and \
-               not (item and termo in item.descricao.descricao.lower()):
+        valor_total_aocs = Decimal('0.0')
+        nome_fornecedor = "N/D"
+        status_consolidado = "Pendente"
+        
+        total_qtd_pedida = Decimal('0.0')
+        total_qtd_entregue = Decimal('0.0')
+
+        for p in itens_pedidos:
+            item = item_repo.get_by_id(p.id_item_contrato)
+            if item:
+                subtotal = p.quantidade_pedida * item.valor_unitario
+                valor_total_aocs += subtotal
+                
+                total_qtd_pedida += p.quantidade_pedida
+                total_qtd_entregue += p.quantidade_entregue
+
+                if nome_fornecedor == "N/D":
+                    contrato = contrato_repo.get_by_id(item.id_contrato)
+                    if contrato and contrato.fornecedor:
+                        nome_fornecedor = contrato.fornecedor.nome
+
+        if total_qtd_pedida > 0:
+            if total_qtd_entregue >= total_qtd_pedida:
+                status_consolidado = "Entregue"
+            elif total_qtd_entregue > 0:
+                status_consolidado = "Parcial"
+            else:
+                status_consolidado = "Pendente"
+        elif not itens_pedidos:
+             status_consolidado = "Vazio" 
+
+        if busca:
+            termo = busca.lower()
+            match_aocs = (termo in aocs.numero_aocs.lower())
+            match_forn = (termo in nome_fornecedor.lower())
+            
+            if not (match_aocs or match_forn):
                 continue
         
-        valor_unitario = item.valor_unitario if item else Decimal('0.0')
-        valor_total = p.quantidade_pedida * valor_unitario
-        
-        pedidos_view.append({
-            "id": p.id,
-            "numero_aocs": aocs.numero_aocs if aocs else "N/D",
-            "descricao_item": item.descricao.descricao if item else "N/D",
-            "quantidade": p.quantidade_pedida,
-            "valor_unitario": valor_unitario,
-            "valor_total": valor_total,
-            "status": p.status_entrega,
-            "data_pedido": p.data_pedido
+        aocs_view.append({
+            "id": aocs.id,
+            "numero_aocs": aocs.numero_aocs,
+            "numero_pedido": aocs.numero_pedido, 
+            "fornecedor": nome_fornecedor,
+            "valor_total": valor_total_aocs,
+            "status_entrega": status_consolidado,
+            "data_pedido": aocs.data_criacao
         })
 
-    total_itens = len(pedidos_view)
-    pagina_atual = int(request.query_params.get('page', 1))
-    offset = (pagina_atual - 1) * ITENS_POR_PAGINA
-    pedidos_paginados = pedidos_view[offset:offset + ITENS_POR_PAGINA]
+    reverse_order = (order == 'desc')
+    
+    def get_sort_key(item, key_name, default_val=''):
+        val = item.get(key_name)
+        if val is None: val = default_val
+        return (val, item['id'])
+
+    if sort_by == 'aocs':
+        aocs_view.sort(key=lambda x: get_sort_key(x, 'numero_aocs'), reverse=reverse_order)
+    elif sort_by == 'fornecedor':
+        aocs_view.sort(key=lambda x: get_sort_key(x, 'fornecedor'), reverse=reverse_order)
+    elif sort_by == 'valor':
+        aocs_view.sort(key=lambda x: (x['valor_total'], x['id']), reverse=reverse_order)
+    elif sort_by == 'status':
+        aocs_view.sort(key=lambda x: get_sort_key(x, 'status_entrega'), reverse=reverse_order)
+    else: 
+        aocs_view.sort(key=lambda x: (x['data_pedido'] if x['data_pedido'] else date.min, x['id']), reverse=reverse_order)
+
+    total_itens = len(aocs_view)
+    offset = (page - 1) * ITENS_POR_PAGINA
+    pedidos_paginados = aocs_view[offset:offset + ITENS_POR_PAGINA]
     total_paginas = math.ceil(total_itens / ITENS_POR_PAGINA) if total_itens > 0 else 1
 
+    query_params = dict(request.query_params)
+
     context = {
+        "request": request,
         "current_user": current_user,
         "pedidos_lista": pedidos_paginados, 
-        "pagina_atual": pagina_atual, 
+        "pagina_atual": page, 
         "total_paginas": total_paginas,
-        "query_params": dict(request.query_params), 
+        "query_params": query_params, 
         "sort_by": sort_by, 
         "order": order, 
-        "termo_busca": termo_busca,
+        "termo_busca": busca,
         "get_flashed_messages": lambda **kwargs: []
     }
     return templates.TemplateResponse(request, "pedidos.html", context)
@@ -380,9 +482,29 @@ async def importar_ui(request: Request, current_user=Depends(get_current_user)):
     return templates.TemplateResponse(request, "importar.html", context)
 
 @router.get("/contratos/novo", response_class=HTMLResponse, name="novo_contrato_ui", dependencies=[Depends(require_access_level(2))])
-async def novo_contrato_ui(request: Request, current_user=Depends(get_current_user)):
-    context = {"current_user": current_user, "get_flashed_messages": lambda **kwargs: []}
-    return templates.TemplateResponse(request, "importar.html", context)
+async def novo_contrato_ui(
+    request: Request, 
+    current_user=Depends(get_current_user),
+    db_conn: connection = Depends(get_db)
+):
+    cat_repo = CategoriaRepository(db_conn)
+    inst_repo = InstrumentoRepository(db_conn)
+    mod_repo = ModalidadeRepository(db_conn)
+    num_mod_repo = NumeroModalidadeRepository(db_conn)
+    proc_repo = ProcessoLicitatorioRepository(db_conn)
+
+    context = {
+        "request": request,
+        "current_user": current_user,
+        "categorias": cat_repo.get_all(),
+        "instrumentos": inst_repo.get_all(),
+        "modalidades": mod_repo.get_all(),
+        "numeros_modalidade": num_mod_repo.get_all(),
+        "processos": proc_repo.get_all(),
+        "get_flashed_messages": lambda **kwargs: []
+    }
+    
+    return templates.TemplateResponse(request, "novo_contrato.html", context)
 
 @router.get("/gerenciar-tabelas", response_class=HTMLResponse, name="gerenciar_tabelas_ui", dependencies=[Depends(require_access_level(2))])
 async def gerenciar_tabelas_ui(request: Request, current_user=Depends(get_current_user)):
@@ -666,9 +788,82 @@ async def nova_ci_ui(
     return templates.TemplateResponse(request, "nova_ci.html", context)
 
 @router.post("/pedido/{numero_aocs:path}/nova-ci", name="nova_ci_post", dependencies=[Depends(require_access_level(2))])
-async def nova_ci_post(request: Request, numero_aocs: str, db_conn: connection = Depends(get_db)):
+async def nova_ci_post(
+    request: Request, 
+    numero_aocs: str, 
+    db_conn: connection = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
     form_data = await request.form()
-    return RedirectResponse(url=request.app.url_path_for('detalhe_pedido', numero_aocs=numero_aocs), status_code=status.HTTP_302_FOUND)
+    
+    # 1. Instancia Repositórios
+    aocs_repo = AocsRepository(db_conn)
+    ci_repo = CiPagamentoRepository(db_conn)
+    agente_repo = AgenteRepository(db_conn)
+    unidade_repo = UnidadeRepository(db_conn)
+    dotacao_repo = DotacaoRepository(db_conn)
+    pedido_repo = PedidoRepository(db_conn) # <--- NOVO
+    
+    # 2. Busca AOCS
+    aocs = aocs_repo.get_by_numero_aocs(numero_aocs)
+    if not aocs:
+        raise HTTPException(status_code=404, detail="AOCS não encontrada")
+
+    try:
+        # 3. Helper de Moeda
+        def parse_money(valor_str):
+            if not valor_str: return Decimal(0)
+            limpo = str(valor_str).replace('R$', '').replace('.', '').replace(',', '.').strip()
+            return Decimal(limpo)
+
+        # 4. Busca Nomes e IDs Relacionados
+        id_solicitante = form_data.get('id_solicitante')
+        solicitante = agente_repo.get_by_id(int(id_solicitante)) if id_solicitante else None
+        
+        id_secretaria = form_data.get('id_secretaria')
+        unidade = unidade_repo.get_by_id(int(id_secretaria)) if id_secretaria else None
+        
+        id_dotacao = form_data.get('id_dotacao_pagamento')
+        dotacao = dotacao_repo.get_by_id(int(id_dotacao)) if id_dotacao else None
+
+        # 5. [CORREÇÃO] Busca um Pedido (Item) para vincular a CI
+        # A CI precisa de um id_pedido. Pegamos o primeiro da lista desta AOCS.
+        pedidos_aocs = pedido_repo.get_by_aocs_id(aocs.id)
+        id_pedido_vinculo = pedidos_aocs[0].id if pedidos_aocs else None
+        
+        # Opcional: Se não tiver pedidos, podemos lançar erro ou tentar passar None (depende do banco)
+        if id_pedido_vinculo is None:
+             logger.warning(f"Aviso: Criando CI para AOCS {numero_aocs} sem itens/pedidos vinculados.")
+
+        # 6. Monta o Objeto
+        nova_ci = CiPagamentoCreateRequest(
+            id_aocs=aocs.id,
+            aocs_numero=aocs.numero_aocs, 
+            numero_ci=form_data.get('numero_ci'), 
+            data_ci=form_data.get('data_ci'),
+            numero_nota_fiscal=form_data.get('numero_nota_fiscal'),
+            data_nota_fiscal=form_data.get('data_nota_fiscal'),
+            valor_nota_fiscal=parse_money(form_data.get('valor_nota_fiscal')),
+            serie_nota_fiscal=form_data.get('serie_nota_fiscal'),
+            solicitante_nome=solicitante.nome if solicitante else "N/D",
+            secretaria_nome=unidade.nome if unidade else "N/D",
+            dotacao_info_orcamentaria=dotacao.info_orcamentaria if dotacao else "N/D",
+            observacoes_pagamento=form_data.get('observacoes_pagamento')
+        )
+        
+        # 7. Salva (Agora passando o id_pedido exigido)
+        ci_repo.create(nova_ci, id_pedido=id_pedido_vinculo) # <--- AQUI ESTAVA O ERRO
+        
+        logger.info(f"CI {nova_ci.numero_ci} criada para AOCS {numero_aocs}")
+        
+        return RedirectResponse(
+            url=request.app.url_path_for('detalhe_pedido', numero_aocs=numero_aocs), 
+            status_code=status.HTTP_302_FOUND
+        )
+
+    except Exception as e:
+        logger.error(f"Erro ao salvar CI: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao salvar CI: {str(e)}")
 
 
 @router.get("/ci/{id_ci}/editar", response_class=HTMLResponse, name="editar_ci_ui", dependencies=[Depends(require_access_level(2))])
@@ -684,17 +879,309 @@ async def editar_ci_post(request: Request, id_ci: int, db_conn: connection = Dep
     numero_aocs = "NUMERO_AOCS_AQUI" 
     return RedirectResponse(url=request.app.url_path_for('detalhe_pedido', numero_aocs=numero_aocs), status_code=status.HTTP_302_FOUND)
 
-@router.get("/pedido/{numero_aocs:path}/imprimir", name="imprimir_aocs", dependencies=[Depends(require_access_level(2))])
+@router.get("/pedido/{numero_aocs:path}/imprimir", response_class=HTMLResponse, name="imprimir_aocs", dependencies=[Depends(require_access_level(2))])
 async def imprimir_aocs(request: Request, numero_aocs: str, db_conn: connection = Depends(get_db)):
-    return Response(content="PDF AOCS aqui", media_type='application/pdf')
+    
+    aocs_repo = AocsRepository(db_conn)
+    pedido_repo = PedidoRepository(db_conn)
+    item_repo = ItemRepository(db_conn)
+    contrato_repo = ContratoRepository(db_conn)
+    unidade_repo = UnidadeRepository(db_conn)
+    local_repo = LocalRepository(db_conn)
+    agente_repo = AgenteRepository(db_conn)
+    dotacao_repo = DotacaoRepository(db_conn)
+    inst_repo = InstrumentoRepository(db_conn) 
 
-@router.get("/pedido/{numero_aocs:path}/imprimir-pendentes", name="imprimir_pendentes_aocs", dependencies=[Depends(require_access_level(2))])
+    aocs = aocs_repo.get_by_numero_aocs(numero_aocs)
+    if not aocs: raise HTTPException(status_code=404, detail="AOCS não encontrada")
+
+    pedidos = pedido_repo.get_by_aocs_id(aocs.id)
+    
+    itens_print = []
+    total_geral = Decimal('0.0')
+    
+    contrato_obj = None
+    
+    for p in pedidos:
+        item = item_repo.get_by_id(p.id_item_contrato)
+        if item:
+            if not contrato_obj:
+                contrato_obj = contrato_repo.get_by_id(item.id_contrato)
+            
+            subtotal = p.quantidade_pedida * item.valor_unitario
+            total_geral += subtotal
+            
+            itens_print.append({
+                "numero_item_contrato": item.numero_item,
+                "descricao": item.descricao.descricao, 
+                "unidade_medida": item.unidade_medida,
+                "quantidade_pedida": p.quantidade_pedida,
+                "valor_unitario": item.valor_unitario,
+                "subtotal": subtotal
+            })
+
+    unidade = unidade_repo.get_by_id(aocs.id_unidade_requisitante) if aocs.id_unidade_requisitante else None
+    local = local_repo.get_by_id(aocs.id_local_entrega) if aocs.id_local_entrega else None
+    agente = agente_repo.get_by_id(aocs.id_agente_responsavel) if aocs.id_agente_responsavel else None
+    dotacao = dotacao_repo.get_by_id(aocs.id_dotacao) if aocs.id_dotacao else None
+    
+    nome_instrumento = "N/D"
+    nome_fornecedor = "N/D"
+    cnpj_fornecedor = "N/D"
+
+    if contrato_obj:
+        if contrato_obj.fornecedor:
+            nome_fornecedor = contrato_obj.fornecedor.nome
+            cnpj_fornecedor = contrato_obj.fornecedor.cpf_cnpj
+        
+        inst = inst_repo.get_by_id(contrato_obj.id_instrumento_contratual)
+        if inst:
+            nome_instrumento = f"{inst.nome} Nº {contrato_obj.numero_contrato}" 
+        else:
+            nome_instrumento = f"Contrato Nº {contrato_obj.numero_contrato}"
+
+    aocs_view = {
+        "numero_aocs": aocs.numero_aocs,
+        "unidade_requisitante": unidade.nome if unidade else "N/D",
+        "justificativa": aocs.justificativa,
+        "instrumento_contratual": nome_instrumento,
+        "fornecedor": nome_fornecedor,
+        "cnpj": cnpj_fornecedor,
+        "info_orcamentaria": dotacao.info_orcamentaria if dotacao else "N/D",
+        "local_entrega": local.descricao if local else "N/D",
+        "local_data": f"Braúnas/MG, {aocs.data_criacao.strftime('%d/%m/%Y') if aocs.data_criacao else date.today().strftime('%d/%m/%Y')}",
+        "agente_responsavel": agente.nome if agente else "Responsável"
+    }
+
+    context = {
+        "request": request,
+        "aocs": aocs_view,
+        "itens": itens_print,
+        "total_geral": total_geral,
+        "get_flashed_messages": lambda **kwargs: [] 
+    }
+    
+    return templates.TemplateResponse("aocs_template.html", context)
+
+@router.get("/pedido/{numero_aocs:path}/imprimir-pendentes", response_class=HTMLResponse, name="imprimir_pendentes_aocs", dependencies=[Depends(require_access_level(2))])
 async def imprimir_pendentes_aocs(request: Request, numero_aocs: str, db_conn: connection = Depends(get_db)):
-    return Response(content="PDF Pendentes aqui", media_type='application/pdf')
 
-@router.get("/ci/{id_ci}/imprimir", name="imprimir_ci", dependencies=[Depends(require_access_level(2))])
+    aocs_repo = AocsRepository(db_conn)
+    pedido_repo = PedidoRepository(db_conn)
+    item_repo = ItemRepository(db_conn)
+    contrato_repo = ContratoRepository(db_conn)
+    unidade_repo = UnidadeRepository(db_conn)
+    
+    aocs = aocs_repo.get_by_numero_aocs(numero_aocs)
+    if not aocs: 
+        raise HTTPException(status_code=404, detail="AOCS não encontrada")
+
+    pedidos = pedido_repo.get_by_aocs_id(aocs.id)
+    itens_pendentes_view = []
+    total_valor_pendente = Decimal('0.0')
+    
+    contrato_obj = None
+
+    for p in pedidos:
+        item = item_repo.get_by_id(p.id_item_contrato)
+        if item:
+            if not contrato_obj:
+                contrato_obj = contrato_repo.get_by_id(item.id_contrato)
+            
+            qtd_pedida = p.quantidade_pedida
+            qtd_entregue = p.quantidade_entregue
+            saldo = qtd_pedida - qtd_entregue
+            
+            if saldo > 0:
+                valor_pendente = saldo * item.valor_unitario
+                total_valor_pendente += valor_pendente
+                
+                itens_pendentes_view.append({
+                    "numero_item_contrato": item.numero_item,
+                    "descricao": item.descricao.descricao,
+                    "unidade_medida": item.unidade_medida,
+                    "quantidade_pedida": qtd_pedida,
+                    "quantidade_entregue": qtd_entregue,
+                    "saldo_pendente": saldo,
+                    "valor_unitario": item.valor_unitario,
+                    "valor_total_pendente": valor_pendente 
+                })
+
+    unidade = unidade_repo.get_by_id(aocs.id_unidade_requisitante) if aocs.id_unidade_requisitante else None
+    
+    nome_fornecedor = "N/D"
+    cnpj_fornecedor = "N/D"
+    if contrato_obj and contrato_obj.fornecedor:
+        nome_fornecedor = contrato_obj.fornecedor.nome
+        cnpj_fornecedor = contrato_obj.fornecedor.cpf_cnpj
+
+    aocs_view = {
+        "numero_aocs": aocs.numero_aocs,
+        "unidade_requisitante": unidade.nome if unidade else "N/D",
+        "fornecedor": nome_fornecedor,
+        "cnpj": cnpj_fornecedor,
+        "numero_pedido": aocs.numero_pedido,
+        "local_data": f"Braúnas/MG, {date.today().strftime('%d/%m/%Y')}"
+    }
+
+    context = {
+        "request": request,
+        "aocs": aocs_view,
+        "itens": itens_pendentes_view,
+        "total_geral_pendente": total_valor_pendente,
+        "get_flashed_messages": lambda **kwargs: []
+    }
+
+    return templates.TemplateResponse("aocs_pendentes_template.html", context)
+
+@router.get("/ci/{id_ci}/imprimir", response_class=HTMLResponse, name="imprimir_ci", dependencies=[Depends(require_access_level(2))])
 async def imprimir_ci(request: Request, id_ci: int, db_conn: connection = Depends(get_db)):
-    return Response(content="PDF CI aqui", media_type='application/pdf')
+
+    ci_repo = CiPagamentoRepository(db_conn)
+    aocs_repo = AocsRepository(db_conn)
+    unidade_repo = UnidadeRepository(db_conn)
+    pedido_repo = PedidoRepository(db_conn)
+    item_repo = ItemRepository(db_conn)
+    contrato_repo = ContratoRepository(db_conn)
+    agente_repo = AgenteRepository(db_conn) 
+
+    ci = ci_repo.get_by_id(id_ci)
+    if not ci:
+        raise HTTPException(status_code=404, detail="CI de Pagamento não encontrada")
+
+    aocs = aocs_repo.get_by_id(ci.id_aocs)
+    if not aocs:
+        raise HTTPException(status_code=404, detail="AOCS vinculada não encontrada")
+
+    unidade = unidade_repo.get_by_id(aocs.id_unidade_requisitante) if aocs.id_unidade_requisitante else None
+    
+    nome_fornecedor = "N/D"
+    cnpj_fornecedor = "N/D"
+    
+    pedidos = pedido_repo.get_by_aocs_id(aocs.id)
+    for p in pedidos:
+        item = item_repo.get_by_id(p.id_item_contrato)
+        if item:
+            contrato = contrato_repo.get_by_id(item.id_contrato)
+            if contrato and contrato.fornecedor:
+                nome_fornecedor = contrato.fornecedor.nome
+                cnpj_fornecedor = contrato.fornecedor.cpf_cnpj
+                break 
+
+    valor_extenso = "valor não processado"
+    try:
+        from num2words import num2words
+        valor_extenso = num2words(ci.valor, lang='pt_BR', to='currency')
+    except ImportError:
+        valor_extenso = f"{ci.valor} reais"
+    except Exception as e:
+        logger.warning(f"Erro ao gerar valor por extenso: {e}")
+        valor_extenso = "---"
+
+    data_ci_formatada = ci.data_ci.strftime('%d/%m/%Y') if ci.data_ci else "N/D"
+    data_nf_formatada = ci.data_nf.strftime('%d/%m/%Y') if ci.data_nf else "N/D"
+
+    nome_solicitante = "Responsável"
+    if aocs.id_agente_responsavel:
+        agente = agente_repo.get_by_id(aocs.id_agente_responsavel)
+        if agente:
+            nome_solicitante = agente.nome
+
+    context = {
+        "request": request,
+        "numero_ci": ci.numero,  
+        "secretaria": unidade.nome if unidade else "Secretaria Municipal",
+        "data_ci": data_ci_formatada,
+        "ilmo_sr": "Secretário de Finanças", 
+        
+        "valor_nf": ci.valor,
+        "valor_por_extenso": valor_extenso,
+        "numero_nf": ci.numero_nf,
+        "data_nf": data_nf_formatada,
+        "fornecedor": nome_fornecedor,
+        "cnpj": cnpj_fornecedor,
+        "referencia": ci.referencia if hasattr(ci, 'referencia') and ci.referencia else aocs.justificativa, # Fallback
+        
+        "observacoes": ci.observacoes,
+        "solicitante": nome_solicitante,
+        
+        "get_flashed_messages": lambda **kwargs: []
+    }
+
+    return templates.TemplateResponse("ci_pagamento_template.html", context)
+
+@router.get("/relatorios/lista-aocs", response_class=HTMLResponse, name="imprimir_lista_aocs", dependencies=[Depends(require_access_level(3))])
+async def imprimir_lista_aocs(
+    request: Request, 
+    filtro: str = Query('todos'), 
+    db_conn: connection = Depends(get_db)
+):
+    aocs_repo = AocsRepository(db_conn)
+    pedido_repo = PedidoRepository(db_conn)
+    item_repo = ItemRepository(db_conn)
+    contrato_repo = ContratoRepository(db_conn)
+    
+    todas_aocs = aocs_repo.get_all()
+    
+    lista_final = []
+    total_geral_valor = Decimal('0.0')
+
+    for aocs in todas_aocs:
+        itens_pedidos = pedido_repo.get_by_aocs_id(aocs.id)
+        
+        valor_total_aocs = Decimal('0.0')
+        nome_fornecedor = "N/D"
+        
+        total_qtd_pedida = Decimal('0.0')
+        total_qtd_entregue = Decimal('0.0')
+
+        for p in itens_pedidos:
+            item = item_repo.get_by_id(p.id_item_contrato)
+            if item:
+                valor_total_aocs += (p.quantidade_pedida * item.valor_unitario)
+                total_qtd_pedida += p.quantidade_pedida
+                total_qtd_entregue += p.quantidade_entregue
+                
+                if nome_fornecedor == "N/D":
+                    contrato = contrato_repo.get_by_id(item.id_contrato)
+                    if contrato and contrato.fornecedor:
+                        nome_fornecedor = contrato.fornecedor.nome
+
+        status_consolidado = "Pendente"
+        if total_qtd_pedida > 0:
+            if total_qtd_entregue >= total_qtd_pedida:
+                status_consolidado = "Entregue"
+            elif total_qtd_entregue > 0:
+                status_consolidado = "Parcial"
+        elif not itens_pedidos:
+             status_consolidado = "Vazio"
+
+        if filtro == 'pendentes' and status_consolidado in ['Entregue', 'Vazio', 'Cancelado']:
+            continue
+
+        lista_final.append({
+            "numero_aocs": aocs.numero_aocs,
+            "fornecedor": nome_fornecedor,
+            "valor_total": valor_total_aocs,
+            "data_pedido": aocs.data_criacao,
+            "status_entrega": status_consolidado,
+            "id": aocs.id 
+        })
+        
+        total_geral_valor += valor_total_aocs
+
+    lista_final.sort(key=lambda x: x['numero_aocs'])
+
+    context = {
+        "request": request,
+        "lista_aocs": lista_final,
+        "total_geral_valor": total_geral_valor,
+        "filtro": filtro,
+        "data_emissao": date.today().strftime('%d/%m/%Y'),
+        "get_flashed_messages": lambda **kwargs: []
+    }
+    
+    return templates.TemplateResponse("relatorio_lista_aocs.html", context)
 
 @router.get("/pedido/{numero_aocs:path}", response_class=HTMLResponse, name="detalhe_pedido", dependencies=[Depends(require_access_level(3))])
 async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
@@ -733,9 +1220,9 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
             total_entregue_qtd += p.quantidade_entregue
             total_pedido_qtd += p.quantidade_pedida
 
-            if not itens_view: 
-                primeiro_fornecedor = contrato.fornecedor.nome if contrato.fornecedor else 'N/D'
-                primeiro_cnpj = contrato.fornecedor.cpf_cnpj if contrato.fornecedor else 'N/D'
+            if primeiro_fornecedor == 'N/D' and contrato.fornecedor:
+                primeiro_fornecedor = contrato.fornecedor.nome
+                primeiro_cnpj = contrato.fornecedor.cpf_cnpj
             
             itens_view.append({
                 "id_pedido": p.id,
@@ -763,28 +1250,43 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
     dotacoes = [d.info_orcamentaria for d in dotacao_repo.get_all()]
     tipos_documento = [td.nome for td in tipo_doc_repo.get_all()]
 
+    unidade_obj = unidade_repo.get_by_id(aocs.id_unidade_requisitante) if aocs.id_unidade_requisitante else None
+    local_obj = local_repo.get_by_id(aocs.id_local_entrega) if aocs.id_local_entrega else None
+    agente_obj = agente_repo.get_by_id(aocs.id_agente_responsavel) if aocs.id_agente_responsavel else None
+    dotacao_obj = dotacao_repo.get_by_id(aocs.id_dotacao) if aocs.id_dotacao else None
+
     aocs_view = {
         "id": aocs.id,
         "numero_aocs": aocs.numero_aocs,
         "data_criacao": aocs.data_criacao,
         "numero_pedido": aocs.numero_pedido,
         "empenho": aocs.empenho,
+        "justificativa": aocs.justificativa, 
         "status_entrega": status_geral,
         "valor_total": total_pedido_valor,
-        
         "fornecedor": primeiro_fornecedor,
         "cpf_cnpj": primeiro_cnpj,
-        "unidade_requisitante": unidade_repo.get_by_id(aocs.id_unidade_requisitante).nome if aocs.id_unidade_requisitante else 'N/D',
-        "local_entrega": local_repo.get_by_id(aocs.id_local_entrega).descricao if aocs.id_local_entrega else 'N/D',
-        "agente_responsavel": agente_repo.get_by_id(aocs.id_agente_responsavel).nome if aocs.id_agente_responsavel else 'N/D',
-        "info_orcamentaria": dotacao_repo.get_by_id(aocs.id_dotacao).info_orcamentaria if aocs.id_dotacao else 'N/D',
+        
+        "unidade_requisitante": unidade_obj.nome if unidade_obj else 'N/D',
+        "local_entrega": local_obj.descricao if local_obj else 'N/D',
+        "agente_responsavel": agente_obj.nome if agente_obj else 'N/D',
+        "info_orcamentaria": dotacao_obj.info_orcamentaria if dotacao_obj else 'N/D',
     }
 
     context = {
-        "url_for": request.app.url_path_for, "current_user": current_user,
-        "aocs": aocs_view, "itens": itens_view, "anexos": anexos, "cis_pagamento": cis_filtradas,
-        "unidades": unidades, "locais": locais, "responsaveis": responsaveis,
-        "dotacoes": dotacoes, "tipos_documento": tipos_documento,
+        "url_for": request.app.url_path_for, 
+        "current_user": current_user,
+        "aocs": aocs_view, 
+        "itens": itens_view, 
+        "anexos": anexos, 
+        "cis_pagamento": cis_filtradas,
+        
+        "unidades": unidades, 
+        "locais": locais, 
+        "responsaveis": responsaveis,
+        "dotacoes": dotacoes, 
+        "tipos_documento": tipos_documento,
+        
         "get_flashed_messages": lambda **kwargs: []
     }
     return templates.TemplateResponse(request, "detalhe_pedido.html", context)
@@ -792,3 +1294,58 @@ async def detalhe_pedido(request: Request, numero_aocs: str, current_user=Depend
 @router.get("/uploads/{path:path}", name="uploaded_file")
 async def uploaded_file(path: str):
      raise HTTPException(status_code=404, detail="Rota de upload não implementada ou insegura")
+ 
+@router.get("/api/tabelas-sistema/{tabela_nome}", dependencies=[Depends(require_access_level(2))])
+async def api_get_tabela(tabela_nome: str, db_conn: connection = Depends(get_db)):
+    config = TABELAS_GERENCIAVEIS.get(tabela_nome)
+    
+    if not config:
+        raise HTTPException(status_code=404, detail="Tabela não encontrada ou não gerenciável.")
+    
+    repo_class = config['repo']
+    repo = repo_class(db_conn)
+    
+    try:
+        itens = repo.get_all()
+        return itens
+    except Exception as e:
+        logger.error(f"Erro ao buscar tabela {tabela_nome}: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno ao buscar dados.")
+
+@router.post("/api/tabelas-sistema/{tabela_nome}", dependencies=[Depends(require_access_level(2))])
+async def api_post_tabela(tabela_nome: str, payload: dict = Body(...), db_conn: connection = Depends(get_db)):
+    """Rota genérica para inserir dados."""
+    config = TABELAS_GERENCIAVEIS.get(tabela_nome)
+    
+    if not config:
+        raise HTTPException(status_code=404, detail="Tabela não encontrada.")
+    
+    repo_class = config['repo']
+    repo = repo_class(db_conn)
+    
+    try:
+        item_obj = SimpleNamespace(**payload)
+        
+        novo_item = repo.create(item_obj) 
+        return novo_item
+        
+    except Exception as e:
+        logger.error(f"Erro ao inserir na tabela {tabela_nome}: {e}")
+        if "object has no attribute" in str(e):
+             raise HTTPException(status_code=400, detail=f"Campo incorreto para esta tabela. Erro técnico: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro ao salvar: {str(e)}")
+
+@router.delete("/api/tabelas-sistema/{tabela_nome}/{id_item}", dependencies=[Depends(require_access_level(1))])
+async def api_delete_tabela(tabela_nome: str, id_item: int, db_conn: connection = Depends(get_db)):
+    config = TABELAS_GERENCIAVEIS.get(tabela_nome)
+    if not config: raise HTTPException(status_code=404, detail="Tabela não encontrada.")
+    
+    repo = config['repo'](db_conn)
+    try:
+        sucesso = repo.delete(id_item)
+        if sucesso:
+            return {"message": "Item deletado com sucesso"}
+        else:
+            raise HTTPException(status_code=400, detail="Não foi possível deletar.")
+    except Exception as e:
+         raise HTTPException(status_code=500, detail=f"Erro ao deletar: {str(e)}")

@@ -130,7 +130,7 @@
 </head>
 <body>
     <header class="header">
-        <img src="{{ logo_url }}" alt="Brasão do Município">
+        <img src="{{ request.app.url_path_for('static', path='images/brasao.png') }}" alt="Brasão Municipal" class="brasao-img">
         <div class="header-text">
             <h2>MUNICÍPIO DE BRAÚNAS</h2>
             <h3>ESTADO DE MINAS GERAIS</h3>

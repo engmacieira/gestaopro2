@@ -125,8 +125,11 @@
 
 {% block scripts %}
 <script>
-    const idContratoGlobal = {{ contrato.id }};
-    const nomeContratoGlobal = "{{ contrato.numero_contrato }}";
+    window.idContratoGlobal = {{ contrato.id }};
+    window.nomeContratoGlobal = "{{ contrato.numero_contrato }}";
+    
+    console.log("Contrato carregado:", window.nomeContratoGlobal); 
 </script>
+
 <script src="{{ request.app.url_path_for('static', path='js/detalhe_contrato.js') }}" defer></script>
 {% endblock %}

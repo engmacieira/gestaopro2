@@ -1,37 +1,50 @@
 {% extends "base.html" %}
 
-{% block title %}Gerenciar Tabelas do Sistema - GestãoPRO{% endblock %}
+{% block title %}Gerenciar Tabelas - GestãoPRO{% endblock %}
 
 {% block content %}
 <div id="notification-area"></div>
 
 <header class="main-header">
-    <h1>Gerenciar Tabelas do Sistema</h1>
-    <p class="subtitle">Adicione, edite ou exclua os dados mestres do sistema.</p>
+    <h1><i class="fa-solid fa-database"></i> Tabelas do Sistema</h1>
+    <p class="subtitle">Gerencie as listas auxiliares e cadastros básicos.</p>
 </header>
 
-<div class="management-container">
-    <aside class="management-sidebar">
-        <nav>
-            {% for key, config in tabelas.items() %}
-                <a href="#" class="management-link" data-tabela="{{ key }}" data-nome-exibicao="{{ config.tabela|replace('_', ' ')|title }}">
-                    {{ config.tabela|replace('_', ' ')|title }}
-                </a>
-            {% endfor %}
-        </nav>
+<div class="management-container" style="display: flex; gap: 20px; align-items: flex-start;">
+    
+    <aside class="settings-sidebar" style="width: 260px; min-width: 260px;">
+        <div class="card" style="padding: 10px;">
+            <nav>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px;">
+                    {% for key, info in tabelas.items() %}
+                    <li>
+                        <button 
+                            class="nav-btn btn btn-light full-width" 
+                            style="text-align: left; width: 100%; justify-content: flex-start; padding: 10px;"
+                            data-target="{{ key }}" 
+                            data-coluna="{{ info.coluna }}"
+                        >
+                            {{ info.titulo }}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
     </aside>
 
-    <main class="management-content">
-        <div id="content-area">
-            <div class="empty-state">
-                <i class="fa-solid fa-arrow-left"></i>
+    <main class="management-content" style="flex-grow: 1; width: 100%;">
+        <div class="card full-width" style="min-height: 400px;">
+            
+            <div id="empty-state" style="text-align: center; padding: 60px 20px; color: #888;">
+                <i class="fa-solid fa-table-list" style="font-size: 48px; margin-bottom: 15px; color: #ddd;"></i>
                 <h2>Selecione uma tabela</h2>
-                <p>Escolha uma das tabelas no menu à esquerda para começar a gerenciar.</p>
+                <p>Clique em uma das opções do menu lateral para visualizar e gerenciar os registros.</p>
             </div>
+
+            {% include '_tabela_generica_crud.html' %}
+            
         </div>
-
-        {% include '_tabela_generica_crud.html' %}
-
     </main>
 </div>
 

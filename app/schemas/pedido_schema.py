@@ -22,3 +22,17 @@ class PedidoResponse(PedidoBase):
     data_pedido: date 
     
     model_config = ConfigDict(from_attributes=True)
+    
+class RegistrarEntregaRequest(BaseModel):
+    quantidade: Decimal = Field(..., gt=0)
+    data_entrega: date
+    nota_fiscal: str
+    
+class EntregaItemLote(BaseModel):
+    id_pedido: int
+    quantidade: Decimal = Field(..., gt=0)
+
+class RegistrarEntregaLoteRequest(BaseModel):
+    data_entrega: date
+    nota_fiscal: str
+    itens: list[EntregaItemLote]

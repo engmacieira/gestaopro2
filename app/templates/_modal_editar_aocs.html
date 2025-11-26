@@ -10,10 +10,7 @@
                 <div class="form-group span-2">
                     <label for="edit-aocs-unidade">Unidade Requisitante</label>
                     <select id="edit-aocs-unidade" name="unidade_requisitante" class="form-control" required>
-                        <option value="" disabled>Selecione...</option>
-                        {% for unidade in unidades %}
-                        <option value="{{ unidade }}">{{ unidade }}</option>
-                        {% endfor %}
+                        <option value="" disabled selected>Carregando...</option>
                     </select>
                 </div>
 
@@ -25,30 +22,21 @@
                 <div class="form-group span-2">
                     <label for="edit-aocs-orcamento">Informação Orçamentária</label>
                     <select id="edit-aocs-orcamento" name="info_orcamentaria" class="form-control" required>
-                        <option value="" disabled>Selecione...</option>
-                        {% for dotacao in dotacoes %}
-                        <option value="{{ dotacao }}">{{ dotacao }}</option>
-                        {% endfor %}
+                        <option value="" disabled selected>Carregando...</option>
                     </select>
                 </div>
 
                 <div class="form-group span-2">
                     <label for="edit-aocs-local-entrega">Local de Entrega</label>
                     <select id="edit-aocs-local-entrega" name="local_entrega" class="form-control" required>
-                        <option value="" disabled>Selecione...</option>
-                        {% for local in locais %}
-                        <option value="{{ local }}">{{ local }}</option>
-                        {% endfor %}
+                        <option value="" disabled selected>Carregando...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="edit-aocs-responsavel">Agente Responsável</label>
                     <select id="edit-aocs-responsavel" name="agente_responsavel" class="form-control" required>
-                        <option value="" disabled>Selecione...</option>
-                        {% for responsavel in responsaveis %}
-                        <option value="{{ responsavel }}">{{ responsavel }}</option>
-                        {% endfor %}
+                        <option value="" disabled selected>Carregando...</option>
                     </select>
                 </div>
 

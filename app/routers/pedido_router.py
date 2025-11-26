@@ -9,6 +9,13 @@ from app.models.user_model import User
 from app.models.pedido_model import Pedido 
 from app.schemas.pedido_schema import PedidoCreateRequest, PedidoUpdateRequest, PedidoResponse
 from app.repositories.pedido_repository import PedidoRepository 
+from app.schemas.pedido_schema import (
+    PedidoCreateRequest, 
+    PedidoUpdateRequest, 
+    PedidoResponse, 
+    RegistrarEntregaRequest,
+    RegistrarEntregaLoteRequest # <--- Adicione este import
+)
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +158,49 @@ def update_pedido(
         logger.exception(f"Erro inesperado ao atualizar Pedido ID {id} por '{current_user.username}': {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
 
+@router.put("/{id}/registrar-entrega",
+            response_model=PedidoResponse,
+            dependencies=[Depends(require_access_level(2))])
+def registrar_entrega(
+    id: int,
+    entrega_req: RegistrarEntregaRequest,
+    db_conn: connection = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    repo = PedidoRepository(db_conn)
+    pedido_atual = repo.get_by_id(id)
+    
+    if not pedido_atual:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado.")
+
+    # 1. Calcula a nova quantidade total entregue
+    nova_qtd_entregue = pedido_atual.quantidade_entregue + entrega_req.quantidade
+    
+    # Validação básica (opcional: impedir entregar mais que o pedido)
+    # if nova_qtd_entregue > pedido_atual.quantidade_pedida:
+    #     raise HTTPException(status_code=400, detail="Quantidade excede o total do pedido.")
+
+    # 2. Define o novo status
+    novo_status = "Entrega Parcial"
+    if nova_qtd_entregue >= pedido_atual.quantidade_pedida:
+        novo_status = "Entregue"
+
+    # 3. Atualiza no Banco
+    # Aqui convertemos nosso request específico para o update genérico do repositório
+    update_data = PedidoUpdateRequest(
+        quantidade_entregue=nova_qtd_entregue,
+        status_entrega=novo_status
+    )
+    
+    # TODO: Se tiver tabela de 'Histórico de Entregas', salvar nota_fiscal e data_entrega lá.
+    # Por enquanto, atualizamos apenas o saldo do pedido.
+    
+    pedido_atualizado = repo.update(id, update_data)
+    
+    logger.info(f"Entrega registrada por '{current_user.username}': Pedido {id} recebeu +{entrega_req.quantidade}. Status: {novo_status}")
+    
+    return pedido_atualizado
+
 @router.delete("/{id}",
                status_code=status.HTTP_204_NO_CONTENT,
                dependencies=[Depends(require_access_level(2))])
@@ -181,3 +231,22 @@ def delete_pedido(
     except Exception as e:
         logger.exception(f"Erro inesperado ao deletar Pedido ID {id} por '{current_user.username}': {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor.")
+    
+@router.post("/entrega-lote", status_code=status.HTTP_200_OK, dependencies=[Depends(require_access_level(2))])
+def registrar_entrega_lote(
+    lote_req: RegistrarEntregaLoteRequest,
+    db_conn: connection = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        repo = PedidoRepository(db_conn)
+        resultado = repo.registrar_entrega_lote(lote_req)
+        
+        logger.info(f"Usuário '{current_user.username}' registrou entrega em lote de {resultado['qtd_itens']} itens.")
+        return {"mensagem": "Entregas registradas com sucesso!", "detalhes": resultado}
+        
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.exception(f"Erro na rota de entrega em lote: {e}")
+        raise HTTPException(status_code=500, detail="Erro ao processar entregas em lote.")

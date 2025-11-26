@@ -1,27 +1,33 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    let idPedidoParaEntrega = null;
-
+    // --- Elementos Globais ---
     const notificationArea = document.querySelector('.main-content #notification-area');
+    let idPedidoParaEntrega = null;
+    let listasCarregadas = false; // Cache para não buscar listas toda vez
+
+    // --- Inicialização de Mensagens (Pós-Reload) ---
+    const msg = sessionStorage.getItem('notificationMessage');
+    if (msg) {
+        showNotification(msg, sessionStorage.getItem('notificationType') || 'success');
+        sessionStorage.removeItem('notificationMessage');
+        sessionStorage.removeItem('notificationType');
+    }
+
+    // --- Funções Auxiliares ---
 
     function showNotification(message, type = 'error') {
-        if (!notificationArea) { console.error("Notification area not found!"); return; }
-
-        const initialFlash = notificationArea.querySelector('.notification.flash');
-        if(initialFlash) initialFlash.remove();
-
-        const existing = notificationArea.querySelector('.notification:not(.flash)');
-        if(existing) existing.remove();
-
+        if (!notificationArea) { alert(message); return; }
+        
+        notificationArea.innerHTML = '';
+        
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
         notificationArea.prepend(notification); 
+        
         setTimeout(() => {
-            if (notification) {
-                notification.style.opacity = '0';
-                notification.addEventListener('transitionend', () => notification.remove());
-            }
+            notification.style.opacity = '0';
+            notification.addEventListener('transitionend', () => notification.remove());
         }, 5000);
     }
 
@@ -41,49 +47,173 @@ document.addEventListener('DOMContentLoaded', function() {
         return num;
     }
 
-    const msg = sessionStorage.getItem('notificationMessage');
-    if (msg) {
-        showNotification(msg, sessionStorage.getItem('notificationType') || 'success');
-        sessionStorage.removeItem('notificationMessage');
-        sessionStorage.removeItem('notificationType');
-    }
-
+    // --- FUNÇÃO DE ATUALIZAÇÃO GENÉRICA (Para Data, Número e Empenho) ---
     async function updateAocsField(campo, valor) {
-        const encodedAOCS = encodeURIComponent(numeroAOCSGlobal);
+        // Usa o ID global da AOCS para maior segurança
+        const aocsId = window.aocsDadosAtuais ? window.aocsDadosAtuais.id : null;
+        
+        if (!aocsId) {
+            showNotification("Erro: ID da AOCS não encontrado. Recarregue a página.", "error");
+            return;
+        }
+
         try {
-            const response = await fetch(`/api/aocs/${encodedAOCS}/dados-gerais`, { 
+            // Payload dinâmico: { "data_criacao": "2023-01-01" } ou { "numero_pedido": "123" }
+            const payload = {};
+            payload[campo] = valor;
+
+            const response = await fetch(`/api/aocs/${aocsId}`, { 
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ [campo]: valor })
+                body: JSON.stringify(payload)
             });
-            const resultado = await response.json();
             
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao atualizar campo.`);
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || err.erro || `Erro ${response.status}`);
+            }
             
-            showNotification(resultado.mensagem || 'Campo atualizado.', 'success');
+            showNotification('Atualizado com sucesso.', 'success');
         } catch (error) {
-            showNotification(`Erro ao atualizar ${campo}: ${error.message}`, 'error');
+            showNotification(`Erro ao atualizar: ${error.message}`, 'error');
         }
     }
 
-    async function updateAocsDate(data) {
-        const encodedAOCS = encodeURIComponent(numeroAOCSGlobal);
-         try {
-            const response = await fetch(`/api/aocs/${encodedAOCS}/data`, { 
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data_criacao: data }) 
-            });
-            const resultado = await response.json();
-            
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao atualizar data.`);
-            
-            showNotification(resultado.mensagem || 'Data atualizada.', 'success');
+    // --- LISTENERS DOS INPUTS DE EDIÇÃO RÁPIDA ---
+    const numPedidoInput = document.getElementById('numero-pedido-input');
+    const empenhoInput = document.getElementById('empenho-input');
+    const dataPedidoInput = document.getElementById('data_pedido_input');
+
+    if (numPedidoInput) {
+        numPedidoInput.addEventListener('change', (e) => updateAocsField('numero_pedido', e.target.value));
+    }
+    
+    if (empenhoInput) {
+        empenhoInput.addEventListener('change', (e) => updateAocsField('empenho', e.target.value));
+    }
+    
+    // [CORREÇÃO DA DATA] Agora usa a mesma função genérica, apontando para 'data_criacao'
+    if (dataPedidoInput) {
+        dataPedidoInput.addEventListener('change', (e) => updateAocsField('data_criacao', e.target.value));
+    }
+
+    // --- CARREGAMENTO DE DROPDOWNS (Para o Modal de Edição) ---
+    async function carregarListasDropdowns() {
+        if (listasCarregadas) return; 
+
+        try {
+            const [unidades, locais, agentes, dotacoes] = await Promise.all([
+                fetch('/api/tabelas-sistema/unidade-requisitante').then(r => r.json()),
+                fetch('/api/tabelas-sistema/local-entrega').then(r => r.json()),
+                fetch('/api/tabelas-sistema/agente-responsavel').then(r => r.json()),
+                fetch('/api/tabelas-sistema/dotacao').then(r => r.json())
+            ]);
+
+            const popularSelect = (id, dados, campoTexto) => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                
+                select.innerHTML = '<option value="" disabled selected>Selecione...</option>';
+                
+                dados.forEach(item => {
+                    const valor = item[campoTexto] || item.nome || item.descricao || '---';
+                    const option = document.createElement('option');
+                    option.value = valor;
+                    option.textContent = valor;
+                    select.appendChild(option);
+                });
+            };
+
+            popularSelect('edit-aocs-unidade', unidades, 'nome');
+            popularSelect('edit-aocs-local-entrega', locais, 'descricao');
+            popularSelect('edit-aocs-responsavel', agentes, 'nome');
+            popularSelect('edit-aocs-orcamento', dotacoes, 'info_orcamentaria');
+
+            listasCarregadas = true;
+
         } catch (error) {
-            showNotification(`Erro ao atualizar data: ${error.message}`, 'error');
+            console.error("Erro ao carregar listas:", error);
+            showNotification("Erro ao carregar opções dos formulários.", "error");
         }
     }
 
+    // --- MODAL: EDIÇÃO DE DADOS DA AOCS ---
+    const modalEdicao = document.getElementById('modal-edicao-aocs');
+    const btnAbrirModalEdicao = document.getElementById('btn-abrir-modal-edicao'); 
+    const formEdicao = modalEdicao?.querySelector('#form-edicao-aocs');
+
+    if (modalEdicao && btnAbrirModalEdicao && formEdicao) {
+        
+        btnAbrirModalEdicao.addEventListener('click', async () => {
+            await carregarListasDropdowns(); // Garante que as opções existam
+
+            const dados = window.aocsDadosAtuais; // Pega dados atuais da tela
+            
+            if (dados) {
+                // Preenche os campos
+                const setVal = (name, val) => {
+                    if (formEdicao.elements[name]) formEdicao.elements[name].value = val;
+                };
+
+                setVal('unidade_requisitante', dados.unidade_requisitante);
+                setVal('justificativa', dados.justificativa);
+                setVal('info_orcamentaria', dados.info_orcamentaria);
+                setVal('local_entrega', dados.local_entrega);
+                setVal('agente_responsavel', dados.agente_responsavel);
+
+                modalEdicao.style.display = 'flex';
+            } else {
+                showNotification("Erro: Dados da AOCS não carregados.", "error");
+            }
+        });
+
+        modalEdicao.querySelectorAll('.close-button').forEach(btn => {
+            btn.addEventListener('click', () => modalEdicao.style.display = 'none');
+        });
+
+        formEdicao.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(formEdicao);
+            
+            const payload = {
+                unidade_requisitante_nome: formData.get('unidade_requisitante'),
+                justificativa: formData.get('justificativa'),
+                dotacao_info_orcamentaria: formData.get('info_orcamentaria'),
+                local_entrega_descricao: formData.get('local_entrega'),
+                agente_responsavel_nome: formData.get('agente_responsavel')
+            };
+
+            const submitButton = this.querySelector('button[type="submit"]');
+            if(submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+            }
+
+            try {
+                const aocsId = window.aocsDadosAtuais.id;
+                const response = await fetch(`/api/aocs/${aocsId}`, { 
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload) 
+                });
+                
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Erro ao salvar');
+                }
+                reloadPageWithMessage('Dados da AOCS atualizados!', 'success');
+            } catch (error) {
+                showNotification(`Erro ao salvar: ${error.message}`, 'error');
+            } finally {
+                if(submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
+                }
+            }
+        });
+    }
+
+    // --- MODAL: REGISTRAR ENTREGA ---
     const modalEntrega = document.getElementById('modal-registrar-entrega');
     const formEntrega = modalEntrega?.querySelector('#form-registrar-entrega');
     const inputQtdEntrega = modalEntrega?.querySelector('#quantidade_entregue');
@@ -92,291 +222,242 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataEntregaInput = modalEntrega?.querySelector('#data_entrega'); 
 
     window.abrirModalEntrega = function(idPedido, descricao, saldo) {
-        if (!modalEntrega || !inputQtdEntrega || !descModalEntrega || !saldoModalEntrega || !dataEntregaInput) {
-            console.error("Elementos do modal de entrega não encontrados!");
-            showNotification("Erro ao abrir modal de entrega.", "error");
-            return;
-        }
+        if (!modalEntrega) return;
         idPedidoParaEntrega = idPedido;
-        descModalEntrega.textContent = descricao; 
         
-        const saldoFormatado = saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        saldoModalEntrega.textContent = saldoFormatado; 
+        if(descModalEntrega) descModalEntrega.textContent = descricao;
         
-        inputQtdEntrega.value = saldoFormatado;
-        inputQtdEntrega.max = saldo; 
-        inputQtdEntrega.placeholder = saldoFormatado; 
+        const saldoFmt = saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        if(saldoModalEntrega) saldoModalEntrega.textContent = saldoFmt;
         
-        dataEntregaInput.valueAsDate = new Date(); 
-        formEntrega.reset(); 
-        formEntrega.elements['item_pedido_id'].value = idPedido;
-        formEntrega.elements['quantidade_entregue'].value = saldoFormatado; 
-
+        if(inputQtdEntrega) {
+            inputQtdEntrega.value = saldoFmt;
+            inputQtdEntrega.max = saldo;
+        }
+        if(dataEntregaInput) dataEntregaInput.valueAsDate = new Date();
+        
+        formEntrega.reset();
+        if(inputQtdEntrega) inputQtdEntrega.value = saldoFmt;
+        
         modalEntrega.style.display = 'flex';
-        inputQtdEntrega.focus();
-        inputQtdEntrega.select();
+        if(inputQtdEntrega) { inputQtdEntrega.focus(); inputQtdEntrega.select(); }
     }
 
     if (modalEntrega) {
-        const fecharModalEntrega = () => { modalEntrega.style.display = 'none'; };
-        modalEntrega.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', fecharModalEntrega));
+        modalEntrega.querySelectorAll('.close-button').forEach(btn => {
+            btn.addEventListener('click', () => modalEntrega.style.display = 'none');
+        });
     }
 
     if (formEntrega) {
         formEntrega.addEventListener('submit', async function(event) {
              event.preventDefault();
-             const formData = new FormData(formEntrega);
-             const dados = Object.fromEntries(formData.entries());
+             const dados = Object.fromEntries(new FormData(formEntrega).entries());
 
-             let quantidadeEntregueNum;
-             const max = parseFloat(inputQtdEntrega.max); 
-             
+             let qtdNum;
              try {
-                quantidadeEntregueNum = parseBrazilianFloat(dados.quantidade_entregue);
-                
-                 if (quantidadeEntregueNum <= 0 || quantidadeEntregueNum > max) {
-                    throw new Error(`Quantidade inválida. Deve ser maior que 0 e no máximo ${max.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`);
-                 }
+                qtdNum = parseBrazilianFloat(dados.quantidade_entregue);
+                if (qtdNum <= 0) throw new Error("Quantidade deve ser maior que zero.");
              } catch(e) {
                  showNotification(e.message, 'error');
                  return;
              }
 
-             if (!dados.data_entrega) { showNotification("Data da entrega é obrigatória.", "error"); return; }
-             if (!dados.nota_fiscal || dados.nota_fiscal.trim() === "") { showNotification("Número da Nota Fiscal/Documento é obrigatório.", "error"); return; }
+             if (!dados.data_entrega) { showNotification("Data obrigatória.", "error"); return; }
+             if (!dados.nota_fiscal) { showNotification("Nota Fiscal obrigatória.", "error"); return; }
 
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Confirmando...';
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ...';
 
             try {
                 const response = await fetch(`/api/pedidos/${idPedidoParaEntrega}/registrar-entrega`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        quantidade: quantidadeEntregueNum.toFixed(2), 
+                        quantidade: qtdNum.toFixed(2), 
                         data_entrega: dados.data_entrega,
                         nota_fiscal: dados.nota_fiscal
                     })
                 });
                 
-                const resultado = await response.json();
-                
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao registrar entrega`);
-
-                const pedidoAtualizado = resultado; 
-                
-                reloadPageWithMessage(`Entrega de ${pedidoAtualizado.quantidade_entregue} registrada com sucesso!`, 'success');
-                
+                if (!response.ok) {
+                    const res = await response.json();
+                    throw new Error(res.detail || 'Erro ao registrar entrega');
+                }
+                reloadPageWithMessage('Entrega registrada com sucesso!', 'success');
             } catch (error) {
                 showNotification(`Erro: ${error.message}`);
             } finally {
-                submitButton.disabled = false;
-                 submitButton.innerHTML = '<i class="fa-solid fa-truck-ramp-box"></i> Confirmar Entrega';
+                btn.disabled = false;
+                btn.innerHTML = 'Confirmar';
             }
         });
-    } else {
-        console.error("Formulário de registro de entrega não encontrado.");
     }
 
-    const numPedidoInput = document.getElementById('numero-pedido-input');
-    const empenhoInput = document.getElementById('empenho-input');
-    const dataPedidoInput = document.getElementById('data_pedido_input');
-
-    if (numPedidoInput) numPedidoInput.addEventListener('change', (e) => updateAocsField(e.target.dataset.campo, e.target.value));
-    if (empenhoInput) empenhoInput.addEventListener('change', (e) => updateAocsField(e.target.dataset.campo, e.target.value));
-    if (dataPedidoInput) dataPedidoInput.addEventListener('change', (e) => updateAocsDate(e.target.value));
-
-    const modalEdicao = document.getElementById('modal-edicao-aocs');
-    const btnAbrirModalEdicao = document.getElementById('btn-abrir-modal-edicao'); 
-    const formEdicao = modalEdicao?.querySelector('#form-edicao-aocs');
-
-    if (modalEdicao && btnAbrirModalEdicao && formEdicao) {
-        btnAbrirModalEdicao.addEventListener('click', async () => {
-             const encodedAOCS = encodeURIComponent(numeroAOCSGlobal);
-             try {
-                const response = await fetch(`/api/aocs/numero/${encodedAOCS}`); 
-                const aocsDados = await response.json();
-                if (!response.ok) throw new Error(aocsDados.detail || aocsDados.erro || 'Erro ao carregar dados da AOCS');
-
-                formEdicao.elements['unidade_requisitante'].value = aocsDados.unidade_requisitante_nome || '';
-                formEdicao.elements['justificativa'].value = aocsDados.justificativa || '';
-                formEdicao.elements['info_orcamentaria'].value = aocsDados.dotacao_info_orcamentaria || ''; 
-                formEdicao.elements['local_entrega'].value = aocsDados.local_entrega_descricao || ''; 
-                formEdicao.elements['agente_responsavel'].value = aocsDados.agente_responsavel_nome || ''; 
-
-                modalEdicao.style.display = 'flex';
-            } catch (error) {
-                showNotification(`Erro ao carregar dados para edição: ${error.message}`, 'error');
-            }
-        });
-
-        const fecharModalEdicao = () => { modalEdicao.style.display = 'none'; };
-        modalEdicao.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', fecharModalEdicao));
-
-        formEdicao.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const dadosParaSalvar = Object.fromEntries(new FormData(formEdicao).entries());
-            const payload = {
-                unidade_requisitante_nome: dadosParaSalvar.unidade_requisitante,
-                justificativa: dadosParaSalvar.justificativa,
-                dotacao_info_orcamentaria: dadosParaSalvar.info_orcamentaria,
-                local_entrega_descricao: dadosParaSalvar.local_entrega,
-                agente_responsavel_nome: dadosParaSalvar.agente_responsavel
-            };
-
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-
-            const encodedAOCS = encodeURIComponent(numeroAOCSGlobal);
-            try {
-                 const getResponse = await fetch(`/api/aocs/numero/${encodedAOCS}`);
-                 const aocsData = await getResponse.json();
-                 if (!getResponse.ok) throw new Error("AOCS não encontrada para obter ID.");
-                 const aocsId = aocsData.id;
-
-                const response = await fetch(`/api/aocs/${aocsId}`, { 
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload) 
-                });
-                const resultado = await response.json();
-                
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao salvar alterações`);
-                
-                const aocsAtualizada = resultado;
-
-                reloadPageWithMessage(`Dados da AOCS ${aocsAtualizada.numero_aocs} atualizados!`, 'success');
-            } catch (error) {
-                showNotification(`Erro ao salvar: ${error.message}`, 'error');
-            } finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Alterações';
-            }
-        });
-    } else {
-        console.error("Elementos do modal de edição da AOCS não foram completamente encontrados.");
-    }
-
+    // --- FORMULÁRIO DE ANEXOS ---
     const formAnexos = document.getElementById('form-anexos'); 
-    const tipoDocumentoSelectAnexo = formAnexos?.querySelector('#tipo_documento_select');
-    const tipoDocumentoNovoInputAnexo = formAnexos?.querySelector('#tipo_documento_novo');
-    const anexoFileInput = formAnexos?.querySelector('#file'); 
+    if (formAnexos) {
+        const tipoSelect = formAnexos.querySelector('#tipo_documento_select');
+        const tipoNovo = formAnexos.querySelector('#tipo_documento_novo');
+        const fileInput = formAnexos.querySelector('#file'); 
 
-    if (formAnexos && tipoDocumentoSelectAnexo && tipoDocumentoNovoInputAnexo && anexoFileInput) {
-        tipoDocumentoSelectAnexo.addEventListener('change', function() {
-            const isNovo = this.value === 'NOVO';
-            tipoDocumentoNovoInputAnexo.style.display = isNovo ? 'block' : 'none';
-            tipoDocumentoNovoInputAnexo.required = isNovo;
-            if (!isNovo) tipoDocumentoNovoInputAnexo.value = '';
-        });
+        if (tipoSelect && tipoNovo) {
+            tipoSelect.addEventListener('change', function() {
+                const isNovo = this.value === 'NOVO';
+                tipoNovo.style.display = isNovo ? 'block' : 'none';
+                tipoNovo.required = isNovo;
+            });
+        }
 
-        formAnexos.addEventListener('submit', async function(event) {
-            event.preventDefault();
+        formAnexos.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!fileInput.files.length) { showNotification("Selecione um arquivo.", "error"); return; }
+            
             const formData = new FormData(formAnexos);
-            const submitButton = this.querySelector('button[type="submit"]');
-
-            if (!anexoFileInput.files || anexoFileInput.files.length === 0) {
-                 showNotification("Selecione um arquivo.", "error"); return;
-            }
-            const tipoDoc = formData.get('tipo_documento');
-            const novoTipo = formData.get('tipo_documento_novo');
-             if (tipoDoc === 'NOVO' && (!novoTipo || novoTipo.trim() === '')) {
-                 showNotification("Informe o nome do novo tipo.", "error"); return;
-            }
-            if (!tipoDoc && tipoDoc !== 'NOVO') { 
-                 showNotification("Selecione ou crie um tipo.", "error"); return;
-            }
-
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = 'Enviando...';
 
             try {
                 const response = await fetch(formAnexos.action, { method: 'POST', body: formData });
-                
-                 if (response.status === 204) {
-                     formAnexos.reset();
-                     if(tipoDocumentoNovoInputAnexo) tipoDocumentoNovoInputAnexo.style.display = 'none';
-                     reloadPageWithMessage('Anexo enviado com sucesso!', 'success');
-                     return;
-                 }
-                 
-                const resultado = await response.json(); 
-                
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status}`);
-
-                formAnexos.reset();
-                 if(tipoDocumentoNovoInputAnexo) tipoDocumentoNovoInputAnexo.style.display = 'none';
-                reloadPageWithMessage('Anexo enviado com sucesso!', 'success');
-
+                if (!response.ok) {
+                    const res = await response.json();
+                    throw new Error(res.detail || 'Erro ao enviar');
+                }
+                reloadPageWithMessage('Anexo enviado!', 'success');
             } catch (error) {
-                showNotification(`Erro ao enviar anexo: ${error.message}`, 'error');
+                showNotification(error.message, 'error');
             } finally {
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fa-solid fa-upload"></i> Enviar Anexo';
+                btn.disabled = false;
+                btn.innerHTML = 'Enviar Anexo';
             }
         });
-    } else {
-         console.error("Elementos do formulário de anexos não encontrados.");
     }
 
     window.excluirAnexo = async function(idAnexo, nomeOriginal) {
-         if (!confirm(`Tem certeza que deseja excluir o anexo "${nomeOriginal}"?`)) return;
+         if (!confirm(`Excluir o anexo "${nomeOriginal}"?`)) return;
         try {
             const response = await fetch(`/api/anexos/${idAnexo}`, { method: 'DELETE' });
-
-            if (response.status === 204) { 
-                 reloadPageWithMessage("Anexo excluído com sucesso.", 'success');
-                 return;
-            }
-            const resultado = await response.json();
-            if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao excluir anexo');
-            reloadPageWithMessage(resultado.mensagem || "Anexo excluído.", 'success');
-
+            if (!response.ok) throw new Error('Erro ao excluir');
+            reloadPageWithMessage("Anexo excluído.", 'success');
         } catch (error) {
-            showNotification(`Erro ao excluir anexo: ${error.message}`);
+            showNotification(error.message);
         }
     }
 
+    // --- EXCLUIR AOCS ---
     const btnExcluirAOCS = document.getElementById('btn-excluir-aocs'); 
     if (btnExcluirAOCS) {
         btnExcluirAOCS.addEventListener('click', async function() {
-            if (!confirm(`ATENÇÃO: Ação irreversível!\n\nExcluir a AOCS nº ${numeroAOCSGlobal} irá apagar todos os registos de entrega associados.\nDeseja continuar?`)) return;
+            if (!confirm(`ATENÇÃO: Excluir a AOCS ${numeroAOCSGlobal} apagará tudo. Continuar?`)) return;
 
-            const encodedAOCS = encodeURIComponent(numeroAOCSGlobal);
             try {
-                 const getResponse = await fetch(`/api/aocs/numero/${encodedAOCS}`);
-                 const aocsData = await getResponse.json();
-                 if (!getResponse.ok) throw new Error("AOCS não encontrada para obter ID.");
-                 const aocsId = aocsData.id;
-
+                const aocsId = window.aocsDadosAtuais.id;
                 const response = await fetch(`/api/aocs/${aocsId}`, { method: 'DELETE' }); 
-
-                if (response.status === 204) { 
-                    sessionStorage.setItem('notificationMessage', `AOCS ${numeroAOCSGlobal} excluída com sucesso.`);
-                    sessionStorage.setItem('notificationType', 'success');
-                    window.location.href = document.querySelector('.back-link').href; 
-                    return;
-                }
+                if (!response.ok) throw new Error('Erro ao excluir');
                 
-                const resultado = await response.json();
-                if (!response.ok) throw new Error(resultado.detail || resultado.erro || 'Erro ao excluir AOCS');
-                 
-                 sessionStorage.setItem('notificationMessage', resultado.mensagem || `AOCS ${numeroAOCSGlobal} excluída.`);
-                 sessionStorage.setItem('notificationType', 'success');
-                 window.location.href = document.querySelector('.back-link').href;
-
-
+                window.location.href = document.querySelector('.back-link').href; 
             } catch (error) {
-                showNotification(`Erro ao excluir AOCS: ${error.message}`, 'error');
+                showNotification(error.message, 'error');
             }
         });
     }
 
-     window.addEventListener('click', (event) => {
-         if (modalEdicao && event.target == modalEdicao) modalEdicao.style.display = 'none';
-         if (modalEntrega && event.target == modalEntrega) modalEntrega.style.display = 'none';
-     });
-
+    // Fecha modais ao clicar fora
+    window.addEventListener('click', (event) => {
+        if (modalEdicao && event.target == modalEdicao) modalEdicao.style.display = 'none';
+        if (modalEntrega && event.target == modalEntrega) modalEntrega.style.display = 'none';
+    });
 });
+
+// ... código existente ...
+
+    // --- LÓGICA DE ENTREGA EM LOTE ---
+    const modalLote = document.getElementById('modal-entrega-lote');
+    const btnLote = document.getElementById('btn-entrega-lote');
+    const formLote = document.getElementById('form-entrega-lote');
+
+    if (btnLote && modalLote) {
+        btnLote.addEventListener('click', () => {
+            // Define data de hoje como padrão
+            const inputData = modalLote.querySelector('#lote_data_entrega');
+            if(inputData) inputData.valueAsDate = new Date();
+            
+            modalLote.style.display = 'flex';
+        });
+
+        modalLote.querySelectorAll('.close-button').forEach(btn => {
+            btn.addEventListener('click', () => modalLote.style.display = 'none');
+        });
+    }
+
+    if (formLote) {
+        formLote.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const dataEntrega = formLote.querySelector('#lote_data_entrega').value;
+            const notaFiscal = formLote.querySelector('#lote_nota_fiscal').value;
+            
+            if (!dataEntrega || !notaFiscal) {
+                showNotification("Preencha Data e Nota Fiscal.", "error");
+                return;
+            }
+
+            // Coleta os itens marcados
+            const itensParaEnviar = [];
+            const rows = formLote.querySelectorAll('.item-row');
+            
+            rows.forEach(row => {
+                const check = row.querySelector('.item-check');
+                const inputQtd = row.querySelector('.item-qtd');
+                const idPedido = row.dataset.id;
+                
+                if (check && check.checked && inputQtd) {
+                    const qtd = parseFloat(inputQtd.value);
+                    if (qtd > 0) {
+                        itensParaEnviar.push({
+                            id_pedido: parseInt(idPedido),
+                            quantidade: qtd
+                        });
+                    }
+                }
+            });
+
+            if (itensParaEnviar.length === 0) {
+                showNotification("Nenhum item selecionado para entrega.", "warning");
+                return;
+            }
+
+            // Monta Payload
+            const payload = {
+                data_entrega: dataEntrega,
+                nota_fiscal: notaFiscal,
+                itens: itensParaEnviar
+            };
+
+            const btn = formLote.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = 'Processando...';
+
+            try {
+                const response = await fetch('/api/pedidos/entrega-lote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Erro ao processar lote');
+                }
+
+                reloadPageWithMessage('Entrega em lote registrada com sucesso!', 'success');
+
+            } catch (error) {
+                showNotification(`Erro: ${error.message}`, 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Tentar Novamente';
+            }
+        });
+    }

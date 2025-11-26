@@ -461,3 +461,16 @@ body {
 .status-overview .detail-item strong { font-size: 1.2em; }
 .status-overview .status-badge { font-size: 1em; padding: 6px 12px; }
 .status-overview .status-badge.blue { background-color: rgba(13, 110, 253, 0.1); color: var(--action-primary); }
+
+.dropdown-content a:hover {background-color: #f1f1f1;}
+
+body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .brasao-img {
+        max-width: 100px;
+        height: auto;
+        display: block !important;
+    }

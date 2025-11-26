@@ -1,0 +1,74 @@
+{% extends "relatorios_base.html" %}
+
+{% block relatorio_title %}
+    {% if filtro == 'pendentes' %}
+        Relatório de AOCS Pendentes e Parciais
+    {% else %}
+        Relatório Geral de AOCS Emitidas
+    {% endif %}
+{% endblock %}
+
+{% block unidade_requisitante %}Gestão de Contratos e Compras{% endblock %}
+
+{% block relatorio_content %}
+    <div class="title">
+        {% if filtro == 'pendentes' %}
+            RELAÇÃO DE ORDENS DE COMPRA COM ENTREGA PENDENTE
+        {% else %}
+            RELAÇÃO GERAL DE ORDENS DE COMPRA (AOCS)
+        {% endif %}
+    </div>
+
+    <div class="section-box">
+        <div class="section-title">Data de Emissão: {{ data_emissao }}</div>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Nº AOCS</th>
+                    <th style="width: 35%;">Fornecedor</th>
+                    <th style="width: 15%;" class="text-right">Valor Total</th>
+                    <th style="width: 15%;" class="text-center">Data Emissão</th>
+                    <th style="width: 25%;" class="text-center">Status Entrega</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in lista_aocs %}
+                <tr>
+                    <td><strong>{{ item.numero_aocs }}</strong></td>
+                    <td>{{ item.fornecedor }}</td>
+                    <td class="text-right">R$ {{ "%.2f"|format(item.valor_total)|replace('.', ',') }}</td>
+                    <td class="text-center">{{ item.data_pedido.strftime('%d/%m/%Y') if item.data_pedido else '-' }}</td>
+                    <td class="text-center">
+                        {% if item.status_entrega == 'Entregue' %}
+                            <span style="color: green; font-weight: bold;">TOTAL</span>
+                        {% elif item.status_entrega == 'Parcial' %}
+                            <span style="color: orange; font-weight: bold;">PARCIAL</span>
+                        {% elif item.status_entrega == 'Pendente' %}
+                            <span style="color: red; font-weight: bold;">PENDENTE</span>
+                        {% else %}
+                            <span style="color: gray;">{{ item.status_entrega }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <tr class="total-row">
+                    <td colspan="2" class="text-right"><strong>TOTAIS DO RELATÓRIO</strong></td>
+                    <td class="text-right"><strong>R$ {{ "%.2f"|format(total_geral_valor)|replace('.', ',') }}</strong></td>
+                    <td colspan="2"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-box" style="margin-top: 20px; border: none;">
+        <p><strong>Total de Registros:</strong> {{ lista_aocs|length }} AOCS listadas.</p>
+    </div>
+    
+    <footer class="footer">
+        <div style="text-align: center; font-size: 9pt; color: #666; margin-top: 2cm;">
+            Relatório gerado automaticamente pelo sistema GestãoPRO em {{ data_emissao }}.
+        </div>
+    </footer>
+{% endblock %}

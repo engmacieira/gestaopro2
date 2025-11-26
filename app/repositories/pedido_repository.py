@@ -5,7 +5,7 @@ from datetime import date
 from decimal import Decimal 
 import logging
 from app.models.pedido_model import Pedido 
-from app.schemas.pedido_schema import PedidoCreateRequest, PedidoUpdateRequest 
+from app.schemas.pedido_schema import PedidoCreateRequest, PedidoUpdateRequest, RegistrarEntregaLoteRequest 
 from .item_repository import ItemRepository 
 from .aocs_repository import AocsRepository 
 
@@ -270,6 +270,92 @@ class PedidoRepository:
         except (Exception, psycopg2.DatabaseError) as error:
             if self.db_conn: self.db_conn.rollback()
             logger.exception(f"Erro inesperado ao deletar Pedido ID {id}: {error}")
+            raise error
+        finally:
+            if cursor: cursor.close()
+            
+    def get_pendentes_dashboard(self, limite: int = 10) -> list[dict]:
+        """
+        Busca pedidos pendentes com detalhes de AOCS e Contrato para exibição no Dashboard.
+        Retorna uma lista de dicionários.
+        """
+        cursor = None
+        try:
+            cursor = self.db_conn.cursor(cursor_factory=DictCursor)
+            sql = """
+                SELECT 
+                    p.id,
+                    a.numero_aocs,
+                    c.numero_contrato,
+                    a.data_criacao as data_pedido,
+                    CURRENT_DATE - a.data_criacao AS dias_passados
+                FROM pedidos p
+                JOIN aocs a ON p.id_aocs = a.id
+                JOIN itenscontrato ic ON p.id_item_contrato = ic.id
+                JOIN contratos c ON ic.id_contrato = c.id
+                WHERE p.status_entrega NOT IN ('Entregue', 'Cancelado')
+                ORDER BY dias_passados DESC
+                LIMIT %s
+            """
+            cursor.execute(sql, (limite,))
+            rows = cursor.fetchall()
+            
+            # Convertendo Row do psycopg2 para dict puro para evitar problemas no Jinja
+            return [dict(row) for row in rows]
+            
+        except Exception as error:
+             logger.exception(f"Erro ao buscar pedidos pendentes para dashboard: {error}")
+             return []
+        finally:
+            if cursor: cursor.close()
+    
+    def registrar_entrega_lote(self, dados_lote: RegistrarEntregaLoteRequest) -> dict:
+        """
+        Processa múltiplas entregas de uma vez dentro de uma transação atômica.
+        """
+        cursor = None
+        try:
+            cursor = self.db_conn.cursor(cursor_factory=DictCursor)
+            
+            itens_processados = 0
+            
+            for item_req in dados_lote.itens:
+                # 1. Busca dados atuais do pedido para validar saldo
+                # Reutilizamos o método existente para evitar duplicar SQL
+                pedido_atual = self.get_by_id(item_req.id_pedido)
+                
+                if not pedido_atual:
+                    raise ValueError(f"Pedido ID {item_req.id_pedido} não encontrado.")
+                
+                # Calcula novo total
+                nova_qtd_entregue = pedido_atual.quantidade_entregue + item_req.quantidade
+                
+                # Validação de Saldo (Opcional mas recomendada)
+                if nova_qtd_entregue > pedido_atual.quantidade_pedida:
+                     # Tolerância pequena para arredondamentos ou rejeita
+                     pass 
+
+                # Define status
+                novo_status = "Entrega Parcial"
+                if nova_qtd_entregue >= pedido_atual.quantidade_pedida:
+                    novo_status = "Entregue"
+
+                # 2. Atualiza no Banco
+                update_sql = """
+                    UPDATE pedidos 
+                    SET quantidade_entregue = %s, status_entrega = %s
+                    WHERE id = %s
+                """
+                cursor.execute(update_sql, (nova_qtd_entregue, novo_status, item_req.id_pedido))
+                itens_processados += 1
+
+            # Se chegou aqui sem erro, comita tudo
+            self.db_conn.commit()
+            return {"sucesso": True, "qtd_itens": itens_processados}
+
+        except Exception as error:
+            if self.db_conn: self.db_conn.rollback()
+            logger.exception(f"Erro ao registrar entrega em lote: {error}")
             raise error
         finally:
             if cursor: cursor.close()

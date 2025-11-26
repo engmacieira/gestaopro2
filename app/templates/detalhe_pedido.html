@@ -9,6 +9,10 @@
 
 {% include '_pedido_status_summary.html' %}
 
+<button id="btn-entrega-lote" class="btn btn-success">
+    <i class="fa-solid fa-boxes-stacked"></i> Registrar Entrega em Lote
+</button>
+
 <div class="dashboard-main-grid">
 
     <div class="main-panel">
@@ -29,12 +33,30 @@
 <div id="modal-registrar-entrega" class="modal-overlay">
     {% include '_modal_registrar_entrega.html' %}
 </div>
+
+<div id="modal-entrega-lote" class="modal-overlay">
+    {% include '_modal_entrega_lote.html' %}
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 
 <script>
+    // Dados globais para o JavaScript
     const numeroAOCSGlobal = "{{ aocs.numero_aocs }}";
+    
+    // Injetamos os dados atuais da AOCS (já formatados como nomes pelo Python)
+    // Isso garante que o formulário de edição receba exatamente o que está na tela.
+    window.aocsDadosAtuais = {
+        id: {{ aocs.id }},
+        justificativa: `{{ aocs.justificativa }}`,
+        // Usamos 'default' para evitar erro se vier vazio
+        unidade_requisitante: `{{ aocs.unidade_requisitante | default('', true) }}`,
+        local_entrega: `{{ aocs.local_entrega | default('', true) }}`,
+        agente_responsavel: `{{ aocs.agente_responsavel | default('', true) }}`,
+        info_orcamentaria: `{{ aocs.info_orcamentaria | default('', true) }}`
+    };
 </script>
 
 <script src="{{ request.app.url_path_for('static', path='js/detalhe_pedido.js') }}" defer></script>

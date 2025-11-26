@@ -1,23 +1,27 @@
-<template id="table-template">
-    <div class="card full-width">
-        <div class="card-actions">
-            <h2 id="table-title"></h2>
-            <button id="btn-add-new-item" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Adicionar Novo
-            </button>
+<div id="tabela-container" style="display: none;">
+    
+    <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+        <div>
+            <h2 id="pageTitle" style="margin: 0; color: var(--primary-color);">Listagem</h2>
+            <small class="text-muted">Gerenciamento de registros</small>
         </div>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width: 10%;">ID</th>
-                        <th>Nome</th>
-                        <th style="width: 20%;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                </tbody>
-            </table>
-        </div>
+        
+        <button id="btnNovoItem" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Adicionar Novo
+        </button>
     </div>
-</template>
+
+    <div class="table-wrapper">
+        <table class="data-table" id="genericTable">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Descrição / Valor</th>
+                    <th style="width: 100px; text-align: center;">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+</div>

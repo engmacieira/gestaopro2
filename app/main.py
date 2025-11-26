@@ -5,13 +5,15 @@ if os.environ.get("TESTING") != "true":
     load_dotenv()
 
 import logging
-from contextlib import asynccontextmanager 
-from app.core.logging_config import setup_logging
-setup_logging()
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone 
 
-from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, Request, status
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles 
+from fastapi.exception_handlers import http_exception_handler
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from jose import jwt, JWTError
  
 from app.routers import (
     agente_router, anexo_router, aocs_router, categoria_router, 
@@ -21,6 +23,16 @@ from app.routers import (
     tipo_documento_router, unidade_router, auth_router, user_router, ui_router
 )
 
+from app.core.logging_config import setup_logging
+from app.core.database import get_db
+from app.core.security import (
+    create_access_token, 
+    ACCESS_TOKEN_EXPIRE_MINUTES, 
+    SECRET_KEY, 
+    ALGORITHM
+)
+
+setup_logging()
 logger = logging.getLogger(__name__) 
 
 @asynccontextmanager
@@ -40,6 +52,70 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory=os.path.join(APP_DIR, "static")), name="static")
+
+@app.middleware("http")
+async def sliding_session_middleware(request: Request, call_next):
+    response = await call_next(request)
+    
+    if request.url.path.startswith("/static") or request.url.path == "/login" or response.status_code == 401:
+        return response
+
+    token_header = request.cookies.get("access_token")
+    
+    if token_header:
+        try:
+            scheme, token = token_header.split()
+            if scheme.lower() != "bearer":
+                return response
+            
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            username = payload.get("sub")
+            
+            if username:
+                current_data = {
+                    "sub": payload.get("sub"),
+                    "id": payload.get("id"),
+                    "nivel": payload.get("nivel")
+                }
+                
+                new_access_token = create_access_token(data=current_data)
+                
+                expires = datetime.now(timezone.utc) + timedelta(minutes=30)
+                response.set_cookie(
+                    key="access_token",
+                    value=f"bearer {new_access_token}",
+                    expires=expires.strftime("%a, %d %b %Y %H:%M:%S GMT"),
+                    httponly=True,
+                    samesite="lax",
+                    secure=False, 
+                    path="/"
+                )
+        except (ValueError, JWTError):
+            pass
+            
+    return response
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """
+    Redireciona para o login se der erro 401 em uma página HTML.
+    Mantém o JSON se for uma chamada de API (AJAX/Fetch).
+    """
+    if exc.status_code == 401:
+        accept = request.headers.get("accept", "")
+        
+        if "text/html" in accept:
+            return RedirectResponse(
+                url="/login?msg=Sessão expirada por inatividade. Faça login novamente.&category=warning",
+                status_code=status.HTTP_302_FOUND
+            )
+        
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Não autenticado. Faça login novamente."}
+        )
+        
+    return await http_exception_handler(request, exc)
 
 @app.get("/")
 def read_root():

@@ -1,207 +1,190 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
+    // --- ELEMENTOS DA NAVEGAÇÃO E TABELA ---
+    const buttons = document.querySelectorAll('.nav-btn');
+    const emptyState = document.getElementById('empty-state');
+    const tabelaContainer = document.getElementById('tabela-container');
+    const tableBody = document.getElementById('tableBody');
+    const pageTitle = document.getElementById('pageTitle');
+    const btnNovoItem = document.getElementById('btnNovoItem');
 
-    let tabelaAtiva = null;
-    let nomeExibicaoTabelaAtiva = null;
-
-    const contentArea = document.getElementById('content-area');
-    const tableTemplate = document.getElementById('table-template'); 
-    const modal = document.getElementById('modal-item');
+    // --- ELEMENTOS DO MODAL (Baseado no seu upload) ---
+    const modal = document.getElementById('modal-item'); 
+    const form = document.getElementById('form-item');
+    const inputNome = document.getElementById('item-nome');
     const modalTitulo = document.getElementById('modal-titulo');
-    const formItem = document.getElementById('form-item');
-    const inputNomeItem = document.getElementById('item-nome');
-    const notificationArea = document.querySelector('.main-content #notification-area');
-    let idItemEmEdicao = null;
+    const btnFechar = document.getElementById('btn-fechar-modal');
+    const btnCancelar = document.getElementById('btn-cancelar-modal');
 
-    function showNotification(message, type = 'error') {
-        if (!notificationArea) return;
-        const initialFlash = notificationArea.querySelector('.notification.flash');
-        if(initialFlash) initialFlash.remove();
+    // --- ESTADO DA APLICAÇÃO ---
+    let currentTabela = null;
+    let currentColuna = 'nome'; // Padrão, atualizado pelo botão
+    let currentTitulo = '';
 
-        const existing = notificationArea.querySelector('.notification:not(.flash)');
-        if(existing) existing.remove();
+    // =========================================================================
+    // 1. NAVEGAÇÃO (Troca de Tabelas)
+    // =========================================================================
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Visual: destaca o botão clicado
+            buttons.forEach(b => {
+                b.classList.remove('btn-primary', 'active');
+                b.classList.add('btn-light');
+            });
+            btn.classList.remove('btn-light');
+            btn.classList.add('btn-primary', 'active');
 
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        notificationArea.prepend(notification); 
-        setTimeout(() => {
-            if (notification) {
-                notification.style.opacity = '0';
-                notification.addEventListener('transitionend', () => notification.remove());
-            }
-        }, 5000);
-    }
+            // Dados: captura configuração do botão
+            currentTabela = btn.dataset.target;
+            currentColuna = btn.dataset.coluna;
+            currentTitulo = btn.textContent.trim();
 
-    const fecharModal = () => {
-        if (!modal) return; 
-        modal.style.display = 'none';
-        formItem.reset();
-        idItemEmEdicao = null;
-    };
+            // UI: Atualiza títulos e mostra a tabela
+            if (pageTitle) pageTitle.textContent = currentTitulo;
+            if (emptyState) emptyState.style.display = 'none';
+            if (tabelaContainer) tabelaContainer.style.display = 'block';
 
-    async function carregarTabela(nomeTabela, nomeExibicao) {
-        tabelaAtiva = nomeTabela;
-        nomeExibicaoTabelaAtiva = nomeExibicao;
+            // Carrega os dados
+            console.log(`[UI] Carregando tabela: ${currentTabela}, Coluna chave: ${currentColuna}`);
+            carregarDados(currentTabela);
+        });
+    });
 
-        contentArea.innerHTML = '';
-        
-        // --- BLINDAGEM CRÍTICA ---
-        if (!tableTemplate) {
-            contentArea.innerHTML = '<div class="notification error">Erro: Template da tabela (ID table-template) não encontrado no DOM.</div>';
-            return; // Para a execução aqui para não quebrar
-        }
-        // -------------------------
-
-        const clone = tableTemplate.content.cloneNode(true);
-        contentArea.appendChild(clone);
-
-        const tableTitle = contentArea.querySelector('#table-title');
-        const btnAddNewItem = contentArea.querySelector('#btn-add-new-item');
-        const tableBody = contentArea.querySelector('#table-body');
-
-        if (!tableTitle || !btnAddNewItem || !tableBody) {
-             contentArea.innerHTML = '<div class="notification error">Erro: Elementos internos do template da tabela não encontrados.</div>';
-             return;
-        }
-
-        tableTitle.textContent = `Gerenciando: ${nomeExibicao}`;
-        btnAddNewItem.addEventListener('click', abrirModalParaNovo); 
-        tableBody.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
+    // =========================================================================
+    // 2. API: LEITURA (GET)
+    // =========================================================================
+    async function carregarDados(tabela) {
+        if (!tableBody) return;
+        tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Carregando...</td></tr>';
 
         try {
-            const response = await fetch(`/api/tabelas-sistema/${nomeTabela}`);
-            const itens = await response.json();
-
-            if (!response.ok) throw new Error(itens.detail || itens.erro || 'Erro desconhecido da API');
-
-            tableBody.innerHTML = '';
-            if (itens.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="3"><div class="empty-state mini"><p>Nenhum item cadastrado.</p></div></td></tr>';
-                return;
-            }
-
-            itens.forEach(item => {
-                const tr = document.createElement('tr');
-                const nomeEscapado = JSON.stringify(item.nome); 
-                tr.innerHTML = `
-                    <td>${item.id}</td>
-                    <td>${item.nome}</td>
-                    <td class="actions-cell">
-                        <button class="btn-link-action" onclick="abrirModalParaEditar(${item.id}, ${nomeEscapado})"><i class="fa-solid fa-pencil"></i> Editar</button>
-                        <button class="btn-link-action red" onclick="excluirItem(${item.id})"><i class="fa-solid fa-trash-can"></i> Excluir</button>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
+            const response = await fetch(`/api/tabelas-sistema/${tabela}`);
+            if (!response.ok) throw new Error(`Erro API: ${response.status}`);
+            
+            const data = await response.json();
+            renderizarTabela(data);
         } catch (error) {
-            tableBody.innerHTML = `<tr><td colspan="3"><div class="notification error">Erro ao carregar dados: ${error.message}</div></td></tr>`;
+            console.error(error);
+            tableBody.innerHTML = '<tr><td colspan="3" class="text-center error-msg">Erro ao carregar dados.</td></tr>';
         }
     }
 
-    function abrirModalParaNovo() {
-        if (!modal || !modalTitulo || !formItem) return; 
-        idItemEmEdicao = null;
-        modalTitulo.textContent = `Adicionar Novo em ${nomeExibicaoTabelaAtiva}`;
-        formItem.reset();
-        modal.style.display = 'flex';
+    function renderizarTabela(data) {
+        tableBody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum registro encontrado.</td></tr>';
+            return;
+        }
+
+        data.forEach(item => {
+            // Tenta pegar o valor correto usando a coluna configurada no Python
+            // Se falhar, tenta os nomes comuns como fallback
+            let valor = item[currentColuna] || item.nome || item.descricao || item.numero || item.info_orcamentaria || '---';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.id}</td>
+                <td><strong>${valor}</strong></td>
+                <td class="text-center">
+                    <button class="btn-icon delete-btn" onclick="deletarItem(${item.id})" title="Excluir">
+                        <i class="fa-solid fa-trash" style="color: #dc3545;"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
     }
 
-    window.abrirModalParaEditar = (id, nomeAtual) => {
-        if (!modal || !modalTitulo || !inputNomeItem) return; 
-        idItemEmEdicao = id;
-        modalTitulo.textContent = `Editar Item em ${nomeExibicaoTabelaAtiva}`;
-        inputNomeItem.value = nomeAtual; 
-        modal.style.display = 'flex';
-    }
+    // =========================================================================
+    // 3. API: CRIAÇÃO (POST)
+    // =========================================================================
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const valor = inputNome.value.trim();
+            if (!valor) return alert("Campo obrigatório.");
 
-    if (formItem) {
-        formItem.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const nome = inputNomeItem.value.trim();
-
-            if (!nome) { showNotification('O campo Nome é obrigatório.'); return; }
-            if (!tabelaAtiva) { showNotification('Nenhuma tabela ativa selecionada.'); return; } 
-
-            const url = idItemEmEdicao
-                ? `/api/tabelas-sistema/${tabelaAtiva}/${idItemEmEdicao}` 
-                : `/api/tabelas-sistema/${tabelaAtiva}`; 
-            const method = idItemEmEdicao ? 'PUT' : 'POST';
-
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando...`;
+            // Monta o JSON dinâmico: { "nome": "Valor" } ou { "descricao": "Valor" }
+            const payload = {};
+            payload[currentColuna] = valor;
 
             try {
-                const response = await fetch(url, {
-                    method: method,
+                const response = await fetch(`/api/tabelas-sistema/${currentTabela}`, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome: nome })
+                    body: JSON.stringify(payload)
                 });
-                
-                if (!response.ok) {
-                    const erro = await response.json();
-                    throw new Error(erro.detail || erro.erro || `Erro ${response.status} na API`);
+
+                if (response.ok) {
+                    toggleModal(false);
+                    inputNome.value = '';
+                    carregarDados(currentTabela);
+                    alert('Salvo com sucesso!');
+                } else {
+                    const err = await response.json();
+                    alert(`Erro ao salvar: ${err.detail || 'Verifique os dados'}`);
                 }
-                
-                const item = await response.json();
-
-                const acao = idItemEmEdicao ? 'atualizado' : 'criado';
-                showNotification(`Item '${item.nome}' ${acao} com sucesso!`, 'success');
-
-                fecharModal();
-                if(tabelaAtiva) carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva);
-
             } catch (error) {
-                showNotification(`Erro: ${error.message}`);
-            } finally {
-                submitButton.disabled = false;
-                 submitButton.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Salvar`;
+                console.error(error);
+                alert('Erro de conexão.');
             }
         });
     }
 
-    window.excluirItem = async (id) => {
-        if (!confirm('Tem certeza que deseja excluir este item? A ação não pode ser desfeita e pode falhar se o item estiver em uso.')) return;
-        if (!tabelaAtiva) { showNotification('Nenhuma tabela ativa selecionada.'); return; } 
+    // =========================================================================
+    // 4. API: DELEÇÃO (DELETE)
+    // =========================================================================
+    // Global para ser acessível via onclick no HTML gerado
+    window.deletarItem = async (id) => {
+        if (!confirm('Tem certeza que deseja excluir este item?')) return;
 
         try {
-            const response = await fetch(`/api/tabelas-sistema/${tabelaAtiva}/${id}`, {
+            const response = await fetch(`/api/tabelas-sistema/${currentTabela}/${id}`, {
                 method: 'DELETE'
             });
 
-            if (response.status === 204) {
-                 showNotification('Item excluído com sucesso!', 'success');
+            if (response.ok) {
+                carregarDados(currentTabela);
             } else {
-                 const resultado = await response.json();
-                 if (!response.ok) throw new Error(resultado.detail || resultado.erro || `Erro ${response.status} ao excluir`);
-                 showNotification(resultado.mensagem || 'Item excluído.', 'success');
+                const err = await response.json();
+                alert(`Erro: ${err.detail || 'Não foi possível excluir.'}`);
             }
-
-            if(tabelaAtiva) carregarTabela(tabelaAtiva, nomeExibicaoTabelaAtiva);
-
         } catch (error) {
-            showNotification(`Erro ao excluir: ${error.message}`);
+            console.error(error);
+            alert('Erro de conexão.');
+        }
+    };
+
+    // =========================================================================
+    // 5. CONTROLE DO MODAL
+    // =========================================================================
+    function toggleModal(show) {
+        if (!modal) return;
+        
+        if (show) {
+            modal.classList.add('active'); // Classe para mostrar (se usar CSS de classe)
+            modal.style.display = 'flex';  // Fallback inline
+            if (modalTitulo) modalTitulo.textContent = `Adicionar: ${currentTitulo}`;
+            if (inputNome) inputNome.focus();
+        } else {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
         }
     }
 
-    document.querySelectorAll('.management-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.querySelectorAll('.management-link').forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            const nomeTabela = link.dataset.tabela;
-            const nomeExibicao = link.dataset.nomeExibicao;
-            carregarTabela(nomeTabela, nomeExibicao);
-        });
+    // Event Listeners do Modal
+    if (btnNovoItem) btnNovoItem.addEventListener('click', () => toggleModal(true));
+    if (btnFechar) btnFechar.addEventListener('click', () => toggleModal(false));
+    if (btnCancelar) btnCancelar.addEventListener('click', () => toggleModal(false));
+
+    // Fecha ao clicar fora
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) toggleModal(false);
     });
 
-    const btnFecharModal = document.getElementById('btn-fechar-modal');
-    const btnCancelarModal = document.getElementById('btn-cancelar-modal');
-    if(btnFecharModal) btnFecharModal.addEventListener('click', fecharModal);
-    if(btnCancelarModal) btnCancelarModal.addEventListener('click', fecharModal);
-
-    window.addEventListener('click', (event) => {
-        if (modal && event.target == modal) fecharModal();
-    });
-
+    // Auto-Load: Clica no primeiro botão ao abrir a tela para não ficar vazio
+    if (buttons.length > 0) {
+        buttons[0].click();
+    }
 });

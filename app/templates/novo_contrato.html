@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Contrato - GestãoPRO{% endblock %}
+
+{% block content %}
+<header class="main-header">
+    <h1><i class="fa-solid fa-file-contract"></i> Cadastro de Novo Contrato</h1>
+    <div class="header-actions">
+        <a href="{{ request.app.url_path_for('contratos_ui') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+        </a>
+        <button type="submit" form="formNovoContrato" class="btn btn-success">
+            <i class="fa-solid fa-save"></i> Salvar Contrato
+        </button>
+    </div>
+</header>
+
+<div class="card full-width">
+    <form id="formNovoContrato">
+        
+        <div class="section-box">
+            <div class="section-title">1. Identificação e Vigência</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="numero_contrato">Número do Contrato *</label>
+                    <input type="text" id="numero_contrato" name="numero_contrato" required placeholder="Ex: 123/2024">
+                </div>
+                
+                <div class="form-group">
+                    <label for="data_inicio">Data Início *</label>
+                    <input type="date" id="data_inicio" name="data_inicio" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="data_fim">Data Fim *</label>
+                    <input type="date" id="data_fim" name="data_fim" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ativo">Situação</label>
+                    <select id="ativo" name="ativo">
+                        <option value="true" selected>Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-title">2. Dados do Fornecedor</div>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="fornecedor_nome">Razão Social / Nome *</label>
+                    <input type="text" id="fornecedor_nome" name="fornecedor_nome" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fornecedor_cnpj">CPF / CNPJ *</label>
+                    <input type="text" id="fornecedor_cnpj" name="fornecedor_cnpj" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fornecedor_email">E-mail</label>
+                    <input type="email" id="fornecedor_email" name="fornecedor_email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="fornecedor_telefone">Telefone</label>
+                    <input type="text" id="fornecedor_telefone" name="fornecedor_telefone">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-title">3. Classificação e Origem</div>
+            <div class="form-grid three-columns">
+                <div class="form-group">
+                    <label for="id_categoria">Categoria *</label>
+                    <select id="id_categoria" name="id_categoria" required>
+                        <option value="">Selecione...</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_processo_licitatorio">Processo Licitatório *</label>
+                    <select id="id_processo_licitatorio" name="id_processo_licitatorio" required>
+                        <option value="">Selecione...</option>
+                        {% for proc in processos %}
+                        <option value="{{ proc.id }}">Proc. {{ proc.numero }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_instrumento_contratual">Instrumento Contratual</label>
+                    <select id="id_instrumento_contratual" name="id_instrumento_contratual" required>
+                        <option value="">Selecione...</option>
+                        {% for inst in instrumentos %}
+                        <option value="{{ inst.id }}">{{ inst.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_modalidade">Modalidade</label>
+                    <select id="id_modalidade" name="id_modalidade" required>
+                        <option value="">Selecione...</option>
+                        {% for mod in modalidades %}
+                        <option value="{{ mod.id }}">{{ mod.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_numero_modalidade">Número da Modalidade</label>
+                    <select id="id_numero_modalidade" name="id_numero_modalidade" required>
+                        <option value="">Selecione...</option>
+                        {% for num in numeros_modalidade %}
+                        <option value="{{ num.id }}">{{ num.numero_ano }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ request.app.url_path_for('static', path='js/novo_contrato.js') }}" defer></script>
+{% endblock %}

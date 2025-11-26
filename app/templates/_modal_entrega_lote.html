@@ -1,0 +1,80 @@
+<div class="modal-content large">
+    <div class="modal-header">
+        <h2><i class="fa-solid fa-boxes-packing"></i> Registrar Entrega em Lote</h2>
+        <button type="button" class="close-button">&times;</button>
+    </div>
+    <form id="form-entrega-lote">
+        <div class="modal-body">
+            
+            <div class="form-grid" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="lote_data_entrega">Data de Recebimento *</label>
+                    <input type="date" id="lote_data_entrega" name="data_entrega" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="lote_nota_fiscal">Nota Fiscal / Documento *</label>
+                    <input type="text" id="lote_nota_fiscal" name="nota_fiscal" class="form-control" placeholder="Ex: NF-e 12345" required>
+                </div>
+            </div>
+
+            <div class="table-wrapper" style="max-height: 400px; overflow-y: auto;">
+                <table class="data-table" id="tabela-entrega-lote">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="check-all-items" checked></th>
+                            <th>Item</th>
+                            <th class="text-right">Saldo Pendente</th>
+                            <th style="width: 150px;">Qtd. a Entregar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in itens %}
+                            {% set saldo_pendente = item.quantidade_pedida - item.quantidade_entregue %}
+                            
+                            {% if saldo_pendente > 0 %}
+                            <tr class="item-row" data-id="{{ item.id_pedido }}">
+                                <td>
+                                    <input type="checkbox" class="item-check" checked>
+                                </td>
+                                <td>
+                                    <small class="text-muted">Item {{ item.numero_item_contrato }}</small><br>
+                                    <strong>{{ item.descricao }}</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span class="badge-saldo">{{ "%.2f"|format(saldo_pendente)|replace('.', ',') }}</span>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control item-qtd" 
+                                           value="{{ "%.2f"|format(saldo_pendente) }}" 
+                                           max="{{ saldo_pendente }}"
+                                           min="0" step="0.01">
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <small class="text-muted">* Desmarque os itens que NÃO chegaram nesta nota fiscal.</small>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="close-button btn btn-secondary">Cancelar</button>
+            <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-check-double"></i> Confirmar Entrega em Lote
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('check-all-items')?.addEventListener('change', function() {
+        const isChecked = this.checked;
+        document.querySelectorAll('#tabela-entrega-lote .item-check').forEach(chk => {
+            chk.checked = isChecked;
+            const row = chk.closest('tr');
+            const input = row.querySelector('.item-qtd');
+            if(input) input.disabled = !isChecked;
+        });
+    });
+</script>
