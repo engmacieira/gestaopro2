@@ -1036,73 +1036,89 @@ async def imprimir_pendentes_aocs(request: Request, numero_aocs: str, db_conn: c
 
 @router.get("/ci/{id_ci}/imprimir", response_class=HTMLResponse, name="imprimir_ci", dependencies=[Depends(require_access_level(2))])
 async def imprimir_ci(request: Request, id_ci: int, db_conn: connection = Depends(get_db)):
-
+    # 1. Instanciando Repositórios
     ci_repo = CiPagamentoRepository(db_conn)
     aocs_repo = AocsRepository(db_conn)
     unidade_repo = UnidadeRepository(db_conn)
     pedido_repo = PedidoRepository(db_conn)
     item_repo = ItemRepository(db_conn)
     contrato_repo = ContratoRepository(db_conn)
-    agente_repo = AgenteRepository(db_conn) 
+    agente_repo = AgenteRepository(db_conn)
 
+    # 2. Buscando a CI
     ci = ci_repo.get_by_id(id_ci)
     if not ci:
         raise HTTPException(status_code=404, detail="CI de Pagamento não encontrada")
 
+    # 3. Buscando AOCS Vinculada
     aocs = aocs_repo.get_by_id(ci.id_aocs)
     if not aocs:
         raise HTTPException(status_code=404, detail="AOCS vinculada não encontrada")
 
+    # 4. Buscando Dados Relacionados
     unidade = unidade_repo.get_by_id(aocs.id_unidade_requisitante) if aocs.id_unidade_requisitante else None
     
+    # Descobrindo o Fornecedor via Itens da AOCS
     nome_fornecedor = "N/D"
     cnpj_fornecedor = "N/D"
     
+    # Tenta pegar dados do fornecedor através dos pedidos vinculados
     pedidos = pedido_repo.get_by_aocs_id(aocs.id)
-    for p in pedidos:
-        item = item_repo.get_by_id(p.id_item_contrato)
+    if pedidos:
+        item = item_repo.get_by_id(pedidos[0].id_item_contrato)
         if item:
             contrato = contrato_repo.get_by_id(item.id_contrato)
             if contrato and contrato.fornecedor:
                 nome_fornecedor = contrato.fornecedor.nome
                 cnpj_fornecedor = contrato.fornecedor.cpf_cnpj
-                break 
 
+    # 5. Gerando Valor por Extenso
+    # [CORREÇÃO]: Usando .valor_nota_fiscal
     valor_extenso = "valor não processado"
     try:
         from num2words import num2words
-        valor_extenso = num2words(ci.valor, lang='pt_BR', to='currency')
+        valor_extenso = num2words(ci.valor_nota_fiscal, lang='pt_BR', to='currency')
     except ImportError:
-        valor_extenso = f"{ci.valor} reais"
+        valor_extenso = f"{ci.valor_nota_fiscal} reais"
     except Exception as e:
         logger.warning(f"Erro ao gerar valor por extenso: {e}")
         valor_extenso = "---"
 
+    # 6. Formatando Datas
+    # [CORREÇÃO]: Usando .data_nota_fiscal
     data_ci_formatada = ci.data_ci.strftime('%d/%m/%Y') if ci.data_ci else "N/D"
-    data_nf_formatada = ci.data_nf.strftime('%d/%m/%Y') if ci.data_nf else "N/D"
+    data_nf_formatada = ci.data_nota_fiscal.strftime('%d/%m/%Y') if ci.data_nota_fiscal else "N/D"
 
+    # 7. Identificando Solicitante
     nome_solicitante = "Responsável"
-    if aocs.id_agente_responsavel:
+    # Tenta usar o solicitante gravado na CI primeiro
+    if ci.id_solicitante:
+        agente = agente_repo.get_by_id(ci.id_solicitante)
+        if agente: nome_solicitante = agente.nome
+    # Fallback para o responsável da AOCS
+    elif aocs.id_agente_responsavel:
         agente = agente_repo.get_by_id(aocs.id_agente_responsavel)
-        if agente:
-            nome_solicitante = agente.nome
+        if agente: nome_solicitante = agente.nome
 
+    # 8. Montando o Contexto
+    # As chaves do dicionário devem bater com o que o TEMPLATE espera (ex: numero_nf)
+    # Os valores vêm do MODELO (ex: ci.numero_nota_fiscal)
     context = {
         "request": request,
-        "numero_ci": ci.numero,  
+        "numero_ci": ci.numero_ci,
         "secretaria": unidade.nome if unidade else "Secretaria Municipal",
         "data_ci": data_ci_formatada,
-        "ilmo_sr": "Secretário de Finanças", 
+        "ilmo_sr": "Secretário de Finanças",
         
-        "valor_nf": ci.valor,
+        "valor_nf": ci.valor_nota_fiscal,          # [CORREÇÃO]
         "valor_por_extenso": valor_extenso,
-        "numero_nf": ci.numero_nf,
+        "numero_nf": ci.numero_nota_fiscal,        # [CORREÇÃO]
         "data_nf": data_nf_formatada,
         "fornecedor": nome_fornecedor,
         "cnpj": cnpj_fornecedor,
-        "referencia": ci.referencia if hasattr(ci, 'referencia') and ci.referencia else aocs.justificativa, # Fallback
         
-        "observacoes": ci.observacoes,
+        "referencia": ci.observacoes_pagamento if ci.observacoes_pagamento else aocs.justificativa, # [CORREÇÃO]
+        "observacoes": ci.observacoes_pagamento,   # [CORREÇÃO]
         "solicitante": nome_solicitante,
         
         "get_flashed_messages": lambda **kwargs: []
