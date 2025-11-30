@@ -193,7 +193,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const item = await response.json();
 
-            if(formItemTitulo) formItemTitulo.innerText = 'Editar Item';
+            // Atualiza referência caso o DOM tenha mudado
+            const tituloEl = document.getElementById('form-item-titulo');
+            if(tituloEl) tituloEl.innerText = 'Editar Item';
 
             // Popula os campos do formulário
             if (formItem) {
@@ -278,7 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
                  return;
             }
             if (!response.ok) {
-                throw new Error('Erro ao excluir anexo');
+                const res = await response.json();
+                throw new Error(res.detail || 'Erro ao excluir anexo');
             }
             reloadPageWithMessage("Anexo excluído.", 'success');
         } catch (error) {
