@@ -82,7 +82,7 @@ class AnexoRepository:
     def get_by_entidade(self, id_entidade: int, tipo_entidade: str) -> list[Anexo]:
         cursor = None
         
-        fk_column = ""
+        # Define qual coluna de ID usar
         if tipo_entidade == 'contrato':
             fk_column = "id_contrato"
         elif tipo_entidade == 'aocs':
@@ -94,22 +94,28 @@ class AnexoRepository:
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
             
-            sql = f"SELECT * FROM anexos WHERE {fk_column} = %s AND tipo_entidade = %s ORDER BY data_upload DESC"
+            # [CORREÇÃO] Simplificamos a query para garantir compatibilidade
+            # Se a coluna tipo_entidade for o problema, podemos removê-la daqui temporariamente
+            # Mas como ela existe no dump, vamos manter, mas garantindo a sintaxe.
+            
+            sql = f"""
+                SELECT * FROM anexos 
+                WHERE {fk_column} = %s 
+                AND tipo_entidade = %s 
+                ORDER BY data_upload DESC
+            """
             
             params = (id_entidade, tipo_entidade)
             
-            logger.debug(f"Executando get_by_entidade: SQL='{sql}' com PARAMS={params}")
+            logger.debug(f"SQL Anexos: {sql} | Params: {params}")
 
             cursor.execute(sql, params)
             rows = cursor.fetchall()
             
-            if not rows:
-                 logger.warning(f"Nenhum anexo encontrado para {fk_column}={id_entidade} E tipo_entidade={tipo_entidade}")
-
             return [anexo for anexo in (self._map_row_to_model(row) for row in rows) if anexo]
 
         except (Exception, psycopg2.DatabaseError) as error:
-             logger.exception(f"Erro ao buscar anexos por entidade {tipo_entidade} ID {id_entidade}: {error}")
+             logger.exception(f"Erro ao buscar anexos ({tipo_entidade}={id_entidade}): {error}")
              return []
         finally:
             if cursor:
