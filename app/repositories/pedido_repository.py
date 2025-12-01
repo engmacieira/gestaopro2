@@ -274,38 +274,54 @@ class PedidoRepository:
         finally:
             if cursor: cursor.close()
             
-    def get_pendentes_dashboard(self, limite: int = 10) -> list[dict]:
+    def get_pendentes_paginados(self, page: int = 1, limit: int = 10) -> dict:
         """
-        Busca pedidos pendentes com detalhes de AOCS e Contrato para exibição no Dashboard.
-        Retorna uma lista de dicionários.
+        Busca AOCS que possuem itens pendentes (agrupado por AOCS).
         """
         cursor = None
+        offset = (page - 1) * limit
         try:
             cursor = self.db_conn.cursor(cursor_factory=DictCursor)
-            sql = """
-                SELECT 
-                    p.id,
+            
+            # 1. Contar TOTAL de AOCS Únicas com pendências
+            sql_count = """
+                SELECT COUNT(DISTINCT a.id) as total
+                FROM aocs a
+                JOIN pedidos p ON p.id_aocs = a.id
+                WHERE p.status_entrega NOT IN ('Entregue', 'Cancelado')
+            """
+            cursor.execute(sql_count)
+            total = cursor.fetchone()['total']
+
+            # 2. Buscar Dados das AOCS Únicas
+            # Usamos DISTINCT para garantir que a AOCS apareça só uma vez
+            # Removemos 'p.id' e 'p.status_entrega' do select para permitir o DISTINCT
+            sql_data = """
+                SELECT DISTINCT
+                    a.id,
                     a.numero_aocs,
                     c.numero_contrato,
                     a.data_criacao as data_pedido,
-                    CURRENT_DATE - a.data_criacao AS dias_passados
-                FROM pedidos p
-                JOIN aocs a ON p.id_aocs = a.id
+                    (CURRENT_DATE - a.data_criacao) AS dias_passados
+                FROM aocs a
+                JOIN pedidos p ON p.id_aocs = a.id
                 JOIN itenscontrato ic ON p.id_item_contrato = ic.id
                 JOIN contratos c ON ic.id_contrato = c.id
                 WHERE p.status_entrega NOT IN ('Entregue', 'Cancelado')
                 ORDER BY dias_passados DESC
-                LIMIT %s
+                LIMIT %s OFFSET %s
             """
-            cursor.execute(sql, (limite,))
+            cursor.execute(sql_data, (limit, offset))
             rows = cursor.fetchall()
             
-            # Convertendo Row do psycopg2 para dict puro para evitar problemas no Jinja
-            return [dict(row) for row in rows]
+            return {
+                "itens": [dict(row) for row in rows],
+                "total": total
+            }
             
         except Exception as error:
-             logger.exception(f"Erro ao buscar pedidos pendentes para dashboard: {error}")
-             return []
+             logger.exception(f"Erro ao buscar AOCS pendentes: {error}")
+             return {"itens": [], "total": 0}
         finally:
             if cursor: cursor.close()
     

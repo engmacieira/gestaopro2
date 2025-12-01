@@ -179,30 +179,53 @@ async def read_root(request: Request):
     return RedirectResponse(url=request.app.url_path_for("login"))
 
 @router.get("/home", response_class=HTMLResponse, name="home_ui", dependencies=[Depends(require_access_level(3))])
-async def home_ui(request: Request, current_user=Depends(get_current_user), db_conn: connection = Depends(get_db)):
+async def home_ui(
+    request: Request, 
+    page: int = Query(1, alias="page"), # Recebe o número da página
+    current_user=Depends(get_current_user), 
+    db_conn: connection = Depends(get_db)
+):
     indicadores = {"contratos_ativos": 0, "pedidos_mes": 0, "contratos_a_vencer": 0}
-    pedidos_pendentes = [] 
-    pagina_atual = 1
+    
+    # Variáveis de Paginação
+    pedidos_pendentes = []
     total_paginas = 1
+    ITENS_DASHBOARD = 10 # Limite por página
     
     try:
+         # 1. Indicadores (Lógica existente mantida)
          cursor = db_conn.cursor()
          cursor.execute("SELECT COUNT(id) FROM Contratos WHERE ativo = TRUE")
          indicadores["contratos_ativos"] = cursor.fetchone()[0]
          cursor.close()
          
+         # 2. Pedidos Pendentes Paginados (NOVA LÓGICA)
          pedido_repo = PedidoRepository(db_conn)
-         pedidos_pendentes = pedido_repo.get_pendentes_dashboard(limite=10) 
+         resultado = pedido_repo.get_pendentes_paginados(page=page, limit=ITENS_DASHBOARD)
+         
+         pedidos_pendentes = resultado['itens']
+         total_registros = resultado['total']
+         
+         # Cálculo de páginas (Arredonda para cima: 11 itens / 10 = 1.1 -> 2 páginas)
+         if total_registros > 0:
+             total_paginas = math.ceil(total_registros / ITENS_DASHBOARD)
          
     except Exception as e:
          logger.error(f"Erro ao buscar dados do dashboard: {e}")
+
+    # Passamos os query_params para o macro de paginação não perder filtros (se houver no futuro)
+    query_params = dict(request.query_params)
 
     context = {
         "current_user": current_user,
         "indicadores": indicadores,
         "pedidos_pendentes": pedidos_pendentes,
-        "pagina_atual": pagina_atual,
+        
+        # Variáveis necessárias para o _pagination.html funcionar
+        "pagina_atual": page,
         "total_paginas": total_paginas,
+        "query_params": query_params,
+        
         "get_flashed_messages": lambda **kwargs: []
     }
     return templates.TemplateResponse(request, "index.html", context)

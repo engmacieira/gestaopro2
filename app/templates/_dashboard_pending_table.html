@@ -1,34 +1,45 @@
 {% from '_pagination.html' import render_pagination with context %}
 
 <div class="card full-width">
-    <h2><i class="fa-solid fa-clock-rotate-left" style="margin-right: 8px; color: var(--action-primary);"></i> Pedidos Pendentes</h2>
+    <h2><i class="fa-solid fa-clock-rotate-left" style="margin-right: 8px; color: var(--action-primary);"></i> AOCS Pendentes</h2>
     <div class="table-wrapper">
         <table class="data-table">
             <thead>
                 <tr>
                     <th>Nº AOCS</th>
                     <th>Contrato</th>
-                    <th>Data</th>
-                    <th>Dias Passados</th>
+                    <th>Data Emissão</th>
+                    <th>Tempo de Espera</th>
                 </tr>
             </thead>
             <tbody>
                 {% if pedidos_pendentes %}
-                    {% for pedido in pedidos_pendentes %}
+                    {% for item in pedidos_pendentes %}
                     <tr>
-                        <td><strong><a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=pedido.numero_aocs) }}">{{ pedido.numero_aocs }}</a></strong></td>
-                        <td>{{ pedido.numero_contrato }}</td>
-                        <td>{{ pedido.data_pedido | replace('-', '/') }}</td> 
-                        {% set dias_passados = pedido.dias_passados %}
+                        <td>
+                            <strong>
+                                <a href="{{ request.app.url_path_for('detalhe_pedido', numero_aocs=item.numero_aocs) }}">
+                                    {{ item.numero_aocs }}
+                                </a>
+                            </strong>
+                        </td>
+                        <td>{{ item.numero_contrato }}</td>
+                        
+                        <td>{{ item.data_pedido.strftime('%d/%m/%Y') if item.data_pedido else 'N/D' }}</td> 
+                        
+                        {% set dias = item.dias_passados %}
                         {% set dias_class = '' %}
-                        {% if dias_passados > 60 %}
+                        {% if dias > 60 %}
                             {% set dias_class = 'overdue-critical' %}
-                        {% elif dias_passados > 30 %}
+                        {% elif dias > 30 %}
                             {% set dias_class = 'overdue-warning' %}
-                        {% elif dias_passados > 7 %}
+                        {% elif dias > 7 %}
                             {% set dias_class = 'overdue-mild' %}
                         {% endif %}
-                        <td class="{{ dias_class }}">{{ pedido.dias_passados }} dias</td>
+                        
+                        <td class="{{ dias_class }}">
+                            <i class="fa-regular fa-calendar"></i> {{ dias }} dias
+                        </td>
                     </tr>
                     {% endfor %}
                 {% else %}
@@ -36,7 +47,7 @@
                         <td colspan="4">
                             <div class="empty-state mini">
                                 <i class="fa-solid fa-check-circle" style="color: var(--action-success);"></i>
-                                <p>Nenhum pedido pendente. Bom trabalho!</p>
+                                <p>Nenhuma pendência encontrada. Tudo em dia!</p>
                             </div>
                         </td>
                     </tr>
@@ -46,6 +57,6 @@
     </div>
 
     <div class="card-footer">
-        {{ render_pagination(pagina_atual, total_paginas, 'home_ui') }} {# Nota: O nome da rota é 'home_ui' no ui_router.py #}
+        {{ render_pagination(pagina_atual, total_paginas, 'home_ui') }}
     </div>
 </div>
