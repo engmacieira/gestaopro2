@@ -134,8 +134,12 @@ def test_imprimir_aocs(test_client: TestClient, admin_auth_headers: dict, setup_
     )
     
     assert response.status_code == 200
-    assert response.headers["content-type"] == "application/pdf"
-    assert len(response.content) > 0 
+    # Ajuste: Agora esperamos HTML, não PDF
+    assert "text/html" in response.headers["content-type"]
+    assert "<!DOCTYPE html>" in response.text
+    # Verifica se os dados renderizaram
+    assert numero_aocs_teste in response.text
+    assert cenario["nome_fornecedor"] in response.text
 
 def test_imprimir_pendentes(test_client: TestClient, admin_auth_headers: dict, setup_full_pedido_scenario: dict):
     cenario = setup_full_pedido_scenario
@@ -147,8 +151,10 @@ def test_imprimir_pendentes(test_client: TestClient, admin_auth_headers: dict, s
     )
     
     assert response.status_code == 200
-    assert response.headers["content-type"] == "application/pdf"
-    assert len(response.content) > 0
+    # Ajuste: Agora esperamos HTML, não PDF
+    assert "text/html" in response.headers["content-type"]
+    assert "<!DOCTYPE html>" in response.text
+    assert "Pendentes" in response.text
 
 def test_nova_ci_post_happy_path(
     test_client: TestClient, 
@@ -157,12 +163,24 @@ def test_nova_ci_post_happy_path(
 ):
     numero_aocs_teste = setup_nova_ci_deps
     
+    # Ajuste: Adicionado campos obrigatórios exigidos pelo Schema Pydantic
     form_payload = {
         "id_aocs": "1", 
         "justificativa": "Justificativa enviada pelo formulário",
-        "id_dotacao": "1",
+        "id_dotacao_pagamento": "1", # Nome do campo no form HTML pode variar, chequei o código e parece usar id_dotacao_pagamento no backend para recuperar, mas o form pode enviar outro nome. No post original usava 'id_dotacao' no dict, mas no router tenta pegar 'id_dotacao_pagamento' ou 'id_dotacao'. Vou manter genérico.
+        # No router: id_dotacao = form_data.get('id_dotacao_pagamento')
+        "id_dotacao_pagamento": "1",
         "id_solicitante": "1",
-        "id_secretaria": "1"
+        "id_secretaria": "1",
+        
+        # Campos Obrigatórios adicionados:
+        "numero_ci": "CI-TESTE-001",
+        "data_ci": date.today().isoformat(),
+        "numero_nota_fiscal": "NF-12345",
+        "serie_nota_fiscal": "1",
+        "data_nota_fiscal": date.today().isoformat(),
+        "valor_nota_fiscal": "150,00", # String para testar o parse_money
+        "observacoes_pagamento": "Teste de observação"
     }
 
     original_follow_redirects = test_client.follow_redirects
@@ -176,7 +194,8 @@ def test_nova_ci_post_happy_path(
     
     test_client.follow_redirects = original_follow_redirects
 
-    assert response.status_code == 302
+    # Se falhar aqui com 500, verifique os logs do pytest
+    assert response.status_code == 302, f"Esperava redirecionamento (302), recebeu {response.status_code}. Texto: {response.text}"
     
     decoded_location = unquote(response.headers["location"])
     assert f"/pedido/{numero_aocs_teste}" in decoded_location
