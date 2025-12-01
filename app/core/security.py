@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user_model import User
 from app.repositories.user_repository import UserRepository
 from app.core.database import get_db
@@ -92,3 +93,9 @@ def require_access_level(required_level: int):
             )
         return current_user
     return check_permission
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return check_password_hash(hashed_password, plain_password)
+
+def get_password_hash(password: str) -> str:
+    return generate_password_hash(password)

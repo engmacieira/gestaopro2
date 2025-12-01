@@ -22,3 +22,7 @@ class UserResponse(UserBase):
 
 class UserAdminResponse(UserResponse):
      data_criacao: date | None = None
+     
+class UserChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, description="Senha atual para validação")
+    new_password: str = Field(..., min_length=4, description="Nova senha desejada")

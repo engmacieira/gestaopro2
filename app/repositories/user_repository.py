@@ -2,8 +2,12 @@ import psycopg2
 from psycopg2.extensions import connection 
 from psycopg2.extras import DictCursor 
 from werkzeug.security import generate_password_hash 
+import logging
+
 from app.models.user_model import User
 from app.schemas.user_schema import UserCreateRequest, UserUpdateRequest
+
+logger = logging.getLogger(__name__)
 
 class UserRepository:
     def __init__(self, db_conn):
@@ -183,3 +187,19 @@ class UserRepository:
              return False
          finally:
              if cursor: cursor.close()
+             
+    def update_password(self, user_id: int, new_password_hash: str) -> bool:
+        """Atualiza apenas a senha do usuário."""
+        cursor = None
+        try:
+            cursor = self.db_conn.cursor()
+            sql = "UPDATE usuarios SET password_hash = %s WHERE id = %s"
+            cursor.execute(sql, (new_password_hash, user_id))
+            self.db_conn.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            if self.db_conn: self.db_conn.rollback()
+            logger.exception(f"Erro ao atualizar senha do usuário {user_id}: {e}")
+            raise e
+        finally:
+            if cursor: cursor.close()
