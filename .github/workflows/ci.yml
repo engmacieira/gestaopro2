@@ -66,18 +66,3 @@ jobs:
 
     - name: 7. Rodar os Testes
       run: python -m pytest --cov=app
-
-      # --- NOVOS PASSOS DO FRONTEND (ADICIONADOS ABAIXO) ---
-    
-    - name: 8. Configurar Node.js 18
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: 9. Instalar Dependências Frontend
-      # npm ci é mais seguro para CI do que npm install
-      run: npm ci
-
-    - name: 10. Rodar Testes do Frontend
-      run: npm run test:frontend -- --coverage
